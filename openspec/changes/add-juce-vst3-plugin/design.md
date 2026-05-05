@@ -97,7 +97,9 @@ This is a new sibling project, so there is no in-place migration for existing AC
 
 ## Open Questions
 
-- Exact JUCE tag and `acestep.cpp` commit pin must be selected during implementation and recorded in `.gitmodules`.
-- Exact GGUF manifest filenames and SHA-256 values must be verified against `Serveurperso/ACE-Step-1.5-GGUF` before downloader implementation.
+- Exact JUCE tag and `acestep.cpp` commit pin must be selected during implementation and recorded in the vendored-source notes in `session-handoff.md`.
+- Exact GGUF manifest filenames and SHA-256 values must be verified against the
+  `ServeurpersoCom/ACE-Step-1.5-GGUF` Hugging Face repository (same provider as the
+  `ServeurpersoCom/acestep.cpp` GitHub source) before downloader implementation.
 - The available `acestep.cpp` outputs for reliable MIDI event data and stem generation must be verified before choosing whether MIDI/stems come directly from backend metadata, model output, or post-processing analysis.
 - The upstream PR shape for `acestep-core` public headers and the C API shim must be validated against the current `acestep.cpp` source before creating `patches/0001-public-headers.patch`.

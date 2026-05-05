@@ -1,7 +1,0 @@
-[submodule "External/JUCE"]
-	path = External/JUCE
-	url = https://github.com/juce-framework/JUCE.git
-[submodule "External/acestep_cpp"]
-	path = External/acestep_cpp
-	url = https://github.com/ServeurpersoCom/acestep.cpp.git
-	branch = master

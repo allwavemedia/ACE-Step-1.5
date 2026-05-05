@@ -9,7 +9,7 @@ The system SHALL run ACE-Step generation on a background worker pool limited to 
 
 #### Scenario: User submits another request while one is running
 - **WHEN** a generation job is already active
-- **THEN** the system queues, rejects, or disables additional generation requests without running two GGML generations concurrently
+- **THEN** the new request is rejected immediately (no-op return with an error state); the user must cancel the active job before a new one can be submitted
 
 ### Requirement: Generation request parameters
 The system SHALL support prompt, lyrics, duration seconds, seed, CFG scale, LM seed, scheduler, and optional reference audio in the v1 generation request.

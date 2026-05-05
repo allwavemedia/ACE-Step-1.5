@@ -15,8 +15,8 @@ Important workflow constraints:
 
 - Follow repository instructions in `AGENTS.md` and `.github/copilot-instructions.md`.
 - Use OpenSpec change directory `openspec/changes/add-juce-vst3-plugin/` as the source of truth.
-- Main repo is `A:\Repos\ACE-Step-1.5-allwavemedia`.
-- Plugin working tree is now `A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin`.
+- Main repo root is `<ACE-Step-1.5>` (the repository root; e.g., `A:\Repos\ACE-Step-1.5-allwavemedia` on Windows).
+- Plugin working tree is `<ACE-Step-1.5>/ACE-Step-Plugin`.
 - Use TDD for feature/bugfix work where practical.
 - Keep changes minimal and scoped; do not refactor unrelated code.
 - Do not revert existing uncommitted changes unless explicitly asked.
@@ -52,9 +52,9 @@ Current next actionable task:
 
 Added:
 
-- `A:\Repos\ACE-Step-Plugin\Source\UI\PreviewPlayer.h`
-- `A:\Repos\ACE-Step-Plugin\Source\UI\PreviewPlayer.cpp`
-- `A:\Repos\ACE-Step-Plugin\Tests\PreviewPlayer_test.cpp`
+- `ACE-Step-Plugin/Source/UI/PreviewPlayer.h`
+- `ACE-Step-Plugin/Source/UI/PreviewPlayer.cpp`
+- `ACE-Step-Plugin/Tests/PreviewPlayer_test.cpp`
 
 `PreviewPlayer` owns a UI-side preview path using `juce::AudioTransportSource`,
 `juce::AudioFormatReaderSource`, `juce::AudioSourcePlayer`, and an optional
@@ -70,9 +70,9 @@ Tests added:
 
 Added:
 
-- `A:\Repos\ACE-Step-Plugin\Source\UI\ExternalFileDrag.h`
-- `A:\Repos\ACE-Step-Plugin\Source\UI\ExternalFileDrag.cpp`
-- `A:\Repos\ACE-Step-Plugin\Tests\ExternalFileDrag_test.cpp`
+- `ACE-Step-Plugin/Source/UI/ExternalFileDrag.h`
+- `ACE-Step-Plugin/Source/UI/ExternalFileDrag.cpp`
+- `ACE-Step-Plugin/Tests/ExternalFileDrag_test.cpp`
 
 `ExternalFileDrag::startCopyDrag()` wraps
 `juce::DragAndDropContainer::performExternalDragDropOfFiles(files, false)`.
@@ -90,8 +90,8 @@ Tests added:
 Latest validation passed:
 
 ```powershell
-cmake --build "A:\Repos\ACE-Step-Plugin\build-tests" --config RelWithDebInfo --target AceStepPluginTests --parallel
-ctest --test-dir "A:\Repos\ACE-Step-Plugin\build-tests" -C RelWithDebInfo --output-on-failure
+cmake --build "<ACE-Step-1.5>/ACE-Step-Plugin/build-tests" --config RelWithDebInfo --target AceStepPluginTests --parallel
+ctest --test-dir "<ACE-Step-1.5>/ACE-Step-Plugin/build-tests" -C RelWithDebInfo --output-on-failure
 ```
 
 Result:
@@ -102,22 +102,8 @@ Result:
 
 ## Pull Request Status
 
-The user requested a pull request at session close. The sibling plugin repo currently has no
-configured remote:
-
-```powershell
-git -C "A:\Repos\ACE-Step-Plugin" config --get-regexp "^remote\..*\.url$"
-```
-
-Output was empty. `gh repo view allwavemedia/ACE-Step-Plugin` failed with:
-
-```text
-GraphQL: Could not resolve to a Repository with the name 'allwavemedia/ACE-Step-Plugin'. (repository)
-```
-
-GitHub auth is available for account `allwavemedia`, and the main repo
-`allwavemedia/ACE-Step-1.5` is reachable. A code PR for the sibling plugin cannot be pushed until a
-remote repository is created or provided for `A:\Repos\ACE-Step-Plugin`.
+The plugin code is now vendored under `ACE-Step-Plugin/` in this repository and tracked as
+ordinary files. Plugin changes can be included in PRs against `allwavemedia/ACE-Step-1.5`.
 
 ## Important Repository State
 
@@ -129,16 +115,11 @@ OpenSpec files under:
 openspec/changes/add-juce-vst3-plugin/
 ```
 
-The `openspec/changes/` tree is untracked in the main repo. Do not assume it has already been
-published.
+These files are committed in this PR and tracked in the main repo.
 
 ### Plugin Tree: ACE-Step-Plugin
 
-The previous sibling repo contents were copied into the parent repo under:
-
-```text
-A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin
-```
+The previous sibling repo contents were copied into the parent repo under `ACE-Step-Plugin/`.
 
 The nested plugin `.git` directory and copied external `.git` pointer files were removed so the
 plugin can be tracked as ordinary files in the parent repository for now. Build output directories
@@ -170,7 +151,7 @@ Vendored external source pins from the copied tree:
 A real backend configure still requires CUDA Toolkit. Do not mark task 3.7 complete until:
 
 ```powershell
-cmake -S "A:\Repos\ACE-Step-Plugin" -B "A:\Repos\ACE-Step-Plugin\build-real" -G "Visual Studio 17 2022" -A x64 -DACESTEP_ENABLE_ACESTEP_CPP=ON -DACESTEP_BUILD_TESTS=OFF -DACESTEP_PLUGIN_MODE=static
+cmake -S "<ACE-Step-1.5>/ACE-Step-Plugin" -B "<ACE-Step-1.5>/ACE-Step-Plugin/build-real" -G "Visual Studio 17 2022" -A x64 -DACESTEP_ENABLE_ACESTEP_CPP=ON -DACESTEP_BUILD_TESTS=OFF -DACESTEP_PLUGIN_MODE=static
 ```
 
 succeeds and `dumpbin /dependents` shows expected DLL relationships.
@@ -182,20 +163,20 @@ with unchanged audio pass-through verified.
 
 ## Recommended Next Steps
 
-1. Continue all plugin development in `A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin`.
+1. Continue all plugin development in `ACE-Step-Plugin/` (repo-relative).
 2. Continue task 7.5 with TDD: add a scrollable history component using `juce::Viewport` around a child component that lays out up to eight `GeneratedAssetTile` instances vertically.
 3. Rebuild and run tests after each task:
 
 ```powershell
-cmake -S "A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin" -B "A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin\build-codex-tests" -G "Visual Studio 17 2022" -A x64 -DACESTEP_ENABLE_ACESTEP_CPP=OFF -DACESTEP_BUILD_TESTS=ON
-cmake --build "A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin\build-codex-tests" --config RelWithDebInfo --target AceStepPluginTests --parallel
-ctest --test-dir "A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin\build-codex-tests" -C RelWithDebInfo --output-on-failure
+cmake -S "<ACE-Step-1.5>/ACE-Step-Plugin" -B "<ACE-Step-1.5>/ACE-Step-Plugin/build-codex-tests" -G "Visual Studio 17 2022" -A x64 -DACESTEP_ENABLE_ACESTEP_CPP=OFF -DACESTEP_BUILD_TESTS=ON
+cmake --build "<ACE-Step-1.5>/ACE-Step-Plugin/build-codex-tests" --config RelWithDebInfo --target AceStepPluginTests --parallel
+ctest --test-dir "<ACE-Step-1.5>/ACE-Step-Plugin/build-codex-tests" -C RelWithDebInfo --output-on-failure
 ```
 
 4. Only after tests pass, mark task 7.5 complete in:
 
 ```text
-A:\Repos\ACE-Step-1.5-allwavemedia\openspec\changes\add-juce-vst3-plugin\tasks.md
+openspec/changes/add-juce-vst3-plugin/tasks.md
 ```
 
 ## Do Not Forget
