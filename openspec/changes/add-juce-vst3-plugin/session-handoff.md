@@ -16,7 +16,7 @@ Important workflow constraints:
 - Follow repository instructions in `AGENTS.md` and `.github/copilot-instructions.md`.
 - Use OpenSpec change directory `openspec/changes/add-juce-vst3-plugin/` as the source of truth.
 - Main repo is `A:\Repos\ACE-Step-1.5-allwavemedia`.
-- Sibling plugin repo is `A:\Repos\ACE-Step-Plugin`.
+- Plugin working tree is now `A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin`.
 - Use TDD for feature/bugfix work where practical.
 - Keep changes minimal and scoped; do not refactor unrelated code.
 - Do not revert existing uncommitted changes unless explicitly asked.
@@ -132,9 +132,17 @@ openspec/changes/add-juce-vst3-plugin/
 The `openspec/changes/` tree is untracked in the main repo. Do not assume it has already been
 published.
 
-### Sibling Plugin Repo: ACE-Step-Plugin
+### Plugin Tree: ACE-Step-Plugin
 
-The sibling repo has uncommitted changes and no remote. Do not reset them.
+The previous sibling repo contents were copied into the parent repo under:
+
+```text
+A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin
+```
+
+The nested plugin `.git` directory and copied external `.git` pointer files were removed so the
+plugin can be tracked as ordinary files in the parent repository for now. Build output directories
+remain ignored by `ACE-Step-Plugin/.gitignore`.
 
 Current important changed/added areas:
 
@@ -151,7 +159,7 @@ Current important changed/added areas:
 - `Tests/ReferenceAudioBufferTestMain.cpp`
 - `Tests/ReferenceAudioBufferTestUtils.h`
 
-Submodules:
+Vendored external source pins from the copied tree:
 
 - `External/JUCE`: tag `8.0.10`, commit `3af3ce009f6a02f6fa651008fffb5b41743a9fab`.
 - `External/acestep_cpp`: commit `6e0237bb4a2c94479a8c636e1116e1e3c30c9f45`, dirty due to guarded patch.
@@ -174,13 +182,14 @@ with unchanged audio pass-through verified.
 
 ## Recommended Next Steps
 
-1. Configure or create a remote for `A:\Repos\ACE-Step-Plugin`, then push a branch and create a PR.
+1. Continue all plugin development in `A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin`.
 2. Continue task 7.5 with TDD: add a scrollable history component using `juce::Viewport` around a child component that lays out up to eight `GeneratedAssetTile` instances vertically.
 3. Rebuild and run tests after each task:
 
 ```powershell
-cmake --build "A:\Repos\ACE-Step-Plugin\build-tests" --config RelWithDebInfo --target AceStepPluginTests --parallel
-ctest --test-dir "A:\Repos\ACE-Step-Plugin\build-tests" -C RelWithDebInfo --output-on-failure
+cmake -S "A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin" -B "A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin\build-codex-tests" -G "Visual Studio 17 2022" -A x64 -DACESTEP_ENABLE_ACESTEP_CPP=OFF -DACESTEP_BUILD_TESTS=ON
+cmake --build "A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin\build-codex-tests" --config RelWithDebInfo --target AceStepPluginTests --parallel
+ctest --test-dir "A:\Repos\ACE-Step-1.5-allwavemedia\ACE-Step-Plugin\build-codex-tests" -C RelWithDebInfo --output-on-failure
 ```
 
 4. Only after tests pass, mark task 7.5 complete in:
