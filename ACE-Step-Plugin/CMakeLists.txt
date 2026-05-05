@@ -66,6 +66,8 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/Models/ModelSetupState.h
     Source/UI/ExternalFileDrag.cpp
     Source/UI/ExternalFileDrag.h
+    Source/UI/GeneratedAssetHistoryView.cpp
+    Source/UI/GeneratedAssetHistoryView.h
     Source/UI/GeneratedAssetTile.cpp
     Source/UI/GeneratedAssetTile.h
     Source/UI/PreviewPlayer.cpp
@@ -94,6 +96,7 @@ target_link_libraries(AceStepPlugin
         juce::juce_audio_devices
         juce::juce_dsp
         juce::juce_gui_extra
+        juce::juce_cryptography
 )
 
 target_apply_compiler_warnings(AceStepPlugin)
@@ -148,6 +151,8 @@ if(ACESTEP_BUILD_TESTS)
             Source/Models/ModelSetupState.h
             Source/UI/ExternalFileDrag.cpp
             Source/UI/ExternalFileDrag.h
+            Source/UI/GeneratedAssetHistoryView.cpp
+            Source/UI/GeneratedAssetHistoryView.h
             Source/UI/GeneratedAssetTile.cpp
             Source/UI/GeneratedAssetTile.h
             Source/UI/PreviewPlayer.cpp
@@ -159,6 +164,7 @@ if(ACESTEP_BUILD_TESTS)
             Tests/AceStepEngineProgress_test.cpp
             Tests/ExternalFileDrag_test.cpp
             Tests/GeneratedAssetHistory_test.cpp
+            Tests/GeneratedAssetHistoryView_test.cpp
             Tests/GeneratedAssetTile_test.cpp
             Tests/GenerationTypes_test.cpp
             Tests/ModelChecksum_test.cpp
@@ -188,6 +194,7 @@ if(ACESTEP_BUILD_TESTS)
             juce::juce_audio_formats
             juce::juce_audio_utils
             juce::juce_core
+            juce::juce_cryptography
             juce::juce_gui_basics
     )
 

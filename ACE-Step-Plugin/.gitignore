@@ -6,8 +6,12 @@ out/
 .clangd/
 CMakeUserPresets.json
 
-Models/
+/Models/
 *.gguf
+
+# Un-negate plugin source/test directories that the root .gitignore shadows on Windows
+!Tests/
+!Source/
 *.sln
 *.vcxproj
 *.vcxproj.filters

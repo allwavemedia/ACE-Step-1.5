@@ -80,6 +80,9 @@ GenerationResult AceStepEngine::generate(const GenerationRequest& request)
 
 bool AceStepEngine::submitAsync(const GenerationRequest& request, CompletionCallback onComplete)
 {
+    if (!ready)
+        return false;
+
     // Reject if a job is already queued or running.
     bool expected = false;
     if (!jobPending.compare_exchange_strong(expected, true, std::memory_order_acq_rel))

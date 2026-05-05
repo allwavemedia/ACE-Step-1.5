@@ -62,7 +62,7 @@
 - [x] 7.2 Add `GeneratedAssetTile` with waveform thumbnail, filename, duration, play/stop controls, drag state, and Save As action.
 - [x] 7.3 Add preview playback through a dedicated preview path that does not alter the host audio pass-through path.
 - [x] 7.4 Implement external file drag via `performExternalDragDropOfFiles` with copy semantics for generated WAV paths.
-- [ ] 7.5 Add a scrollable history area for multiple generated assets.
+- [x] 7.5 Add a scrollable history area for multiple generated assets.
 - [ ] 7.6 Clean up plugin-owned temporary generation directories when the plugin instance is destroyed while preserving user-saved copies.
 
 ## 8. MIDI Export
