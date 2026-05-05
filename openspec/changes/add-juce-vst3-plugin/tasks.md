@@ -1,8 +1,8 @@
-## 1. Sibling Repository Skeleton
+## 1. Plugin Project Skeleton
 
-- [x] 1.1 Create sibling `ACE-Step-Plugin/` repository with `Source/`, `Resources/`, `External/`, `cmake/`, `patches/`, and `.vscode/` directories.
+- [x] 1.1 Create `ACE-Step-Plugin/` project with `Source/`, `Resources/`, `External/`, `cmake/`, `patches/`, and `.vscode/` directories.
 - [x] 1.2 Add `.gitignore` entries for build outputs, model directories, generated bundles, and `*.gguf` files.
-- [x] 1.3 Add `.gitmodules` entries for pinned JUCE and `ServeurpersoCom/acestep.cpp` submodules, including recursive `ggml` checkout guidance.
+- [x] 1.3 Add pinned vendored JUCE and `ServeurpersoCom/acestep.cpp` external source, including recursive `ggml` source.
 - [x] 1.4 Add `BUILD.md` with Windows prerequisites for MSVC 2022, CMake, CUDA Toolkit, Vulkan SDK, JUCE AudioPluginHost, and expected build commands.
 
 ## 2. CMake and JUCE Plugin Shell
@@ -104,4 +104,4 @@
 - [ ] 12.3 Verify the VST3 bundle contains the plugin DLL plus CPU, CUDA, and Vulkan GGML backend DLL siblings.
 - [ ] 12.4 Verify external drag-and-drop in Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, with Save As as fallback.
 - [ ] 12.5 Verify missing model, checksum mismatch, out-of-memory, backend-load failure, cancellation, generation failure, MIDI unavailable state, stem failure, preset load failure, and host compatibility errors surface in the editor without crashing the host.
-- [ ] 12.6 Update build and troubleshooting documentation with final submodule pins, SDK versions, model manifest details, MIDI/stem capability details, preset storage details, and known host limitations.
+- [ ] 12.6 Update build and troubleshooting documentation with final external source pins, SDK versions, model manifest details, MIDI/stem capability details, preset storage details, and known host limitations.

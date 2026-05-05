@@ -1,13 +1,13 @@
 ## Context
 
-ACE-Step 1.5 currently exposes generation through Python entry points, a Gradio UI, and API server flows. The proposed plugin is a standalone sibling repository, `ACE-Step-Plugin/`, that brings ACE-Step into Windows DAWs as an offline generate-and-drop VST3 workflow. It must pass audio through unchanged during normal playback, capture routed host audio only when armed, run generation outside the audio thread, and expose generated WAV files for timeline import.
+ACE-Step 1.5 currently exposes generation through Python entry points, a Gradio UI, and API server flows. The proposed plugin lives under `ACE-Step-Plugin/` and brings ACE-Step into Windows DAWs as an offline generate-and-drop VST3 workflow. It must pass audio through unchanged during normal playback, capture routed host audio only when armed, run generation outside the audio thread, and expose generated WAV files for timeline import.
 
 The plugin will use JUCE for the VST3 shell and UI, MSVC 2022 with C++17 for the Windows build, and `ServeurpersoCom/acestep.cpp` for GGML inference. The selected v1 integration is in-process static linking against `acestep-core`, with a build-time sidecar server fallback retained for upstream API churn. GGML CPU, CUDA, and Vulkan backends are bundled as runtime-loaded DLL siblings inside the VST3 bundle.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- Create a sibling JUCE VST3 project that builds a pass-through Windows plugin and can be loaded by VST3-capable DAWs.
+- Create a JUCE VST3 project that builds a pass-through Windows plugin and can be loaded by VST3-capable DAWs.
 - Keep plugin scanning fast by lazy-loading models only on generation request.
 - Keep the audio callback real-time-safe: no allocation, file I/O, logging, locks, or string work in `processBlock`.
 - Capture up to 60 seconds of host-routed stereo reference audio and snapshot it for offline ACE-Step generation.
@@ -27,11 +27,11 @@ The plugin will use JUCE for the VST3 shell and UI, MSVC 2022 with C++17 for the
 
 ## Decisions
 
-### Use a sibling JUCE repository
+### Track the JUCE plugin tree in-repo for now
 
-The plugin will live in `ACE-Step-Plugin/` beside this repository instead of inside the Python package. This keeps the C++ build graph, JUCE submodule, VST3 bundle outputs, and large model/runtime artifacts separate from the ACE-Step Python project.
+The plugin lives in `ACE-Step-Plugin/` inside this repository for the current implementation phase. This keeps the C++ build graph, vendored external source, VST3 bundle outputs, and large model/runtime artifacts separate from the ACE-Step Python package while still allowing the plugin code to be tracked by the parent repository.
 
-Alternatives considered: adding C++ plugin code inside this repository would make cross-language dependency boundaries harder to review and risks introducing build artifacts into the Python project.
+Alternatives considered: keeping the plugin in a separate sibling repository would reduce repository size but would require a separate remote and PR flow. Mixing C++ plugin code into the Python package would make cross-language dependency boundaries harder to review and risks introducing build artifacts into the Python project.
 
 ### Ship Mode A as default with Mode B fallback
 
@@ -93,13 +93,13 @@ Alternatives considered: promising identical behavior in every DAW is not techni
 
 ## Migration Plan
 
-This is a new sibling project, so there is no in-place migration for existing ACE-Step users. Implementation starts with the buildable pass-through plugin skeleton, then layers in capture, engine integration, model management, generation workflow, and export UI. Rollback for each phase is to keep the prior buildable plugin state and gate incomplete paths behind build options or UI-disabled states.
+This is a new plugin project, so there is no in-place migration for existing ACE-Step users. Implementation starts with the buildable pass-through plugin skeleton, then layers in capture, engine integration, model management, generation workflow, and export UI. Rollback for each phase is to keep the prior buildable plugin state and gate incomplete paths behind build options or UI-disabled states.
 
 ## Open Questions
 
 - Exact JUCE tag and `acestep.cpp` commit pin must be selected during implementation and recorded in the vendored-source notes in `session-handoff.md`.
 - Exact GGUF manifest filenames and SHA-256 values must be verified against the
-  `ServeurpersoCom/ACE-Step-1.5-GGUF` Hugging Face repository (same provider as the
-  `ServeurpersoCom/acestep.cpp` GitHub source) before downloader implementation.
+  `Serveurperso/ACE-Step-1.5-GGUF` Hugging Face repository before downloader
+  implementation.
 - The available `acestep.cpp` outputs for reliable MIDI event data and stem generation must be verified before choosing whether MIDI/stems come directly from backend metadata, model output, or post-processing analysis.
 - The upstream PR shape for `acestep-core` public headers and the C API shim must be validated against the current `acestep.cpp` source before creating `patches/0001-public-headers.patch`.

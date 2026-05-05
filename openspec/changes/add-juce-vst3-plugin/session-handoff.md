@@ -28,7 +28,7 @@ OpenSpec reports 41 of 72 tasks complete.
 
 OpenSpec tasks currently completed:
 
-- 1.1-1.4: sibling repo skeleton, ignore rules, submodules, build docs.
+- 1.1-1.4: plugin project skeleton, ignore rules, vendored external source, build docs.
 - 2.1-2.6: root CMake, compiler warnings, backend bundling, pass-through processor/editor shell, VS Code config.
 - 3.1-3.6: ACE-Step integration CMake, guarded patch, patch file, `AceStepCApi` boundary, bundle-local GGML backend init, server mode support.
 - 4.1-4.7: reference audio capture, UI controls, focused tests.

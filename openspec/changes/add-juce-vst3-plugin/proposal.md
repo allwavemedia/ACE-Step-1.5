@@ -4,7 +4,7 @@ ACE-Step can generate full songs, but it currently has no DAW-native workflow fo
 
 ## What Changes
 
-- Add a sibling `ACE-Step-Plugin/` project for a JUCE-based Windows 11 VST3 plugin.
+- Add an `ACE-Step-Plugin/` project tree for a JUCE-based Windows 11 VST3 plugin.
 - Provide a minimal VST3 pass-through plugin skeleton with CMake, JUCE, VS Code, and MSVC 2022 wiring.
 - Integrate `ServeurpersoCom/acestep.cpp` as the primary GGML backend through an in-process `acestep-core` static link, with a sidecar `ace-server.exe` build option as fallback.
 - Ship CPU, Vulkan, and CUDA GGML backend DLLs inside a single universal VST3 bundle and load them from the bundle at runtime.
@@ -18,7 +18,7 @@ ACE-Step can generate full songs, but it currently has no DAW-native workflow fo
 ## Capabilities
 
 ### New Capabilities
-- `juce-vst3-plugin-shell`: Creates and builds the sibling JUCE VST3 plugin project, including CMake integration, VS Code tooling, pass-through audio behavior, and bundled GGML backend DLLs.
+- `juce-vst3-plugin-shell`: Creates and builds the JUCE VST3 plugin project, including CMake integration, VS Code tooling, pass-through audio behavior, and bundled GGML backend DLLs.
 - `acestep-cpp-integration`: Loads ACE-Step GGUF models and invokes the `acestep.cpp` generation pipeline through a contained engine API, with sidecar server fallback available at build time.
 - `reference-audio-capture`: Captures up to 60 seconds of host-routed stereo audio using a real-time-safe buffer and provides immutable snapshots for generation.
 - `model-management`: Detects local GGUF model files and downloads missing models with resumable, verified transfers inside the plugin UI.
@@ -34,8 +34,8 @@ ACE-Step can generate full songs, but it currently has no DAW-native workflow fo
 
 ## Impact
 
-- Adds a new sibling repository layout, build system, JUCE plugin source files, CMake helper modules, patch files for upstream `acestep.cpp`, and Windows build documentation.
-- Introduces git submodule dependencies on JUCE and `ServeurpersoCom/acestep.cpp` plus runtime GGML backend DLL bundling.
+- Adds a new plugin project layout, build system, JUCE plugin source files, CMake helper modules, patch files for upstream `acestep.cpp`, and Windows build documentation.
+- Introduces vendored external source dependencies on JUCE and `ServeurpersoCom/acestep.cpp` plus runtime GGML backend DLL bundling.
 - Requires MSVC 2022, CMake, CUDA Toolkit, and Vulkan SDK on the build machine for the universal Windows bundle.
 - Requires approximately 7.7 GB of ACE-Step GGUF model storage under `%LOCALAPPDATA%\AceStepPlugin\models\` unless models are manually placed there.
 - Keeps DAW plugin scanning fast by lazy-loading models only when generation is requested and keeping all GGML inference off the audio thread.

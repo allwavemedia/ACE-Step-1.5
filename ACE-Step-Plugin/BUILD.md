@@ -7,7 +7,6 @@ This repository builds the Windows VST3 wrapper for `acestep.cpp`.
 - Windows 11 x64
 - Visual Studio 2022 with the Desktop C++ workload
 - CMake 3.24 or newer
-- Git with submodule support
 - CUDA Toolkit for the CUDA GGML backend
 - Vulkan SDK for the Vulkan GGML backend
 
@@ -15,14 +14,13 @@ End users do not need CUDA Toolkit or Vulkan SDK. Those SDKs are build-time
 requirements only; the built VST3 bundle ships the GGML backend DLLs beside the
 plugin binary.
 
-## First Checkout
+## Vendored External Sources
 
-```powershell
-git submodule update --init --recursive
-```
+JUCE and `acestep.cpp` are currently checked in under `External/` as vendored
+source. No `git submodule update` step is required.
 
-The checked-in submodule gitlinks pin JUCE to tag `8.0.10` and `acestep.cpp`
-to commit `6e0237bb4a2c94479a8c636e1116e1e3c30c9f45`.
+The vendored source pins JUCE to tag `8.0.10` and `acestep.cpp` to commit
+`6e0237bb4a2c94479a8c636e1116e1e3c30c9f45`.
 
 ## Configure and Build
 

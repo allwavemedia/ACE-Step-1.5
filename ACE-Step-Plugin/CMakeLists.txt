@@ -23,7 +23,7 @@ include(CompilerWarnings)
 
 set(JUCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/External/JUCE")
 if(NOT EXISTS "${JUCE_DIR}/CMakeLists.txt")
-    message(FATAL_ERROR "JUCE submodule is missing. Run: git submodule update --init --recursive")
+    message(FATAL_ERROR "Vendored JUCE source is missing from External/JUCE.")
 endif()
 
 add_subdirectory("${JUCE_DIR}" EXCLUDE_FROM_ALL)

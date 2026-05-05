@@ -1,11 +1,11 @@
 ## ADDED Requirements
 
-### Requirement: Sibling plugin repository skeleton
-The system SHALL provide a sibling `ACE-Step-Plugin/` repository layout containing CMake, JUCE source, resources, external submodules, helper CMake modules, patches, VS Code configuration, and Windows build documentation.
+### Requirement: Plugin project skeleton
+The system SHALL provide an `ACE-Step-Plugin/` project layout containing CMake, JUCE source, resources, vendored external source, helper CMake modules, patches, VS Code configuration, and Windows build documentation.
 
 #### Scenario: Skeleton files are generated
 - **WHEN** the Step 1 implementation is complete
-- **THEN** the sibling repository contains the planned root, `Source/`, `Resources/`, `External/`, `cmake/`, `patches/`, and `.vscode/` structure
+- **THEN** the plugin project contains the planned root, `Source/`, `Resources/`, `External/`, `cmake/`, `patches/`, and `.vscode/` structure
 
 ### Requirement: VST3 pass-through plugin target
 The system SHALL build a JUCE VST3 plugin target named `AceStepPlugin` that is stereo-in/stereo-out, is not a synth, requires no MIDI input or output, and passes input audio through unchanged.
@@ -26,11 +26,11 @@ The system SHALL copy built `ggml-*.dll` backend modules into the VST3 bundle's 
 
 #### Scenario: Bundle is inspected after build
 - **WHEN** the plugin target finishes building
-- **THEN** the VST3 bundle contains the plugin DLL and sibling GGML backend DLLs needed for runtime loading
+- **THEN** the VST3 bundle contains the plugin DLL and adjacent GGML backend DLLs needed for runtime loading
 
 ### Requirement: VS Code developer workflow
 The system SHALL include VS Code settings, build tasks, and debugger launch configuration for CMake Tools, clangd, and JUCE AudioPluginHost debugging.
 
-#### Scenario: Developer opens the sibling repo in VS Code
+#### Scenario: Developer opens the plugin project in VS Code
 - **WHEN** a developer opens `ACE-Step-Plugin/` in VS Code
 - **THEN** they can select the MSVC kit, build `AceStepPlugin_VST3`, and attach the debugger to JUCE AudioPluginHost from the provided configuration

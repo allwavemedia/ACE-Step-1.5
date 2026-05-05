@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: In-process ACE-Step backend integration
-The system SHALL integrate `ServeurpersoCom/acestep.cpp` as a submodule and link the plugin against `acestep-core` for the default in-process generation mode.
+The system SHALL integrate vendored `ServeurpersoCom/acestep.cpp` source and link the plugin against `acestep-core` for the default in-process generation mode.
 
 #### Scenario: Default backend mode is configured
 - **WHEN** CMake configures the plugin without overriding `ACESTEP_PLUGIN_MODE`
