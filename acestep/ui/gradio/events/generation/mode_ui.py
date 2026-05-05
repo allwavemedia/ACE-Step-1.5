@@ -136,6 +136,14 @@ def compute_mode_ui_updates(mode: str, llm_handler=None, previous_mode: str = "C
     else:
         src_audio_update = gr.update(value=None)
 
+    flow_edit_supported = is_custom or is_cover
+    flow_edit_column_update = gr.update(visible=flow_edit_supported)
+    flow_edit_morph_update = (
+        gr.update(visible=True, interactive=True)
+        if flow_edit_supported
+        else gr.update(visible=False, value=False)
+    )
+
     return (
         gr.update(visible=show_simple),                    # 0: simple_mode_group
         gr.update(visible=show_custom_group),              # 1: custom_mode_group
@@ -175,17 +183,19 @@ def compute_mode_ui_updates(mode: str, llm_handler=None, previous_mode: str = "C
         gr.skip(),                                         # 35: retake_variance
         gr.skip(),                                         # 36: retake_seed
         mode,                                              # 37: previous_generation_mode
-        gr.update(visible=is_cover),                       # 34: remix_help_group
-        gr.update(visible=(is_custom or is_cover or is_repaint)),  # 35: variation_group (Retake all 3; Edit honoured in Custom/Remix)
-        gr.update(visible=(is_extract or is_lego)),        # 36: extract_help_group
-        gr.update(visible=is_complete),                    # 36: complete_help_group
-        auto_bpm_update,                                   # 37: bpm_auto
-        auto_key_update,                                   # 38: key_auto
-        auto_timesig_update,                               # 39: timesig_auto
-        auto_vocal_lang_update,                            # 40: vocal_lang_auto
-        auto_duration_update,                              # 41: duration_auto
-        audio_codes_update,                                # 42: text2music_audio_code_string
-        src_audio_update,                                  # 43: src_audio
+        gr.update(visible=is_cover),                       # 38: remix_help_group
+        gr.update(visible=(is_custom or is_cover or is_repaint)),  # 39: variation_group (Retake all 3; Edit honoured in Custom/Remix)
+        gr.update(visible=(is_extract or is_lego)),        # 40: extract_help_group
+        gr.update(visible=is_complete),                    # 41: complete_help_group
+        auto_bpm_update,                                   # 42: bpm_auto
+        auto_key_update,                                   # 43: key_auto
+        auto_timesig_update,                               # 44: timesig_auto
+        auto_vocal_lang_update,                            # 45: vocal_lang_auto
+        auto_duration_update,                              # 46: duration_auto
+        audio_codes_update,                                # 47: text2music_audio_code_string
+        src_audio_update,                                  # 48: src_audio
+        flow_edit_column_update,                           # 49: flow_edit_column
+        flow_edit_morph_update,                            # 50: flow_edit_morph
     )
 
 

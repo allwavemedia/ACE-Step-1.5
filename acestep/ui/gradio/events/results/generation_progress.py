@@ -10,6 +10,7 @@ import json
 import time as time_module
 
 import gradio as gr
+import numpy as np
 import torch
 from loguru import logger
 
@@ -32,6 +33,7 @@ from acestep.ui.gradio.events.results.audio_playback_updates import (
 )
 from acestep.ui.gradio.events.results.scoring import calculate_score_handler
 from acestep.ui.gradio.events.results.lrc_utils import lrc_to_vtt_file
+from acestep.ui.gradio.events.results.session_artifacts import persist_sample_session_artifacts
 
 
 def generate_with_progress(
@@ -227,8 +229,6 @@ def generate_with_progress(
     total_auto_score_time = 0.0
     total_auto_lrc_time = 0.0
 
-    updated_audio_codes = text2music_audio_code_string if not think_checkbox else ""  # noqa: F841
-
     generation_info = _build_generation_info(
         lm_metadata=lm_generated_metadata,
         time_costs=time_costs,
@@ -294,6 +294,18 @@ def generate_with_progress(
         )
         if saved_path:
             audio_path = saved_path.replace("\\", "/")
+
+        _persist_repaint_source_latents(
+            source_latents=_extract_repaint_source_latents(result.extra_outputs, i),
+            json_path=json_path,
+            audio_params=audio_params,
+        )
+        persist_sample_session_artifacts(
+            extra_outputs=result.extra_outputs,
+            sample_idx=i,
+            json_path=json_path,
+            audio_params=audio_params,
+        )
 
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(audio_params, f, indent=2, ensure_ascii=False)
@@ -393,10 +405,9 @@ def generate_with_progress(
     final_codes_display = [gr.skip()] * 8
     final_accordions = [gr.skip()] * 8
 
-    extra_to_store = {**result.extra_outputs, "lrcs": final_lrcs_list, "subtitles": final_subtitles_list}
-    for k, v in extra_to_store.items():
-        if isinstance(v, torch.Tensor) and v.is_cuda:
-            extra_to_store[k] = v.cpu()
+    extra_to_store = _strip_extra_output_tensors(
+        {**result.extra_outputs, "lrcs": final_lrcs_list, "subtitles": final_subtitles_list}
+    )
 
     yield (
         *audio_playback_updates,
@@ -436,8 +447,44 @@ def _extract_sample_tensor(extra_outputs, sample_idx):
             return None
         return data
     except Exception as e:
-        print(f"[Auto Score] Failed to prepare tensor data for sample {sample_idx}: {e}")
+        logger.warning(
+            "[Auto Score] Failed to prepare tensor data for sample {}: {}", sample_idx, e
+        )
         return None
+
+
+def _extract_repaint_source_latents(extra_outputs, sample_idx):
+    """Return final generated latents for repaint-source reuse."""
+    try:
+        pred_latents = extra_outputs.get("pred_latents")
+        if pred_latents is None or sample_idx >= pred_latents.shape[0]:
+            return None
+        return pred_latents[sample_idx]
+    except (AttributeError, IndexError, TypeError):
+        return None
+
+
+def _strip_extra_output_tensors(extra_outputs):
+    """Return extra outputs without tensor values for batch-queue storage."""
+    return {key: value for key, value in extra_outputs.items() if not isinstance(value, torch.Tensor)}
+
+
+def _persist_repaint_source_latents(source_latents, json_path: str, audio_params: dict) -> None:
+    """Persist repaint-ready source latents beside a generated audio sidecar.
+
+    The cached tensor is the final generated latent returned by the DiT path.
+    This avoids a lossy decode-to-audio then VAE-reencode cycle for generated
+    sources while uploaded audio keeps the normal repaint path.
+    """
+    if source_latents is None:
+        return
+    latent_path = os.path.splitext(json_path)[0] + ".repaint_latents.npy"
+    try:
+        np.save(latent_path, source_latents.detach().cpu().float().numpy())
+    except (AttributeError, OSError, RuntimeError, ValueError) as exc:
+        logger.warning("[repaint_cache] Could not persist repaint source latents: {}", exc)
+        return
+    audio_params["repaint_source_latents_file"] = os.path.basename(latent_path)
 
 
 def _run_auto_lrc(dit_handler, extra_outputs, sample_idx,
