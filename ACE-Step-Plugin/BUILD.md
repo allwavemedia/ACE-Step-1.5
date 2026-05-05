@@ -4,11 +4,18 @@ This repository builds the Windows VST3 wrapper for `acestep.cpp`.
 
 ## Prerequisites
 
-- Windows 11 x64
-- Visual Studio 2022 with the Desktop C++ workload
-- CMake 3.24 or newer
-- CUDA Toolkit for the CUDA GGML backend
-- Vulkan SDK for the Vulkan GGML backend
+- **Windows 11 x64**
+- **Visual Studio 2022** — Desktop development with C++ workload
+- **CMake 3.24+** — `cmake --version` to verify
+- **CUDA Toolkit 12.8** — required only for the real-backend build
+  - Download: https://developer.nvidia.com/cuda-12-8-0-download-archive
+  - Verify: `nvcc --version` (expect `release 12.8`)
+- **Vulkan SDK** — required only for the Vulkan GGML backend build
+  - Download: https://vulkan.lunarg.com/sdk/home#windows
+
+> **Stub host-load validation does not require CUDA Toolkit or Vulkan SDK.**
+> Use `ACE-Step-Plugin\scripts\build-stub-vst3.ps1` to build and validate the
+> stub plugin on any Windows 11 machine with VS 2022 and CMake.
 
 End users do not need CUDA Toolkit or Vulkan SDK. Those SDKs are build-time
 requirements only; the built VST3 bundle ships the GGML backend DLLs beside the
@@ -22,15 +29,47 @@ source. No `git submodule update` step is required.
 The vendored source pins JUCE to tag `8.0.10` and `acestep.cpp` to commit
 `6e0237bb4a2c94479a8c636e1116e1e3c30c9f45`.
 
-## Configure and Build
+## Stub VST3 Build (Task 2.7 prep)
+
+Builds the stub plugin only — no CUDA or Vulkan required.
 
 ```powershell
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DACESTEP_PLUGIN_MODE=static
-cmake --build build --config RelWithDebInfo --target AceStepPlugin_VST3 --parallel
+.\ACE-Step-Plugin\scripts\build-stub-vst3.ps1
+```
+
+This script configures, builds, and verifies that the stub VST3 bundle exists.
+Useful for host-load testing and CI on machines without GPU SDKs.
+
+## Real Backend Build (Task 3.7 — requires CUDA Toolkit 12.8)
+
+Verify CUDA before building:
+
+```powershell
+nvcc --version
+# Expected: release 12.8
+```
+
+Configure and build:
+
+```powershell
+cmake -S ACE-Step-Plugin -B ACE-Step-Plugin\build-real -G "Visual Studio 17 2022" -A x64 -DACESTEP_ENABLE_ACESTEP_CPP=ON -DACESTEP_BUILD_TESTS=OFF -DACESTEP_PLUGIN_MODE=static
+cmake --build ACE-Step-Plugin\build-real --config RelWithDebInfo --target AceStepPlugin_VST3 --parallel
 ```
 
 Use `-DACESTEP_PLUGIN_MODE=server` to build the sidecar fallback path. The v1
 default is the in-process static-link path.
+
+### Validate Real Backend Bundle
+
+```powershell
+.\ACE-Step-Plugin\scripts\validate-bundle.ps1 -BuildDir ACE-Step-Plugin\build-real
+```
+
+Expected output:
+
+```text
+[PASS] Bundle structure is correct and no direct CUDA imports found.
+```
 
 ## Expected Build Output
 

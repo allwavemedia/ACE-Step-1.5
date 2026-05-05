@@ -12,6 +12,7 @@ set(ACESTEP_PLUGIN_MODE "static" CACHE STRING "ACE-Step integration mode: static
 set_property(CACHE ACESTEP_PLUGIN_MODE PROPERTY STRINGS static server)
 option(ACESTEP_ENABLE_ACESTEP_CPP "Configure and link the acestep.cpp backend" ON)
 option(ACESTEP_BUILD_TESTS "Build focused plugin unit tests" OFF)
+option(ACESTEP_BUILD_REAL_SMOKE_TEST "Build real-engine smoke test (requires ACESTEP_ENABLE_ACESTEP_CPP=ON and GPU model files)" OFF)
 
 if(NOT ACESTEP_PLUGIN_MODE STREQUAL "static" AND NOT ACESTEP_PLUGIN_MODE STREQUAL "server")
     message(FATAL_ERROR "ACESTEP_PLUGIN_MODE must be either 'static' or 'server'.")
@@ -201,4 +202,62 @@ if(ACESTEP_BUILD_TESTS)
     target_apply_compiler_warnings(AceStepPluginTests)
 
     add_test(NAME ReferenceAudioBuffer COMMAND AceStepPluginTests)
+endif()
+
+# ---------------------------------------------------------------------------
+# Real-engine smoke test
+# Requires ACESTEP_ENABLE_ACESTEP_CPP=ON (provides the ace-synth executable)
+# and GPU hardware + downloaded model files to actually run.
+# The test exits 0 cleanly when model files are absent so CI without GPU stays green.
+# ---------------------------------------------------------------------------
+if(ACESTEP_BUILD_REAL_SMOKE_TEST)
+    if(NOT ACESTEP_ENABLE_ACESTEP_CPP)
+        message(FATAL_ERROR
+            "ACESTEP_BUILD_REAL_SMOKE_TEST=ON requires ACESTEP_ENABLE_ACESTEP_CPP=ON. "
+            "The smoke test links against the ace-synth target which is only available "
+            "when the acestep.cpp backend is enabled.")
+    endif()
+
+    # Generate a header that embeds the build-time path to ace-synth using a
+    # C++11 raw string literal so Windows backslashes are not misinterpreted as
+    # C escape sequences (e.g. \b, \t) by the compiler.
+    file(GENERATE
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/AceSynthPath.h"
+        CONTENT "#pragma once\n#define ACESTEP_ACE_SYNTH_PATH R\"path($<TARGET_FILE:ace-synth>)path\"\n"
+    )
+
+    juce_add_console_app(AceStepRealSmokeTest
+        PRODUCT_NAME "ACE-Step Real Smoke Test"
+    )
+
+    target_sources(AceStepRealSmokeTest
+        PRIVATE
+            Source/Models/ModelDiscovery.cpp
+            Source/Models/ModelDiscovery.h
+            Tests/RealEngineSmoke_test.cpp
+    )
+
+    target_include_directories(AceStepRealSmokeTest
+        PRIVATE
+            "${CMAKE_CURRENT_BINARY_DIR}"
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+
+    target_compile_definitions(AceStepRealSmokeTest
+        PRIVATE
+            JUCE_DISPLAY_SPLASH_SCREEN=0
+            JUCE_REPORT_APP_USAGE=0
+    )
+
+    target_link_libraries(AceStepRealSmokeTest
+        PRIVATE
+            juce::juce_core
+    )
+
+    add_dependencies(AceStepRealSmokeTest ace-synth)
+
+    target_apply_compiler_warnings(AceStepRealSmokeTest)
+
+    enable_testing()
+    add_test(NAME RealEngineSmoke COMMAND AceStepRealSmokeTest)
 endif()

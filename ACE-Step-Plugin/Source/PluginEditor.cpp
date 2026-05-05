@@ -12,6 +12,14 @@ constexpr auto kEditorWidth = 520;
 constexpr auto kEditorHeightBase = 240;
 constexpr auto kEditorHeightWithSetup = 370;
 
+juce::String formatDownloadSize(juce::int64 bytes)
+{
+    if (bytes <= 0)
+        return "size unavailable";
+
+    return juce::File::descriptionOfSizeInBytes(bytes);
+}
+
 } // namespace
 
 AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& processor)
@@ -78,43 +86,28 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
 void AceStepAudioProcessorEditor::refreshModelSetupPanel()
 {
     const auto paths = acestep_plugin::AceStepCApi::getDefaultBackendPaths();
-    const auto manifestFile = juce::File::getSpecialLocation(juce::File::currentExecutableFile)
-        .getParentDirectory()
-        .getChildFile("model_manifest.json");
+    const auto missingModels = acestep_plugin::ModelDiscovery::getMissingModelFilenames();
 
-    acestep_plugin::ModelSetupState state;
-
-    if (manifestFile.existsAsFile())
-    {
-        try
-        {
-            const auto discovery = acestep_plugin::ModelDiscovery::inspect(
-                manifestFile, paths.modelsDirectory);
-            state = acestep_plugin::ModelSetupState::fromDiscovery(discovery);
-        }
-        catch (const std::exception&)
-        {
-            state.shouldShowFirstRunSetup = false;
-            state.statusText = "Model manifest could not be read.";
-        }
-    }
-    else
-    {
-        state.shouldShowFirstRunSetup = false;
-        state.statusText = "Model manifest not found in bundle.";
-    }
-
-    showModelSetup = state.shouldShowFirstRunSetup;
-
-    statusLabel.setText(state.statusText, juce::dontSendNotification);
+    showModelSetup = !missingModels.empty();
 
     if (showModelSetup)
     {
-        modelSetupHeadingLabel.setText(state.statusText, juce::dontSendNotification);
-        modelDestinationLabel.setText("Destination: " + state.destinationPath,
+        const auto statusText = juce::String("Model setup required: ")
+            + juce::String(static_cast<int>(missingModels.size()))
+            + " required model file(s) missing.";
+
+        statusLabel.setText(statusText, juce::dontSendNotification);
+        modelSetupHeadingLabel.setText(statusText, juce::dontSendNotification);
+        modelDestinationLabel.setText("Destination: " + paths.modelsDirectory.getFullPathName(),
             juce::dontSendNotification);
         modelDownloadSizeLabel.setText(
-            "Approximate download: " + state.approximateDownloadSize,
+            "Approximate download: "
+                + formatDownloadSize(acestep_plugin::ModelDiscovery::getMissingTotalBytes()),
+            juce::dontSendNotification);
+    }
+    else
+    {
+        statusLabel.setText("Models ready. Audio passes through unchanged.",
             juce::dontSendNotification);
     }
 

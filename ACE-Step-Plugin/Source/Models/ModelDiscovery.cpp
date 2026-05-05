@@ -6,22 +6,36 @@ namespace acestep_plugin
 namespace
 {
 
-// Required GGUF model manifest.
-// SHA-256 and URL values are placeholders; update with real values at release.
+// Required GGUF model manifest for the "v1-turbo-q5" profile.
+// Source: Resources/model_manifest.json (Serveurperso/ACE-Step-1.5-GGUF).
 const std::vector<ModelEntry> kRequiredModels = {
     {
-        "ace-step-v1-vocal-expert.Q8_0.gguf",
-        "", // SHA-256 TBD
-        0,  // size TBD
-        "https://huggingface.co/allwavemedia/ACE-Step-GGUF/resolve/main/"
-        "ace-step-v1-vocal-expert.Q8_0.gguf",
+        "acestep-5Hz-lm-4B-Q5_K_M.gguf",
+        "938ed7067c8897f66acf4c3a86fc1fa8113d5cd1a5f13e6edec2e03207514e2d",
+        3025965984LL,
+        "https://huggingface.co/Serveurperso/ACE-Step-1.5-GGUF/resolve/main/"
+        "acestep-5Hz-lm-4B-Q5_K_M.gguf",
     },
     {
-        "ace-step-v1.Q8_0.gguf",
-        "",
-        0,
-        "https://huggingface.co/allwavemedia/ACE-Step-GGUF/resolve/main/"
-        "ace-step-v1.Q8_0.gguf",
+        "acestep-v15-turbo-Q5_K_M.gguf",
+        "a241c9a721e3704cb04b17ce6a40c9aa714d3ee5cf49c2219972020eb761f5a4",
+        1700140224LL,
+        "https://huggingface.co/Serveurperso/ACE-Step-1.5-GGUF/resolve/main/"
+        "acestep-v15-turbo-Q5_K_M.gguf",
+    },
+    {
+        "Qwen3-Embedding-0.6B-Q8_0.gguf",
+        "972f23255e46adfe744a0eb9a0039f3c63988f65753b0968d776e8b27168c321",
+        784144960LL,
+        "https://huggingface.co/Serveurperso/ACE-Step-1.5-GGUF/resolve/main/"
+        "Qwen3-Embedding-0.6B-Q8_0.gguf",
+    },
+    {
+        "vae-BF16.gguf",
+        "0599862ac5d15cd308e1d2e368373aea6c02e25ebd1737ad4a4562a0901b0ef8",
+        337420928LL,
+        "https://huggingface.co/Serveurperso/ACE-Step-1.5-GGUF/resolve/main/"
+        "vae-BF16.gguf",
     },
 };
 
