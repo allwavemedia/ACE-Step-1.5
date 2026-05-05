@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "repository": "Serveurperso/ACE-Step-1.5-GGUF",
+  "revision": "9b3707625776cc4cf775e9b12ab82f9fe48335ff",
+  "defaultProfile": "v1-turbo-q5",
+  "profiles": [
+    {
+      "id": "v1-turbo-q5",
+      "displayName": "ACE-Step 1.5 Turbo Q5",
+      "description": "Default v1 model set balanced for local Windows VST3 generation.",
+      "files": [
+        {
+          "role": "language_model",
+          "filename": "acestep-5Hz-lm-4B-Q5_K_M.gguf",
+          "sizeBytes": 3025965984,
+          "sha256": "938ed7067c8897f66acf4c3a86fc1fa8113d5cd1a5f13e6edec2e03207514e2d",
+          "url": "https://huggingface.co/Serveurperso/ACE-Step-1.5-GGUF/resolve/main/acestep-5Hz-lm-4B-Q5_K_M.gguf"
+        },
+        {
+          "role": "diffusion_transformer",
+          "filename": "acestep-v15-turbo-Q5_K_M.gguf",
+          "sizeBytes": 1700140224,
+          "sha256": "a241c9a721e3704cb04b17ce6a40c9aa714d3ee5cf49c2219972020eb761f5a4",
+          "url": "https://huggingface.co/Serveurperso/ACE-Step-1.5-GGUF/resolve/main/acestep-v15-turbo-Q5_K_M.gguf"
+        },
+        {
+          "role": "text_encoder",
+          "filename": "Qwen3-Embedding-0.6B-Q8_0.gguf",
+          "sizeBytes": 784144960,
+          "sha256": "972f23255e46adfe744a0eb9a0039f3c63988f65753b0968d776e8b27168c321",
+          "url": "https://huggingface.co/Serveurperso/ACE-Step-1.5-GGUF/resolve/main/Qwen3-Embedding-0.6B-Q8_0.gguf"
+        },
+        {
+          "role": "vae",
+          "filename": "vae-BF16.gguf",
+          "sizeBytes": 337420928,
+          "sha256": "0599862ac5d15cd308e1d2e368373aea6c02e25ebd1737ad4a4562a0901b0ef8",
+          "url": "https://huggingface.co/Serveurperso/ACE-Step-1.5-GGUF/resolve/main/vae-BF16.gguf"
+        }
+      ]
+    }
+  ]
+}

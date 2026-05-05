@@ -1,0 +1,17 @@
+{
+  "cmake.buildDirectory": "${workspaceFolder}/build",
+  "cmake.configureSettings": {
+    "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+    "ACESTEP_PLUGIN_MODE": "static"
+  },
+  "cmake.generator": "Visual Studio 17 2022",
+  "cmake.platform": "x64",
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "clangd.arguments": [
+    "--compile-commands-dir=${workspaceFolder}/build"
+  ],
+  "files.associations": {
+    "*.h": "cpp",
+    "*.cpp": "cpp"
+  }
+}

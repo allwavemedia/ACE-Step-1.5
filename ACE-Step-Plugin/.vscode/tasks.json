@@ -1,0 +1,43 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: configure",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-S",
+        "${workspaceFolder}",
+        "-B",
+        "${workspaceFolder}/build",
+        "-G",
+        "Visual Studio 17 2022",
+        "-A",
+        "x64",
+        "-DACESTEP_PLUGIN_MODE=static",
+        "-DCMAKE_CONFIGURATION_TYPES=Debug;RelWithDebInfo;Release"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Build AceStepPlugin_VST3",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "${workspaceFolder}/build",
+        "--config",
+        "RelWithDebInfo",
+        "--target",
+        "AceStepPlugin_VST3",
+        "--parallel"
+      ],
+      "dependsOn": "CMake: configure",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

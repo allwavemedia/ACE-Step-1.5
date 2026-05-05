@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach to JUCE AudioPluginHost",
+      "type": "cppvsdbg",
+      "request": "attach",
+      "processName": "AudioPluginHost.exe"
+    }
+  ]
+}

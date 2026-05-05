@@ -1,0 +1,64 @@
+#pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct acestep_context acestep_context;
+
+typedef enum acestep_result {
+    ACESTEP_RESULT_OK = 0,
+    ACESTEP_RESULT_ERROR = 1,
+    ACESTEP_RESULT_CANCELLED = 2
+} acestep_result;
+
+typedef enum acestep_scheduler {
+    ACESTEP_SCHEDULER_TURBO = 0,
+    ACESTEP_SCHEDULER_SFT = 1
+} acestep_scheduler;
+
+typedef struct acestep_generation_request {
+    const char* prompt;
+    const char* lyrics;
+    const char* models_dir;
+    const char* output_wav_path;
+    int duration_seconds;
+    int seed;
+    int lm_seed;
+    float cfg_scale;
+    acestep_scheduler scheduler;
+} acestep_generation_request;
+
+typedef struct acestep_progress {
+    const char* phase;
+    int step;
+    int total;
+} acestep_progress;
+
+typedef int (*acestep_cancel_callback)(void* user_data);
+typedef void (*acestep_progress_callback)(
+    const acestep_progress* progress,
+    void* user_data);
+
+acestep_result acestep_create_context(
+    const char* backend_dir,
+    acestep_context** out_context);
+
+void acestep_destroy_context(acestep_context* context);
+
+acestep_result acestep_load_models(
+    acestep_context* context,
+    const char* models_dir);
+
+acestep_result acestep_generate_wav(
+    acestep_context* context,
+    const acestep_generation_request* request,
+    acestep_progress_callback progress_callback,
+    acestep_cancel_callback cancel_callback,
+    void* user_data);
+
+const char* acestep_last_error(acestep_context* context);
+
+#ifdef __cplusplus
+}
+#endif
