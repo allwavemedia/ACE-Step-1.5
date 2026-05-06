@@ -139,6 +139,11 @@ std::shared_ptr<juce::AudioBuffer<float>> AceStepAudioProcessor::snapshotReferen
     return referenceAudioBuffer.snapshot();
 }
 
+void AceStepAudioProcessor::trackPluginOwnedGeneratedFile(const juce::File& generatedFile)
+{
+    generatedTempDirectories.trackGeneratedFile(generatedFile);
+}
+
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new AceStepAudioProcessor();

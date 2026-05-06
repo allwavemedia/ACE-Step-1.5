@@ -4,6 +4,7 @@
 
 #include "Audio/ReferenceAudioBuffer.h"
 #include "Engine/AceStepEngine.h"
+#include "Models/GeneratedAssetTempDirectories.h"
 
 class AceStepAudioProcessor final : public juce::AudioProcessor
 {
@@ -41,11 +42,16 @@ public:
     float consumeReferencePeak() noexcept;
     std::shared_ptr<juce::AudioBuffer<float>> snapshotReference();
 
+    /** Track a plugin-owned generated WAV so its temporary directory is cleaned up. */
+    void trackPluginOwnedGeneratedFile(const juce::File& generatedFile);
+
     /** Returns the engine instance owned by this processor. */
     acestep_plugin::AceStepEngine& getEngine() noexcept { return engine; }
 
 private:
     acestep_plugin::ReferenceAudioBuffer referenceAudioBuffer;
+    // Declared before engine so cleanup runs after engine destruction joins pending jobs.
+    acestep_plugin::GeneratedAssetTempDirectories generatedTempDirectories;
     acestep_plugin::AceStepEngine engine;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AceStepAudioProcessor)

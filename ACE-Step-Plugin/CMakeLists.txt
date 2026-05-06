@@ -57,6 +57,8 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/Engine/ReferenceAudioResampler.h
     Source/Models/GeneratedAssetHistory.cpp
     Source/Models/GeneratedAssetHistory.h
+    Source/Models/GeneratedAssetTempDirectories.cpp
+    Source/Models/GeneratedAssetTempDirectories.h
     Source/Models/ModelChecksum.cpp
     Source/Models/ModelChecksum.h
     Source/Models/ModelDiscovery.cpp
@@ -142,6 +144,8 @@ if(ACESTEP_BUILD_TESTS)
             Source/Engine/ReferenceAudioResampler.h
             Source/Models/GeneratedAssetHistory.cpp
             Source/Models/GeneratedAssetHistory.h
+            Source/Models/GeneratedAssetTempDirectories.cpp
+            Source/Models/GeneratedAssetTempDirectories.h
             Source/Models/ModelChecksum.cpp
             Source/Models/ModelChecksum.h
             Source/Models/ModelDiscovery.cpp
@@ -166,6 +170,7 @@ if(ACESTEP_BUILD_TESTS)
             Tests/ExternalFileDrag_test.cpp
             Tests/GeneratedAssetHistory_test.cpp
             Tests/GeneratedAssetHistoryView_test.cpp
+            Tests/GeneratedAssetTempDirectoryCleanup_test.cpp
             Tests/GeneratedAssetTile_test.cpp
             Tests/GenerationTypes_test.cpp
             Tests/ModelChecksum_test.cpp
