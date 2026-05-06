@@ -40,9 +40,9 @@ functionality.
 
 When an AMT path becomes available, the implementation steps are:
 
-1. **8.3 — MIDI file writer**: Implement a `MidiFileWriter` service in
-   `Source/Services/MidiFileWriter.h/.cpp` that accepts a note-event list and writes a
-   standards-compliant SMF Type 0 (single-track) `.mid` file. Use `juce::MidiFile` and
+1. **8.3 — MIDI file writer**: Implemented `MidiNoteEvent` and `MidiFileWriter` in
+   `Source/MIDI/`. The writer accepts explicit note events and writes a standards-compliant
+   SMF Type 0 (single-track) `.mid` file using `juce::MidiFile` and
    `juce::MidiMessageSequence`.
 
 2. **8.4 — Export paths**: Wire MIDI drag-and-drop via `performExternalDragDropOfFiles` and

@@ -93,7 +93,7 @@ Expected result: configure succeeds, `AceStepPluginTests` builds, CTest passes, 
 - Test: `ACE-Step-Plugin\Tests\MidiFileWriter_test.cpp`
 - Modify: `ACE-Step-Plugin\CMakeLists.txt`
 
-- [ ] **Step 1: Write the failing MIDI writer tests**
+- [x] **Step 1: Write the failing MIDI writer tests**
 
 Create `ACE-Step-Plugin\Tests\MidiFileWriter_test.cpp`:
 
@@ -168,7 +168,7 @@ static MidiFileWriterTests sMidiFileWriterTests;
 } // namespace acestep_plugin
 ```
 
-- [ ] **Step 2: Add the test to CMake and run it red**
+- [x] **Step 2: Add the test to CMake and run it red**
 
 Modify the `AceStepPluginTests` source list in `ACE-Step-Plugin\CMakeLists.txt`:
 
@@ -188,7 +188,7 @@ cmake --build "ACE-Step-Plugin\build-codex-tests" --config RelWithDebInfo --targ
 
 Expected: build fails because `Source\MIDI\MidiFileWriter.h` does not exist.
 
-- [ ] **Step 3: Add the MIDI value type**
+- [x] **Step 3: Add the MIDI value type**
 
 Create `ACE-Step-Plugin\Source\MIDI\MidiNoteEvent.h`:
 
@@ -210,7 +210,7 @@ struct MidiNoteEvent
 } // namespace acestep_plugin
 ```
 
-- [ ] **Step 4: Add the writer interface**
+- [x] **Step 4: Add the writer interface**
 
 Create `ACE-Step-Plugin\Source\MIDI\MidiFileWriter.h`:
 
@@ -247,7 +247,7 @@ public:
 } // namespace acestep_plugin
 ```
 
-- [ ] **Step 5: Add the writer implementation**
+- [x] **Step 5: Add the writer implementation**
 
 Create `ACE-Step-Plugin\Source\MIDI\MidiFileWriter.cpp`:
 
@@ -335,7 +335,7 @@ MidiFileWriteResult MidiFileWriter::writeType0(
 } // namespace acestep_plugin
 ```
 
-- [ ] **Step 6: Run MIDI writer tests green**
+- [x] **Step 6: Run MIDI writer tests green**
 
 Run:
 
@@ -346,7 +346,7 @@ ctest --test-dir "ACE-Step-Plugin\build-codex-tests" -C RelWithDebInfo --output-
 
 Expected: `MidiFileWriter` tests pass with the rest of the test suite.
 
-- [ ] **Step 7: Mark OpenSpec task 8.3 complete and commit**
+- [x] **Step 7: Mark OpenSpec task 8.3 complete and commit**
 
 Modify `openspec\changes\add-juce-vst3-plugin\tasks.md`:
 

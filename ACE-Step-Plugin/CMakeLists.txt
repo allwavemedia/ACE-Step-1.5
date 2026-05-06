@@ -55,6 +55,9 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/Engine/GenerationRequest.h
     Source/Engine/ReferenceAudioResampler.cpp
     Source/Engine/ReferenceAudioResampler.h
+    Source/MIDI/MidiFileWriter.cpp
+    Source/MIDI/MidiFileWriter.h
+    Source/MIDI/MidiNoteEvent.h
     Source/Models/GeneratedAssetHistory.cpp
     Source/Models/GeneratedAssetHistory.h
     Source/Models/GeneratedAssetTempDirectories.cpp
@@ -142,6 +145,9 @@ if(ACESTEP_BUILD_TESTS)
             Source/Engine/GenerationRequest.h
             Source/Engine/ReferenceAudioResampler.cpp
             Source/Engine/ReferenceAudioResampler.h
+            Source/MIDI/MidiFileWriter.cpp
+            Source/MIDI/MidiFileWriter.h
+            Source/MIDI/MidiNoteEvent.h
             Source/Models/GeneratedAssetHistory.cpp
             Source/Models/GeneratedAssetHistory.h
             Source/Models/GeneratedAssetTempDirectories.cpp
@@ -178,6 +184,7 @@ if(ACESTEP_BUILD_TESTS)
             Tests/ModelDownloader_test.cpp
             Tests/ModelDownloaderErrors_test.cpp
             Tests/ModelSetupState_test.cpp
+            Tests/MidiFileWriter_test.cpp
             Tests/PreviewPlayer_test.cpp
             Tests/ReferenceAudioBufferBasic_test.cpp
             Tests/ReferenceAudioBufferConcurrent_test.cpp
