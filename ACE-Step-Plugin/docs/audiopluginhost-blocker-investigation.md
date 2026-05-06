@@ -1,9 +1,9 @@
 # AudioPluginHost Validation Blocker Investigation
 
 **Investigation Date:** 2026-05-06
-**Worktree:** `agents-add-juce-vst3-plugin-validation`  
-**Branch:** `feat/add-juce-vst3-plugin-8-3-onwards`  
-**Task:** OpenSpec 2.7 - Validate with AudioPluginHost  
+**Worktree:** `agents-add-juce-vst3-plugin-validation`
+**Branch:** `feat/add-juce-vst3-plugin-8-3-onwards`
+**Task:** OpenSpec 2.7 - Validate with AudioPluginHost
 **Todo ID:** `unblock-audiopluginhost-validation`
 
 ---
@@ -252,8 +252,6 @@ If future validation requires testing AudioPluginHost demo plugins:
 3. **Update BUILD.md:**
    - Add prerequisite step for JUCE asset restoration before AudioPluginHost build
 
-**Effort:** Medium (manual download + documentation)  
-**Risk:** Low (restores standard JUCE behavior)  
 **Blockers:** Requires access to official JUCE 8.0.10 distribution
 
 ---

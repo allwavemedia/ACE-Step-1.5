@@ -14,8 +14,8 @@ This repository builds the Windows VST3 wrapper for `acestep.cpp`.
   - Download: https://vulkan.lunarg.com/sdk/home#windows
 
 > **Stub host-load validation does not require CUDA Toolkit or Vulkan SDK.**
-> Use `ACE-Step-Plugin\scripts\build-stub-vst3.ps1` to build and validate the
-> stub plugin on any Windows 11 machine with VS 2022 and CMake.
+> Use `ACE-Step-Plugin\scripts\build-stub-vst3.ps1` to build the stub plugin on
+> any Windows 11 machine with VS 2022 and CMake.
 
 End users do not need CUDA Toolkit or Vulkan SDK. Those SDKs are build-time
 requirements only; the built VST3 bundle ships the GGML backend DLLs beside the
