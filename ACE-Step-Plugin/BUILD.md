@@ -29,14 +29,31 @@ the standard PowerShell environment:
 | Tool | Result |
 |---|---|
 | `cmake` | Found at `C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe` |
-| `dumpbin` | Missing from `PATH`; run from a Visual Studio developer environment before dependency capture. |
-| `nvcc` | Missing; CUDA Toolkit 12.8 is required before real-backend validation. |
-| `glslc` | Missing; Vulkan SDK is required before Vulkan backend bundle validation. |
+| `dumpbin` | Not on `PATH`; available via Visual Studio developer environment (see below). |
+| `nvcc` | Not installed; CUDA Toolkit 12.8 is required before real-backend validation. |
+| `glslc` | Not installed; Vulkan SDK is required before Vulkan backend bundle validation. |
 
-OpenSpec tasks 3.7 and 12.3 remain unchecked until `dumpbin`, CUDA Toolkit
-12.8, and Vulkan SDK are available, the real backend VST3 builds, and the bundle
-directory plus `dumpbin /dependents` output prove the plugin DLL and CPU, CUDA,
-and Vulkan GGML backend DLL siblings.
+**dumpbin Availability:**
+
+`dumpbin.exe` is installed with Visual Studio 2022 Professional (version 17.14.18)
+but not added to `PATH`. It can be used via:
+
+- **Explicit path:**
+  ```
+  "C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\dumpbin.exe"
+  ```
+
+- **Developer environment:** Activate the Visual Studio developer environment first:
+  ```powershell
+  cmd /c "call `"C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Auxiliary\Build\vcvarsall.bat`" x64 && dumpbin /?"
+  ```
+
+**Remaining Prerequisites:**
+
+OpenSpec tasks 3.7 and 12.3 remain unchecked until CUDA Toolkit 12.8 and Vulkan
+SDK are installed, the real backend VST3 builds, and the bundle directory plus
+`dumpbin /dependents` output prove the plugin DLL and CPU, CUDA, and Vulkan GGML
+backend DLL siblings.
 
 ## Vendored External Sources
 
