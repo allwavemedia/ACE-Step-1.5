@@ -97,6 +97,7 @@
 - [x] 11.1 Define the supported v1 DAW validation matrix and the plugin-owned behaviors expected to match across hosts.
 - [x] 11.2 Add compatibility notes for host-controlled differences such as external drag insertion location, file import prompts, and scan behavior.
 - [ ] 11.3 Verify scan/load, pass-through, editor layout, capture controls, generation UI state, WAV export, MIDI export when available, stem export, and preset browsing across Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig.
+  Partial evidence: Reaper v7.71/x64 automated ReaScript validation on Windows 11 Pro Insider Preview 10.0.26300 build 26300 found `VST3: ACE-Step (Allwave Media)`, inserted the plugin on a track, opened the FX UI, and verified offline pass-through with identical bypassed/enabled peak and RMS values. Remaining Reaper UI/export checks plus FL Studio, Cubase, Studio One, Ableton Live, and Bitwig validation are still pending.
 - [x] 11.4 Add fallback documentation for hosts where external drag-and-drop differs from the common path.
 
 ## 12. Validation and Release Readiness

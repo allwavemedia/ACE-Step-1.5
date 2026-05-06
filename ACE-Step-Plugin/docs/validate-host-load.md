@@ -230,3 +230,30 @@ Notes:       <any observations, e.g. "editor opens as blank stub - expected">
 ```
 
 **Do not mark Task 2.7 complete without this record for both hosts.**
+
+## Partial Reaper Automation Record
+
+This is a partial Reaper-only validation record. It does **not** complete Task
+2.7 because JUCE AudioPluginHost has not passed the same checklist yet.
+
+| Field | Value |
+|---|---|
+| Reaper version | REAPER v7.71/x64 |
+| Host executable | `C:\Program Files\REAPER (x64)\reaper.exe` |
+| OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
+| Build commit | `7909e8460d88` |
+| Bundle path | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
+| Tester | Copilot CLI automated ReaScript validation |
+| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\reaper-validation-ace\` |
+
+Reaper scan/load and FX UI open passed with an isolated Reaper profile:
+`EnumInstalledFX` found `VST3: ACE-Step (Allwave Media)`,
+`TrackFX_AddByName` inserted it on a track with FX index `0`, and the FX UI
+reported open.
+
+Offline pass-through also passed with a generated 48 kHz stereo sine WAV. Reaper
+track audio was sampled via `CreateTrackAudioAccessor` /
+`GetAudioAccessorSamples` with ACE-Step bypassed and enabled:
+`baseline_peak=0.250000000`, `enabled_peak=0.250000000`,
+`peak_diff=0.000000000`, `baseline_rms=0.176771017`,
+`enabled_rms=0.176771017`, `rms_diff=0.000000000`.
