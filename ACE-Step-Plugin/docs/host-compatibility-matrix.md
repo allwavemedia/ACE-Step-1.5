@@ -21,6 +21,15 @@ version, bundle path, build commit, tester, and result.
 
 ## Current validation status
 
+Validation run:
+
+| Field | Value |
+|---|---|
+| Build commit | `e445150f76db` |
+| OS | Microsoft Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
+| Stub bundle | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
+| Result | Evidence collection in progress; OpenSpec validation gates remain unchecked until the records below pass. |
+
 The CLI validation-prep environment can build the stub VST3 bundle and can run
 isolated Reaper automation. Full evidence-gated manual host validation remains
 pending because most target hosts are not installed and several Reaper cells
