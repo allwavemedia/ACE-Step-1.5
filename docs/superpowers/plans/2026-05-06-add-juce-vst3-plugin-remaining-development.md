@@ -374,7 +374,7 @@ git push origin feat/add-juce-vst3-plugin-8-3-onwards
 - Modify: `ACE-Step-Plugin\Source\UI\GeneratedAssetHistoryView.cpp`
 - Test: `ACE-Step-Plugin\Tests\GeneratedAssetTile_test.cpp`
 
-- [ ] **Step 1: Write failing tests for MIDI callbacks and unavailable state**
+- [x] **Step 1: Write failing tests for MIDI callbacks and unavailable state**
 
 Add these cases to `GeneratedAssetTileTests::runTest()` in `ACE-Step-Plugin\Tests\GeneratedAssetTile_test.cpp`:
 
@@ -400,7 +400,7 @@ beginTest("MIDI export can carry a generated MIDI path");
 
 Expected red failure: `setOnMidiSaveAs` and `midiPath` do not exist.
 
-- [ ] **Step 2: Add MIDI path metadata**
+- [x] **Step 2: Add MIDI path metadata**
 
 Modify `GeneratedAsset` in `ACE-Step-Plugin\Source\Models\GeneratedAssetHistory.h`:
 
@@ -411,7 +411,7 @@ juce::String midiPath;
 
 Place it after `midiAvailability`.
 
-- [ ] **Step 3: Add MIDI callbacks to tile and history view**
+- [x] **Step 3: Add MIDI callbacks to tile and history view**
 
 Modify `ACE-Step-Plugin\Source\UI\GeneratedAssetTile.h`:
 
@@ -446,7 +446,7 @@ if (onMidiSaveAs)
     tile->setOnMidiSaveAs(onMidiSaveAs);
 ```
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 Run:
 
@@ -457,7 +457,7 @@ ctest --test-dir "ACE-Step-Plugin\build-codex-tests" -C RelWithDebInfo --output-
 
 Expected: all tests pass; MIDI button remains disabled unless `MidiExportAvailability::available`.
 
-- [ ] **Step 5: Mark OpenSpec task 8.4 complete and commit**
+- [x] **Step 5: Mark OpenSpec task 8.4 complete and commit**
 
 Modify `openspec\changes\add-juce-vst3-plugin\tasks.md`:
 

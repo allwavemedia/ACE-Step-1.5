@@ -63,6 +63,24 @@ public:
             GeneratedAssetTile tile(asset);
             expect(tile.canExportMidi());
         }
+
+        beginTest("MIDI export callback is not required when unavailable");
+        {
+            GeneratedAssetTile tile(makeTestAsset(0));
+            tile.setOnMidiSaveAs([](const GeneratedAsset&) {});
+            expect(!tile.canExportMidi());
+        }
+
+        beginTest("MIDI export can carry a generated MIDI path");
+        {
+            auto asset = makeTestAsset(0);
+            asset.midiAvailability = MidiExportAvailability::available;
+            asset.midiPath = "C:\\temp\\generated.mid";
+
+            GeneratedAssetTile tile(asset);
+            expect(tile.canExportMidi());
+            expectEquals(tile.getAsset().midiPath, juce::String("C:\\temp\\generated.mid"));
+        }
     }
 };
 

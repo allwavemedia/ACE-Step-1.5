@@ -34,6 +34,11 @@ GeneratedAssetTile::GeneratedAssetTile(const GeneratedAsset& a)
     midiExportButton.setEnabled(midiAvailable);
     midiExportButton.setTooltip(
         midiAvailable ? "Export MIDI" : "MIDI export unavailable: no reliable note/event data");
+    midiExportButton.onClick = [this] {
+        if (canExportMidi() && onMidiSaveAs)
+            onMidiSaveAs(asset);
+    };
+    midiExportButton.addMouseListener(this, true);
 
     addAndMakeVisible(filenameLabel);
     addAndMakeVisible(durationLabel);
@@ -89,10 +94,26 @@ void GeneratedAssetTile::mouseDown(const juce::MouseEvent& /*e*/)
 
 void GeneratedAssetTile::mouseDrag(const juce::MouseEvent& e)
 {
-    if (e.getDistanceFromDragStart() > 8)
+    const auto eventInTile = e.getEventRelativeTo(this);
+
+    if (eventInTile.getDistanceFromDragStart() > 8)
     {
-        ExternalFileDrag::startCopyDrag(juce::File(asset.outputPath));
+        ExternalFileDrag::startCopyDrag(
+            getExternalDragFile(eventInTile.getMouseDownPosition()));
     }
+}
+
+juce::File GeneratedAssetTile::getExternalDragFile(
+    const juce::Point<int>& mouseDownPosition) const
+{
+    if (midiExportButton.getBounds().contains(mouseDownPosition)
+        && canExportMidi()
+        && asset.midiPath.isNotEmpty())
+    {
+        return juce::File(asset.midiPath);
+    }
+
+    return juce::File(asset.outputPath);
 }
 
 } // namespace acestep_plugin

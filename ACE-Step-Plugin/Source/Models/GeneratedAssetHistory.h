@@ -32,6 +32,9 @@ struct GeneratedAsset
 
     /** MIDI export is unavailable until note/event data or analysis exists. */
     MidiExportAvailability midiAvailability = MidiExportAvailability::unavailable;
+
+    /** Absolute path to the generated MIDI file when MIDI export is available. */
+    juce::String midiPath;
 };
 
 /** Thread-safe ring buffer of the most recent generated assets.

@@ -23,6 +23,7 @@ class GeneratedAssetTile final : public juce::Component
 {
 public:
     using SaveAsCallback = std::function<void(const GeneratedAsset&)>;
+    using MidiSaveAsCallback = std::function<void(const GeneratedAsset&)>;
     using PlayStopCallback = std::function<void(const GeneratedAsset&, bool play)>;
 
     explicit GeneratedAssetTile(const GeneratedAsset& asset);
@@ -36,6 +37,7 @@ public:
     bool canExportMidi() const noexcept;
 
     void setOnSaveAs(SaveAsCallback cb) { onSaveAs = std::move(cb); }
+    void setOnMidiSaveAs(MidiSaveAsCallback cb) { onMidiSaveAs = std::move(cb); }
     void setOnPlayStop(PlayStopCallback cb) { onPlayStop = std::move(cb); }
 
     void paint(juce::Graphics& g) override;
@@ -44,6 +46,7 @@ public:
 private:
     void mouseDown(const juce::MouseEvent& e) override;
     void mouseDrag(const juce::MouseEvent& e) override;
+    juce::File getExternalDragFile(const juce::Point<int>& mouseDownPosition) const;
 
     GeneratedAsset asset;
     bool playing = false;
@@ -55,6 +58,7 @@ private:
     juce::Label durationLabel;
 
     SaveAsCallback onSaveAs;
+    MidiSaveAsCallback onMidiSaveAs;
     PlayStopCallback onPlayStop;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GeneratedAssetTile)
