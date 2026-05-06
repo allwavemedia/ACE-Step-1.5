@@ -609,7 +609,7 @@ git push origin feat/add-juce-vst3-plugin-8-3-onwards
 - Modify: `ACE-Step-Plugin\Source\Engine\GenerationRequest.h`
 - Modify: `ACE-Step-Plugin\CMakeLists.txt`
 
-- [ ] **Step 1: Write failing stem capability tests**
+- [x] **Step 1: Write failing stem capability tests**
 
 Create `ACE-Step-Plugin\Tests\StemCapability_test.cpp`:
 
@@ -645,7 +645,7 @@ static StemCapabilityTests sStemCapabilityTests;
 } // namespace acestep_plugin
 ```
 
-- [ ] **Step 2: Add stem types**
+- [x] **Step 2: Add stem types**
 
 Create `ACE-Step-Plugin\Source\Stems\StemTypes.h`:
 
@@ -685,7 +685,7 @@ struct StemAsset
 } // namespace acestep_plugin
 ```
 
-- [ ] **Step 3: Add stem capability helper**
+- [x] **Step 3: Add stem capability helper**
 
 Create `ACE-Step-Plugin\Source\Stems\StemCapability.h`:
 
@@ -723,7 +723,7 @@ bool StemCapability::isAvailable(StemCapabilityState state) noexcept
 } // namespace acestep_plugin
 ```
 
-- [ ] **Step 4: Extend GenerationRequest**
+- [x] **Step 4: Extend GenerationRequest**
 
 Modify `ACE-Step-Plugin\Source\Engine\GenerationRequest.h`:
 
@@ -742,7 +742,7 @@ bool stemsEnabled = false;
 std::vector<StemGroup> requestedStemGroups;
 ```
 
-- [ ] **Step 5: Register files and run tests**
+- [x] **Step 5: Register files and run tests**
 
 Add source/test files to `ACE-Step-Plugin\CMakeLists.txt`, then run:
 
@@ -751,7 +751,7 @@ cmake --build "ACE-Step-Plugin\build-codex-tests" --config RelWithDebInfo --targ
 ctest --test-dir "ACE-Step-Plugin\build-codex-tests" -C RelWithDebInfo --output-on-failure
 ```
 
-- [ ] **Step 6: Mark task 9.2 complete and commit**
+- [x] **Step 6: Mark task 9.2 complete and commit**
 
 Commit:
 

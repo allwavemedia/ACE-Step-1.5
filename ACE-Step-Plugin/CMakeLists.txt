@@ -58,6 +58,9 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/MIDI/MidiFileWriter.cpp
     Source/MIDI/MidiFileWriter.h
     Source/MIDI/MidiNoteEvent.h
+    Source/Stems/StemCapability.cpp
+    Source/Stems/StemCapability.h
+    Source/Stems/StemTypes.h
     Source/Models/GeneratedAssetHistory.cpp
     Source/Models/GeneratedAssetHistory.h
     Source/Models/GeneratedAssetTempDirectories.cpp
@@ -148,6 +151,9 @@ if(ACESTEP_BUILD_TESTS)
             Source/MIDI/MidiFileWriter.cpp
             Source/MIDI/MidiFileWriter.h
             Source/MIDI/MidiNoteEvent.h
+            Source/Stems/StemCapability.cpp
+            Source/Stems/StemCapability.h
+            Source/Stems/StemTypes.h
             Source/Models/GeneratedAssetHistory.cpp
             Source/Models/GeneratedAssetHistory.h
             Source/Models/GeneratedAssetTempDirectories.cpp
@@ -189,6 +195,7 @@ if(ACESTEP_BUILD_TESTS)
             Tests/ReferenceAudioBufferBasic_test.cpp
             Tests/ReferenceAudioBufferConcurrent_test.cpp
             Tests/ReferenceAudioResampler_test.cpp
+            Tests/StemCapability_test.cpp
             Tests/ReferenceAudioBufferTestMain.cpp
             Tests/ReferenceAudioBufferTestUtils.h
     )

@@ -1,8 +1,11 @@
 #pragma once
 
+#include "../Stems/StemTypes.h"
+
 #include <juce_core/juce_core.h>
 
 #include <optional>
+#include <vector>
 
 namespace acestep_plugin
 {
@@ -38,6 +41,12 @@ struct GenerationRequest
 
     /** Optional path to a captured reference audio WAV file. */
     std::optional<juce::String> referenceAudioPath;
+
+    /** Whether stem outputs should be requested when the backend supports them. */
+    bool stemsEnabled = false;
+
+    /** Stem groups requested by the user; empty means full mix only. */
+    std::vector<StemGroup> requestedStemGroups;
 
     /** Absolute path where the output WAV should be written. */
     juce::String outputPath;
