@@ -976,7 +976,7 @@ Mark tasks 10.3-10.5 complete only after UI, no-auto-generation behavior, and te
 - Create: `ACE-Step-Plugin\docs\host-compatibility-matrix.md`
 - Modify: `openspec\changes\add-juce-vst3-plugin\tasks.md`
 
-- [ ] **Step 1: Create host matrix**
+- [x] **Step 1: Create host matrix**
 
 Create `host-compatibility-matrix.md` with rows for:
 
@@ -1005,11 +1005,11 @@ Preset browsing
 Host-owned differences
 ```
 
-- [ ] **Step 2: Document host-owned limitations**
+- [x] **Step 2: Document host-owned limitations**
 
 Explicitly state that timeline insertion location, import prompts, plugin scanning UX, and drag interpretation are owned by the host. The plugin-owned fallback is always Save As.
 
-- [ ] **Step 3: Commit documentation**
+- [x] **Step 3: Commit documentation**
 
 Mark tasks 11.1, 11.2, and 11.4 complete after the document exists. Leave 11.3 incomplete until real host validation evidence exists.
 

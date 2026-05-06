@@ -94,15 +94,16 @@
 
 ## 11. Host Behavior Compatibility
 
-- [ ] 11.1 Define the supported v1 DAW validation matrix and the plugin-owned behaviors expected to match across hosts.
-- [ ] 11.2 Add compatibility notes for host-controlled differences such as external drag insertion location, file import prompts, and scan behavior.
+- [x] 11.1 Define the supported v1 DAW validation matrix and the plugin-owned behaviors expected to match across hosts.
+- [x] 11.2 Add compatibility notes for host-controlled differences such as external drag insertion location, file import prompts, and scan behavior.
 - [ ] 11.3 Verify scan/load, pass-through, editor layout, capture controls, generation UI state, WAV export, MIDI export when available, stem export, and preset browsing across Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig.
-- [ ] 11.4 Add fallback documentation for hosts where external drag-and-drop differs from the common path.
+- [x] 11.4 Add fallback documentation for hosts where external drag-and-drop differs from the common path.
 
 ## 12. Validation and Release Readiness
 
 - [ ] 12.1 Verify DAW scan time stays fast because GGUF models are not loaded during plugin construction or scan.
-- [ ] 12.2 Verify no allocation, logging, file I/O, mutex locking, or string construction occurs inside `processBlock` capture logic.
+- [x] 12.2 Verify no allocation, logging, file I/O, mutex locking, or string construction occurs inside `processBlock` capture logic.
+  Evidence: inspected `PluginProcessor::processBlock`; the audio callback only enters `ScopedNoDenormals`, ignores MIDI, calls `referenceAudioBuffer.push(buffer)`, and clears surplus output channels. `ReferenceAudioBuffer::push` uses atomics/preallocated storage and contains no allocation, logging, file I/O, mutex locking, or string construction on the audio thread.
 - [ ] 12.3 Verify the VST3 bundle contains the plugin DLL plus CPU, CUDA, and Vulkan GGML backend DLL siblings.
 - [ ] 12.4 Verify external drag-and-drop in Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, with Save As as fallback.
 - [ ] 12.5 Verify missing model, checksum mismatch, out-of-memory, backend-load failure, cancellation, generation failure, MIDI unavailable state, stem failure, preset load failure, and host compatibility errors surface in the editor without crashing the host.
