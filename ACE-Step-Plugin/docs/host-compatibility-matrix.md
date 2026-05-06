@@ -9,7 +9,7 @@ The supported v1 validation matrix is Windows VST3 in these hosts:
 
 | Host | Scan/load | Pass-through | Editor layout | Capture controls | Generation UI state | WAV Save As | WAV drag/drop | MIDI gated unavailable state | Stem gated unavailable state | Preset browsing | Host-owned differences |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Reaper | PASS (automated ReaScript smoke, see record below) | PASS (offline accessor pass-through, see record below) | Partial: FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
+| Reaper | Pending re-validation; prior automated PASS at 7909e8460d88 | Pending re-validation; prior automated PASS at 7909e8460d88 | Partial: prior evidence shows FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
 | FL Studio | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Browser/drop target behavior, channel rack vs playlist placement |
 | Cubase | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pool import prompts, project media copy policy |
 | Studio One | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Browser/import prompts, arrange view insertion behavior |
@@ -28,7 +28,7 @@ Validation run:
 | Build commit | `cec0dd941e7b` |
 | OS | Microsoft Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
 | Stub bundle | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
-| Result | Task 2.7 blocked: AudioPluginHost build fails due to missing JUCE example assets. Reaper automated validation passes. |
+| Result | Task 2.7 blocked: AudioPluginHost build fails due to missing JUCE example assets. Current run verified Reaper executable availability and stub bundle path only; prior automated PASS evidence exists at 7909e8460d88. |
 
 The CLI validation-prep environment can build the stub VST3 bundle and can run
 isolated Reaper automation. Full evidence-gated manual host validation remains
@@ -49,19 +49,34 @@ This blocker is not a pass/fail result for Task 11.3 or 12.4. Those tasks
 remain pending until a tester records real host versions, bundle path, build
 commit, pass/fail results, and notes from interactive DAW validation.
 
-## Reaper partial validation record
+## Reaper validation record
+
+### Current run (cec0dd941e7b)
 
 | Field | Value |
 |---|---|
 | Host | REAPER v7.71/x64 |
-| Host executable | `C:\Program Files\REAPER (x64)\reaper.exe` |
+| Host executable | `C:\Program Files\REAPER (x64)\reaper.exe` (availability verified) |
 | OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
-| Build commit | `cec0dd941e7b` (Task 2.7 validation), `7909e8460d88` (prior automated run) |
-| Bundle path | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
+| Build commit | `cec0dd941e7b` |
+| Bundle path | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` (availability verified) |
+| Tester | Copilot CLI (Task 2.7 validation) |
+
+Current run scope:
+- Verified Reaper executable presence at expected path
+- Verified Reaper version (REAPER v7.71/x64)
+- Verified stub bundle path availability
+- **No scan/load, pass-through, or UI validation performed in current run**
+
+### Prior automated validation evidence (7909e8460d88)
+
+| Field | Value |
+|---|---|
+| Build commit | `7909e8460d88` |
 | Tester | Copilot CLI automated ReaScript validation |
 | Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\reaper-validation-ace\` |
 
-Recorded results:
+Prior automated results (not re-validated in current run):
 
 - Scan/load and FX UI open: PASS. ReaScript `EnumInstalledFX` found
   `VST3: ACE-Step (Allwave Media)`, `TrackFX_AddByName` inserted it on a track
@@ -74,7 +89,7 @@ Recorded results:
   `peak_diff=0.000000000`, `baseline_rms=0.176771017`,
   `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
 
-**Task 2.7 status:** Reaper validation PASS, but AudioPluginHost validation BLOCKED by missing JUCE assets. Task 2.7 cannot be marked complete until both hosts pass.
+**Task 2.7 status:** Current build (cec0dd941e7b) Reaper validation scope was limited to executable/bundle availability only. Prior automated PASS evidence exists at 7909e8460d88 but has not been re-validated for current build. AudioPluginHost validation remains BLOCKED by missing JUCE assets. Task 2.7 cannot be marked complete until both hosts pass full validation against current build.
 
 Remaining Reaper checks that still require interactive/manual validation:
 editor layout details, capture controls, generation UI state, WAV Save As, WAV
