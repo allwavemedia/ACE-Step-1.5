@@ -233,35 +233,34 @@ Notes:       <any observations, e.g. "editor opens as blank stub - expected">
 
 ## Host A (AudioPluginHost) Validation Status
 
-**Status:** BLOCKED
+**Status:** UNBLOCKED (stub assets workaround applied)
 
-**Blocker:** AudioPluginHost build fails during BinaryData generation with "Unhandled exception" due to missing JUCE example assets. The following required assets are missing from the vendored JUCE 8.0.10 source:
+**Previous Blocker (RESOLVED):** AudioPluginHost build failed during BinaryData generation due to missing JUCE example assets (cassette_recorder.wav, cello.wav, guitar_amp.wav, reverb_ir.wav). These are copyrighted JUCE example files referenced by demo plugins.
 
-```text
-MISSING ACE-Step-Plugin\External\JUCE\examples\Assets\cassette_recorder.wav
-MISSING ACE-Step-Plugin\External\JUCE\examples\Assets\cello.wav
-MISSING ACE-Step-Plugin\External\JUCE\examples\Assets\guitar_amp.wav
-MISSING ACE-Step-Plugin\External\JUCE\examples\Assets\reverb_ir.wav
-FOUND   ACE-Step-Plugin\External\JUCE\examples\Assets\proaudio.path
-FOUND   ACE-Step-Plugin\External\JUCE\examples\Assets\singing.ogg
-```
+**Resolution Applied:** Generated stub silent WAV files using `ACE-Step-Plugin\scripts\generate-stub-juce-assets.py`. These minimal files satisfy the build requirements without requiring copyrighted assets.
 
-**Build command attempted:**
+**Limitation:** Demo plugins (DSPModulePluginDemo, SamplerPluginDemo) will not produce useful audio output with stub assets. This is acceptable for Task 2.7 validation, which focuses on ACE-Step VST3 load/pass-through behavior, not AudioPluginHost demo plugin quality.
+
+**Build command (successful):**
 
 ```powershell
+# Generate stub assets first
+python ACE-Step-Plugin\scripts\generate-stub-juce-assets.py
+
+# Then build AudioPluginHost
 cd ACE-Step-Plugin\External\JUCE
 cmake -B build-audio-plugin-host -G "Visual Studio 17 2022" -A x64 -DJUCE_BUILD_EXTRAS=ON -DJUCE_BUILD_EXAMPLES=OFF
 cmake --build build-audio-plugin-host --config RelWithDebInfo --target AudioPluginHost --parallel
 ```
 
-**Result:** Build failed at `AudioPluginHostData.vcxproj` with MSB8066 error during custom build for BinaryData generation.
+**Result:** Build succeeded. AudioPluginHost.exe available at:
+```
+ACE-Step-Plugin\External\JUCE\build-audio-plugin-host\extras\AudioPluginHost\AudioPluginHost_artefacts\RelWithDebInfo\AudioPluginHost.exe
+```
 
-**Resolution required:** These assets are copyrighted JUCE example files and cannot be downloaded by automation. Options:
-1. Restore missing assets from a complete JUCE 8.0.10 source tree
-2. Use a known-good prebuilt `AudioPluginHost.exe`
-3. Exclude these assets from the AudioPluginHost build configuration
+**Next Step:** Execute AudioPluginHost validation checklist (sections 2-5 above) to verify ACE-Step VST3 scan/load/editor/pass-through.
 
-**Task 2.7 cannot be marked complete until AudioPluginHost validation passes.**
+**Full Investigation:** See `ACE-Step-Plugin\docs\audiopluginhost-blocker-investigation.md` for detailed analysis and alternative solutions.
 
 ## Host B (Reaper) Validation Status
 
