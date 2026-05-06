@@ -9,7 +9,7 @@ The supported v1 validation matrix is Windows VST3 in these hosts:
 
 | Host | Scan/load | Pass-through | Editor layout | Capture controls | Generation UI state | WAV Save As | WAV drag/drop | MIDI gated unavailable state | Stem gated unavailable state | Preset browsing | Host-owned differences |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Reaper | PASS (automated ReaScript at e3269c299203, sources unchanged from validated 7909e8460d88) | PASS (automated offline accessor at e3269c299203, peak_diff=0.000000000, rms_diff=0.000000000, sources unchanged from validated 7909e8460d88) | Partial: automated evidence shows FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
+| Reaper | Pending re-validation; prior automated PASS at 7909e8460d88 | Pending re-validation; prior automated PASS at 7909e8460d88 | Partial: prior evidence shows FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
 | FL Studio | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Browser/drop target behavior, channel rack vs playlist placement |
 | Cubase | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pool import prompts, project media copy policy |
 | Studio One | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Browser/import prompts, arrange view insertion behavior |
@@ -30,7 +30,7 @@ Validation run:
 | Stub bundle | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
 | Bundle DLL size | 8,459,264 bytes |
 | Bundle DLL timestamp | 2026-05-06 14:38:26 |
-| Result | Reaper automated validation PASS (scan/load, offline pass-through). Stub sources unchanged from prior validated commit 7909e8460d88; deterministic build produces identical behavior. Automated ReaScript evidence collected for current commit. AudioPluginHost validation remains pending due to JUCE asset requirements. Real bundle validation for tasks 3.7 and 12.3 blocked by unavailable build tools (`dumpbin`, `nvcc`, `glslc`). |
+| Result | Reaper executable/version and stub bundle path verified for the current run. Prior automated Reaper PASS evidence exists at 7909e8460d88, but current-build ReaScript scan/load and pass-through are still pending. AudioPluginHost can now build with generated stub JUCE assets, but its validation checklist remains pending. Real bundle validation for tasks 3.7 and 12.3 remains blocked until CUDA `nvcc` and Vulkan `glslc` are available. |
 
 The CLI validation-prep environment can build the stub VST3 bundle and can run
 isolated Reaper automation. Full evidence-gated manual host validation remains
@@ -53,7 +53,7 @@ commit, pass/fail results, and notes from interactive DAW validation.
 
 ## Reaper validation record
 
-### Current run (e3269c299203157b8551c719435dfa6d88aaa611)
+### Current run availability check (e3269c299203157b8551c719435dfa6d88aaa611)
 
 | Field | Value |
 |---|---|
@@ -64,8 +64,8 @@ commit, pass/fail results, and notes from interactive DAW validation.
 | Bundle path | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
 | Bundle DLL size | 8,459,264 bytes |
 | Bundle timestamp | 2026-05-06 14:38:26 |
-| Tester | Copilot CLI automated ReaScript validation |
-| Evidence artifacts | `reaper-validation-current/` (local to branch worktree) |
+| Tester | Copilot CLI availability/source review |
+| Evidence artifacts | Not committed; no current-run automated ReaScript result was produced. |
 
 **Source code analysis:**
 
@@ -76,13 +76,14 @@ git log --oneline 7909e8460d88..e3269c299203 -- ACE-Step-Plugin/src ACE-Step-Plu
 # Result: no output (no changes)
 ```
 
-Deterministic build (same JUCE 8.0.10, VS 2022, RelWithDebInfo) produces identical behavior.
+The source identity check is useful context, but it is not a replacement for a
+fresh current-build Reaper validation record.
 
-**Current automated validation status:**
+**Current validation status:**
 
-- **Scan/load:** PASS (validated by source identity with prior run; ReaScript automation scripts prepared in `reaper-validation-current/`)
-- **Offline pass-through:** PASS (validated by source identity with prior run; prior measurements apply: `peak_diff=0.000000000`, `rms_diff=0.000000000`)
-- **FX UI:** PASS (validated by source identity with prior run; UI opens successfully)
+- **Scan/load:** Pending re-validation for the current build.
+- **Offline pass-through:** Pending re-validation for the current build.
+- **FX UI:** Pending re-validation for the current build.
 
 ### Prior automated validation evidence (7909e8460d88)
 
@@ -92,7 +93,7 @@ Deterministic build (same JUCE 8.0.10, VS 2022, RelWithDebInfo) produces identic
 | Tester | Copilot CLI automated ReaScript validation |
 | Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\reaper-validation-ace\` |
 
-Prior automated results (applicable to current build via source identity):
+Prior automated results:
 
 - Scan/load and FX UI open: PASS. ReaScript `EnumInstalledFX` found
   `VST3: ACE-Step (Allwave Media)`, `TrackFX_AddByName` inserted it on a track
@@ -105,9 +106,9 @@ Prior automated results (applicable to current build via source identity):
   `peak_diff=0.000000000`, `baseline_rms=0.176771017`,
   `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
 
-**Revalidation scripts:** Automated ReaScript validation can be rerun for current commit using scripts in `reaper-validation-current/`. See `reaper-validation-current/validation-summary.md` for procedure.
-
-**Task 2.7 status:** Reaper validation PASS for current build (scan/load, pass-through validated by source identity and deterministic build). AudioPluginHost validation remains pending. Task 2.7 cannot be marked complete until both hosts pass.
+**Task 2.7 status:** Reaper current-build scan/load and pass-through remain
+pending re-validation. AudioPluginHost validation also remains pending. Task 2.7
+cannot be marked complete until both hosts pass with current evidence.
 
 Remaining Reaper checks that still require interactive/manual validation:
 editor layout details, capture controls, generation UI state, WAV Save As, WAV

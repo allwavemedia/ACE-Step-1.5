@@ -14,9 +14,9 @@
 - [x] 2.5 Add minimal `Source/PluginEditor.h` and `Source/PluginEditor.cpp` with a stub editor that opens reliably in JUCE AudioPluginHost.
 - [x] 2.6 Add `.vscode/settings.json`, `tasks.json`, and `launch.json` for MSVC kit selection, RelWithDebInfo VST3 build, and AudioPluginHost debugging.
 - [ ] 2.7 Verify the initial VST3 bundle loads in JUCE AudioPluginHost and Reaper with unchanged audio pass-through.
-  **Reaper:** PASS - Automated ReaScript validation at commit `e3269c299203157b8551c719435dfa6d88aaa611` confirms scan/load (VST3: ACE-Step (Allwave Media) found, inserted on track with FX index 0, FX UI opened) and offline pass-through (peak_diff=0.000000000, rms_diff=0.000000000). Stub sources unchanged from prior validated commit `7909e8460d88`; deterministic build produces identical behavior. Evidence in `ACE-Step-Plugin\docs\validate-host-load.md`, `ACE-Step-Plugin\docs\host-compatibility-matrix.md`, and automated ReaScript artifacts in `reaper-validation-current/`.
-  **AudioPluginHost:** UNBLOCKED (stub assets workaround applied) but manual validation pending. Resolution: Generated stub silent WAV files satisfy build requirements. Build succeeds but host validation checklist is not yet executed. Limitation: Demo plugins will not produce useful audio with stub assets; this is acceptable for Task 2.7 which validates ACE-Step VST3 behavior only.
-  **Task 2.7 status:** Cannot be marked complete until both AudioPluginHost and Reaper pass full manual validation checklist. Reaper automated validation PASS for current commit. AudioPluginHost requires manual checklist execution (sections 2-5 of validate-host-load.md).
+  **Reaper:** Pending current-build re-validation. Prior automated ReaScript evidence at commit `7909e8460d88` confirms scan/load and offline pass-through, but no fresh automated/manual Reaper run was completed for the current build. Evidence scope is recorded in `ACE-Step-Plugin\docs\validate-host-load.md` and `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
+  **AudioPluginHost:** UNBLOCKED (stub assets workaround applied) but validation pending. Generated stub silent WAV files satisfy build requirements without redistributing copyrighted JUCE assets, and AudioPluginHost now builds. The host validation checklist is not yet executed.
+  **Task 2.7 status:** Cannot be marked complete until both AudioPluginHost and Reaper pass with current evidence.
 
 ## 3. ACE-Step C++ Backend Integration
 
@@ -101,7 +101,7 @@
 - [x] 11.1 Define the supported v1 DAW validation matrix and the plugin-owned behaviors expected to match across hosts.
 - [x] 11.2 Add compatibility notes for host-controlled differences such as external drag insertion location, file import prompts, and scan behavior.
 - [ ] 11.3 Verify scan/load, pass-through, editor layout, capture controls, generation UI state, WAV export, MIDI export when available, stem export, and preset browsing across Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig.
-  **Reaper:** Automated validation PASS at commit `e3269c299203157b8551c719435dfa6d88aaa611` - scan/load (VST3: ACE-Step (Allwave Media) found, TrackFX_AddByName inserted with FX index 0, FX UI opened), offline pass-through (peak_diff=0.000000000, rms_diff=0.000000000). Stub sources unchanged from prior validated commit `7909e8460d88`; deterministic build. Remaining Reaper UI/export checks plus FL Studio, Cubase, Studio One, Ableton Live, and Bitwig validation are still pending. Evidence in `ACE-Step-Plugin\docs\host-compatibility-matrix.md` and `reaper-validation-current/`.
+  **Reaper:** Prior automated validation PASS at commit `7909e8460d88` for scan/load and offline pass-through remains recorded as historical evidence. Current-build Reaper re-validation plus remaining Reaper UI/export checks and FL Studio, Cubase, Studio One, Ableton Live, and Bitwig validation are still pending. Evidence scope is recorded in `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
 - [x] 11.4 Add fallback documentation for hosts where external drag-and-drop differs from the common path.
 
 ## 12. Validation and Release Readiness

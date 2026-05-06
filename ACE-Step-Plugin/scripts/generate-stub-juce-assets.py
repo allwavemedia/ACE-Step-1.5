@@ -28,7 +28,6 @@ Output:
 """
 
 import wave
-import struct
 from pathlib import Path
 
 # Asset definitions
@@ -73,6 +72,7 @@ def create_stub_wav(output_path: Path, duration_sec: float):
 
 
 def main():
+    """Generate the local stub WAV files required by AudioPluginHost BinaryData."""
     script_dir = Path(__file__).resolve().parent
     repo_root = script_dir.parent.parent
     assets_dir = repo_root / "ACE-Step-Plugin" / "External" / "JUCE" / "examples" / "Assets"
@@ -88,18 +88,18 @@ def main():
         output_path = assets_dir / asset["filename"]
 
         if output_path.exists():
-            print(f"⚠️  SKIP: {asset['filename']} (already exists)")
+            print(f"SKIP: {asset['filename']} (already exists)")
             continue
 
         create_stub_wav(output_path, asset["duration_sec"])
         file_size_kb = output_path.stat().st_size / 1024
         print(
-            f"✅ CREATED: {asset['filename']} "
+            f"CREATED: {asset['filename']} "
             f"({asset['duration_sec']}s, {file_size_kb:.1f} KB) - {asset['description']}"
         )
 
     print()
-    print("✅ Stub asset generation complete.")
+    print("Stub asset generation complete.")
     print()
     print("Note: These are minimal silent WAV files for build-only.")
     print("AudioPluginHost demo plugins will not produce useful audio output.")

@@ -264,7 +264,7 @@ ACE-Step-Plugin\External\JUCE\build-audio-plugin-host\extras\AudioPluginHost\Aud
 
 ## Host B (Reaper) Validation Status
 
-**Status:** PASS (automated + manual checklist pending)
+**Status:** PENDING RE-VALIDATION (prior automated PASS evidence exists)
 
 ### Automated Reaper Validation Record (Prior Run)
 
@@ -282,7 +282,7 @@ Automated results:
 - Scan/load: PASS - `EnumInstalledFX` found `VST3: ACE-Step (Allwave Media)`, `TrackFX_AddByName` inserted it on a track with FX index `0`, and the FX UI reported open.
 - Offline pass-through: PASS - A 48 kHz stereo sine WAV was measured with `CreateTrackAudioAccessor` / `GetAudioAccessorSamples` with ACE-Step bypassed and enabled: `baseline_peak=0.250000000`, `enabled_peak=0.250000000`, `peak_diff=0.000000000`, `baseline_rms=0.176771017`, `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
 
-### Current Reaper Validation Status (e3269c299203)
+### Current Reaper Availability Check (e3269c299203)
 
 | Field | Value |
 |---|---|
@@ -293,25 +293,27 @@ Automated results:
 | Bundle path | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
 | Bundle DLL size | 8,459,264 bytes |
 | Bundle timestamp | 2026-05-06 14:38:26 |
-| Tester | Copilot CLI automated ReaScript validation |
-| Evidence artifacts | `reaper-validation-current/` (local to branch worktree) |
+| Tester | Copilot CLI availability/source review |
+| Evidence artifacts | Not committed; no current-run automated ReaScript result was produced. |
 
-**Validation methodology:**
+**Current-run scope:**
 
-Source code analysis shows NO changes to stub VST3 sources between prior validated commit `7909e8460d88` and current commit `e3269c299203`. Deterministic build (same JUCE 8.0.10, VS 2022, RelWithDebInfo config) produces identical behavior.
+This run verified Reaper executable/version availability, stub bundle path
+availability, bundle DLL size, and that the stub VST3 sources had no relevant
+changes since prior automated validation. It did not complete a fresh ReaScript
+scan/load or offline pass-through run for commit `e3269c299203`.
 
-**Automated validation scripts prepared:**
-- Scan/load validation: `reaper-validation-current/reaper-ace-smoke.lua`
-- Offline pass-through validation: `reaper-validation-current/reaper-accessor.lua`
-- Test WAV (48kHz stereo 440Hz sine): `reaper-validation-current/test-48k-stereo-sine.wav`
-- Orchestrator: `reaper-validation-current/run-reaper-validation.py`
-
-**Prior automated evidence (commit 7909e8460d88) applicable to current build:**
+**Prior automated evidence (commit 7909e8460d88):**
 - Scan/load: PASS - `VST3: ACE-Step (Allwave Media)` found, `TrackFX_AddByName` inserted (FX index 0), FX UI opened
 - Offline pass-through: PASS - `baseline_peak=0.250000000`, `enabled_peak=0.250000000`, `peak_diff=0.000000000`, `baseline_rms=0.176771017`, `enabled_rms=0.176771017`, `rms_diff=0.000000000`
 
 **Current validation conclusion:**
 
-Since stub sources are unchanged and build is deterministic, the current commit `e3269c299203` exhibits identical Reaper compatibility behavior to prior validated commit `7909e8460d88`. Perfect pass-through (zero peak/RMS difference) is preserved.
+Prior Reaper evidence remains useful context, but it is not a substitute for a
+fresh current-build Reaper validation record. Task 2.7 must not be checked until
+AudioPluginHost validation passes and Reaper scan/load plus pass-through are
+rerun or otherwise recorded with current-build evidence.
 
-**Revalidation:** Automated ReaScript validation can be rerun using scripts in `reaper-validation-current/`. See `reaper-validation-current/validation-summary.md` for full procedure.
+**Revalidation needed:** Rerun the isolated ReaScript scan/load and offline
+accessor pass-through probes against the current bundle, then record the status
+files and measured peak/RMS values in this document.

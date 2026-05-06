@@ -1,6 +1,6 @@
 # AudioPluginHost Validation Blocker Investigation
 
-**Investigation Date:** 2025-06-12  
+**Investigation Date:** 2026-05-06
 **Worktree:** `agents-add-juce-vst3-plugin-validation`  
 **Branch:** `feat/add-juce-vst3-plugin-8-3-onwards`  
 **Task:** OpenSpec 2.7 - Validate with AudioPluginHost  
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-AudioPluginHost validation for Task 2.7 is blocked by **missing JUCE example assets** required for BinaryData generation during the AudioPluginHost build. These assets are copyrighted JUCE example files and cannot be downloaded automatically.
+AudioPluginHost validation for Task 2.7 was blocked by **missing JUCE example assets** required for BinaryData generation during the AudioPluginHost build. The local validation environment now uses generated silent stub WAV files to build AudioPluginHost without downloading or redistributing copyrighted JUCE example assets.
 
 **Root cause:**
 - JUCE AudioPluginHost includes demo plugins (DSPModulePluginDemo, SamplerPluginDemo) that use embedded binary resources
@@ -18,9 +18,9 @@ AudioPluginHost validation for Task 2.7 is blocked by **missing JUCE example ass
 - Build fails with MSB8066 error during BinaryData generation
 
 **Impact:**
-- AudioPluginHost cannot be built from vendored JUCE source
-- Task 2.7 validation checklist cannot be completed
-- OpenSpec change cannot progress without AudioPluginHost validation evidence
+- AudioPluginHost could not be built from vendored JUCE source until stub assets were generated.
+- Task 2.7 validation checklist is still pending; the build prerequisite is unblocked.
+- OpenSpec task 2.7 still requires AudioPluginHost and Reaper current-build validation evidence before completion.
 
 ---
 
@@ -32,12 +32,12 @@ The following assets are referenced in `ACE-Step-Plugin\External\JUCE\extras\Aud
 
 | File | Status | Purpose | Used By |
 |------|--------|---------|---------|
-| `cassette_recorder.wav` | ❌ MISSING | Demo audio sample | Unknown (not found in source grep) |
-| `cello.wav` | ❌ MISSING | Sampler demo sample | `SamplerPluginDemo.h` line 2115 |
-| `guitar_amp.wav` | ❌ MISSING | Convolution IR | `DSPModulePluginDemo.h` line 1105 |
-| `reverb_ir.wav` | ❌ MISSING | Convolution IR | `DSPModulePluginDemo.h` line 1106 |
-| `proaudio.path` | ✅ FOUND | Pro Audio path metadata | InternalPlugins BinaryData lookup |
-| `singing.ogg` | ✅ FOUND | Demo audio sample | InternalPlugins BinaryData lookup |
+| `cassette_recorder.wav` | Missing from vendored JUCE; generated locally as a stub | Demo audio sample | Unknown (not found in source grep) |
+| `cello.wav` | Missing from vendored JUCE; generated locally as a stub | Sampler demo sample | `SamplerPluginDemo.h` line 2115 |
+| `guitar_amp.wav` | Missing from vendored JUCE; generated locally as a stub | Convolution IR | `DSPModulePluginDemo.h` line 1105 |
+| `reverb_ir.wav` | Missing from vendored JUCE; generated locally as a stub | Convolution IR | `DSPModulePluginDemo.h` line 1106 |
+| `proaudio.path` | Found | Pro Audio path metadata | InternalPlugins BinaryData lookup |
+| `singing.ogg` | Found | Demo audio sample | InternalPlugins BinaryData lookup |
 
 ### BinaryData Usage Flow
 
@@ -92,14 +92,14 @@ cmake --build build-audio-plugin-host --config RelWithDebInfo --target AudioPlug
 3. Copy them into `ACE-Step-Plugin\External\JUCE\examples\Assets\`
 
 **Pros:**
-- ✅ Enables full AudioPluginHost build with all demo plugins
-- ✅ No code changes required
-- ✅ Validates real AudioPluginHost behavior
+- Enables full AudioPluginHost build with all demo plugins
+- No code changes required
+- Validates real AudioPluginHost behavior
 
 **Cons:**
-- ❌ Requires manual download of copyrighted JUCE assets
-- ❌ Assets not tracked in Git (or requires LFS)
-- ❌ Must document asset source and licensing
+- Requires manual download of copyrighted JUCE assets
+- Assets not tracked in Git (or requires LFS)
+- Must document asset source and licensing
 
 **Blocker:** These are copyrighted example assets included with JUCE. They cannot be automatically downloaded or redistributed. A developer must manually obtain them from the official JUCE distribution.
 
@@ -115,15 +115,15 @@ cmake --build build-audio-plugin-host --config RelWithDebInfo --target AudioPlug
 3. Use AudioPluginHost from a JUCE installation that includes extras
 
 **Pros:**
-- ✅ No local build required
-- ✅ No need to manage missing assets
-- ✅ Can proceed with validation immediately
+- No local build required
+- No need to manage missing assets
+- Can proceed with validation immediately
 
 **Cons:**
-- ❌ Binary provenance unclear
-- ❌ Version mismatch risk (must match JUCE 8.0.10)
-- ❌ Not reproducible from vendored source
-- ❌ Does not validate vendored JUCE build capability
+- Binary provenance unclear
+- Version mismatch risk (must match JUCE 8.0.10)
+- Not reproducible from vendored source
+- Does not validate vendored JUCE build capability
 
 ---
 
@@ -138,15 +138,15 @@ cmake --build build-audio-plugin-host --config RelWithDebInfo --target AudioPlug
 4. Create a patch file in `ACE-Step-Plugin\patches\` for these changes
 
 **Pros:**
-- ✅ Enables AudioPluginHost build from vendored source
-- ✅ No external assets required
+- Enables AudioPluginHost build from vendored source
+- No external assets required
 
 **Cons:**
-- ❌ Modifies JUCE source code (violates minimal-invasive policy)
-- ❌ Creates divergence from upstream JUCE behavior
-- ❌ Demo plugins unavailable for testing internal plugin system
-- ❌ Maintenance burden for future JUCE upgrades
-- ❌ Not representative of standard AudioPluginHost
+- Modifies JUCE source code (violates minimal-invasive policy)
+- Creates divergence from upstream JUCE behavior
+- Demo plugins unavailable for testing internal plugin system
+- Maintenance burden for future JUCE upgrades
+- Not representative of standard AudioPluginHost
 
 **Verdict:** This approach violates AGENTS.md minimal-scope policy and introduces unnecessary technical debt. Not recommended.
 
@@ -177,15 +177,15 @@ create_stub_wav('reverb_ir.wav', duration_sec=0.5)
 ```
 
 **Pros:**
-- ✅ Enables AudioPluginHost build
-- ✅ No copyrighted content
-- ✅ Reproducible from script
+- Enables AudioPluginHost build
+- No copyrighted content
+- Reproducible from script
 
 **Cons:**
-- ❌ Demo plugins will not produce useful audio output
-- ❌ Cannot validate demo plugin functionality
-- ❌ Still represents modified AudioPluginHost behavior
-- ⚠️ Acceptable **only** if Task 2.7 validation focuses on ACE-Step VST3 load/pass-through, not demo plugin quality
+- Demo plugins will not produce useful audio output
+- Cannot validate demo plugin functionality
+- Still represents modified AudioPluginHost behavior
+- Acceptable **only** if Task 2.7 validation focuses on ACE-Step VST3 load/pass-through, not demo plugin quality
 
 **Verdict:** Viable workaround for **unblocking Task 2.7** if the validation goal is limited to:
 - ACE-Step VST3 scan/load in AudioPluginHost
@@ -202,14 +202,14 @@ This does not enable validation of AudioPluginHost's demo plugins, but those are
 
 **Recommended: Option 4 (Stub Files) for Minimal Unblocking**
 
-1. **Create stub WAV generation script:**
-   - Add `ACE-Step-Plugin\scripts\generate-stub-juce-assets.py`
-   - Generate minimal silent WAV files for missing assets
-   - Document that these are stub files for build-only
+1. **Create stub WAV generation script:** complete.
+   - Added `ACE-Step-Plugin\scripts\generate-stub-juce-assets.py`.
+   - Generates minimal silent WAV files for missing assets.
+   - Documents that these are stub files for build-only.
 
-2. **Update documentation:**
-   - Add note in `validate-host-load.md` explaining stub asset workaround
-   - Clarify that AudioPluginHost validation focuses on ACE-Step VST3 load, not demo plugins
+2. **Update documentation:** complete.
+   - Added note in `validate-host-load.md` explaining stub asset workaround.
+   - Clarified that AudioPluginHost validation focuses on ACE-Step VST3 load, not demo plugins.
 
 3. **Build AudioPluginHost:**
    ```powershell
@@ -228,8 +228,6 @@ This does not enable validation of AudioPluginHost's demo plugins, but those are
 
 5. **Mark Task 2.7 complete** once validation passes
 
-**Effort:** Low (1-2 hours)  
-**Risk:** Low (stub files only affect demo plugins, not ACE-Step validation)  
 **Blockers:** None
 
 ---
@@ -270,10 +268,10 @@ From `openspec\changes\add-juce-vst3-plugin\tasks.md` line 16:
 
 ### What Is Actually Being Validated
 
-- ✅ ACE-Step VST3 scan/load in AudioPluginHost
-- ✅ ACE-Step editor opens without crash
-- ✅ ACE-Step audio pass-through (input → output unchanged)
-- ❌ AudioPluginHost demo plugin functionality (NOT required for Task 2.7)
+- ACE-Step VST3 scan/load in AudioPluginHost
+- ACE-Step editor opens without crash
+- ACE-Step audio pass-through (input -> output unchanged)
+- AudioPluginHost demo plugin functionality is not required for Task 2.7
 
 ### Conclusion
 
@@ -288,7 +286,9 @@ The missing assets are a **JUCE AudioPluginHost build blocker**, not an **ACE-St
 
 ## Files Changed
 
-None yet (investigation only). Proposed next step: create stub asset generation script.
+- Added `ACE-Step-Plugin\scripts\generate-stub-juce-assets.py`.
+- Updated `ACE-Step-Plugin\docs\validate-host-load.md`.
+- Updated `ACE-Step-Plugin\.gitignore` so generated stub WAV files are not committed.
 
 ---
 
