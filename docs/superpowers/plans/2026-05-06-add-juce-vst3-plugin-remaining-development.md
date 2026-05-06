@@ -935,7 +935,7 @@ git push origin feat/add-juce-vst3-plugin-8-3-onwards
 - Test: `ACE-Step-Plugin\Tests\PresetStore_test.cpp`
 - Test: add focused editor-safe tests only if existing test harness supports headless component checks.
 
-- [ ] **Step 1: Add browser controls to editor**
+- [x] **Step 1: Add browser controls to editor**
 
 Add:
 
@@ -948,11 +948,11 @@ juce::TextButton presetRenameButton { "Rename" };
 juce::TextButton presetDeleteButton { "Delete" };
 ```
 
-- [ ] **Step 2: Wire load without generation**
+- [x] **Step 2: Wire load without generation**
 
 Loading a preset must update prompt/lyrics/parameter fields only. It must not call `engine.submitAsync(...)` and must not start downloads.
 
-- [ ] **Step 3: Add tests for no auto-generation**
+- [x] **Step 3: Add tests for no auto-generation**
 
 Use a fake store and fake generation submit callback. Assert load updates the editor model state and generation count remains zero:
 
@@ -960,7 +960,7 @@ Use a fake store and fake generation submit callback. Assert load updates the ed
 expectEquals(fakeGenerationSubmitCount, 0);
 ```
 
-- [ ] **Step 4: Run validation and commit**
+- [x] **Step 4: Run validation and commit**
 
 Mark tasks 10.3-10.5 complete only after UI, no-auto-generation behavior, and tests exist.
 

@@ -88,9 +88,9 @@
 
 - [x] 10.1 Define a versioned preset JSON schema for prompt, lyrics, duration, seeds, CFG scale, scheduler, reference options, stem options, MIDI options, and export preferences.
 - [x] 10.2 Implement preset save, load, rename, delete, and schema migration services.
-- [ ] 10.3 Add preset browser UI with listing, search/filtering, load, rename, delete, and save-current actions.
-- [ ] 10.4 Ensure loading a preset updates editor fields without starting generation automatically.
-- [ ] 10.5 Add tests for preset persistence, load behavior, migration, invalid preset errors, and DAW-independent storage paths.
+- [x] 10.3 Add preset browser UI with listing, search/filtering, load, rename, delete, and save-current actions.
+- [x] 10.4 Ensure loading a preset updates editor fields without starting generation automatically.
+- [x] 10.5 Add tests for preset persistence, load behavior, migration, invalid preset errors, and DAW-independent storage paths.
 
 ## 11. Host Behavior Compatibility
 

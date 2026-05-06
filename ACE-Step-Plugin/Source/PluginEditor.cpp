@@ -9,8 +9,8 @@ namespace
 {
 
 constexpr auto kEditorWidth = 520;
-constexpr auto kEditorHeightBase = 240;
-constexpr auto kEditorHeightWithSetup = 370;
+constexpr auto kEditorHeightBase = 322;
+constexpr auto kEditorHeightWithSetup = 452;
 
 juce::String formatDownloadSize(juce::int64 bytes)
 {
@@ -24,7 +24,8 @@ juce::String formatDownloadSize(juce::int64 bytes)
 
 AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& processor)
     : AudioProcessorEditor(&processor),
-      audioProcessor(processor)
+      audioProcessor(processor),
+      presetBrowserModel(acestep_plugin::PresetStore::getDefaultPresetDirectory())
 {
     titleLabel.setText("ACE-Step", juce::dontSendNotification);
     titleLabel.setJustificationType(juce::Justification::centredLeft);
@@ -78,6 +79,37 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     addChildComponent(modelSetupButton);
 
     refreshModelSetupPanel();
+    presetBrowserPanel.setOnSave([this] {
+        if (const auto& preset = presetBrowserModel.getCurrentPreset())
+        {
+            const auto result = presetBrowserModel.savePreset(*preset);
+            statusLabel.setText(result.success ? "Preset saved." : result.errorMessage,
+                juce::dontSendNotification);
+            refreshPresetBrowser();
+        }
+    });
+    presetBrowserPanel.setOnLoad([this] { loadSelectedPreset(); });
+    presetBrowserPanel.setOnRename([this] {
+        if (const auto& preset = presetBrowserModel.getCurrentPreset())
+        {
+            const auto result = presetBrowserModel.renamePreset(preset->id, preset->name);
+            statusLabel.setText(result.success ? "Preset renamed." : result.errorMessage,
+                juce::dontSendNotification);
+            refreshPresetBrowser();
+        }
+    });
+    presetBrowserPanel.setOnDelete([this] {
+        const auto presetId = presetBrowserPanel.getSelectedPresetId();
+        if (presetId.isNotEmpty())
+        {
+            const auto result = presetBrowserModel.deletePreset(presetId);
+            statusLabel.setText(result.success ? "Preset deleted." : result.errorMessage,
+                juce::dontSendNotification);
+            refreshPresetBrowser();
+        }
+    });
+    addAndMakeVisible(presetBrowserPanel);
+    refreshPresetBrowser();
 
     startTimerHz(30);
     setSize(kEditorWidth, showModelSetup ? kEditorHeightWithSetup : kEditorHeightBase);
@@ -117,6 +149,25 @@ void AceStepAudioProcessorEditor::refreshModelSetupPanel()
     modelSetupButton.setVisible(showModelSetup);
 }
 
+void AceStepAudioProcessorEditor::refreshPresetBrowser()
+{
+    const auto result = presetBrowserModel.refresh();
+    if (result.success)
+        presetBrowserPanel.setPresets(presetBrowserModel.getPresets());
+}
+
+void AceStepAudioProcessorEditor::loadSelectedPreset()
+{
+    const auto presetId = presetBrowserPanel.getSelectedPresetId();
+    if (presetId.isEmpty())
+        return;
+
+    const auto result = presetBrowserModel.loadPreset(presetId);
+    statusLabel.setText(
+        result.success ? "Preset loaded: " + result.preset.name : result.errorMessage,
+        juce::dontSendNotification);
+}
+
 void AceStepAudioProcessorEditor::paint(juce::Graphics& graphics)
 {
     graphics.fillAll(juce::Colour(0xff171a1f));
@@ -144,6 +195,7 @@ void AceStepAudioProcessorEditor::resized()
     clearButton.setBounds(controls.removeFromLeft(96).reduced(8, 0));
 
     statusLabel.setBounds(bounds.removeFromTop(28));
+    presetBrowserPanel.setBounds(bounds.removeFromTop(78));
 
     if (showModelSetup)
     {

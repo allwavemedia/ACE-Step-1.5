@@ -61,6 +61,8 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/Presets/PresetStore.cpp
     Source/Presets/PresetStore.h
     Source/Presets/PresetTypes.h
+    Source/Presets/PresetBrowserModel.cpp
+    Source/Presets/PresetBrowserModel.h
     Source/Stems/StemCapability.cpp
     Source/Stems/StemCapability.h
     Source/Stems/StemTypes.h
@@ -82,6 +84,8 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/UI/GeneratedAssetHistoryView.h
     Source/UI/GeneratedAssetTile.cpp
     Source/UI/GeneratedAssetTile.h
+    Source/UI/PresetBrowserPanel.cpp
+    Source/UI/PresetBrowserPanel.h
     Source/UI/PreviewPlayer.cpp
     Source/UI/PreviewPlayer.h
     Source/PluginEditor.cpp
@@ -157,6 +161,8 @@ if(ACESTEP_BUILD_TESTS)
             Source/Presets/PresetStore.cpp
             Source/Presets/PresetStore.h
             Source/Presets/PresetTypes.h
+            Source/Presets/PresetBrowserModel.cpp
+            Source/Presets/PresetBrowserModel.h
             Source/Stems/StemCapability.cpp
             Source/Stems/StemCapability.h
             Source/Stems/StemTypes.h
@@ -178,6 +184,8 @@ if(ACESTEP_BUILD_TESTS)
             Source/UI/GeneratedAssetHistoryView.h
             Source/UI/GeneratedAssetTile.cpp
             Source/UI/GeneratedAssetTile.h
+            Source/UI/PresetBrowserPanel.cpp
+            Source/UI/PresetBrowserPanel.h
             Source/UI/PreviewPlayer.cpp
             Source/UI/PreviewPlayer.h
             Tests/AceStepCApi_test.cpp
@@ -198,6 +206,8 @@ if(ACESTEP_BUILD_TESTS)
             Tests/ModelSetupState_test.cpp
             Tests/MidiFileWriter_test.cpp
             Tests/PresetStore_test.cpp
+            Tests/PresetBrowserModel_test.cpp
+            Tests/PresetBrowserPanel_test.cpp
             Tests/PreviewPlayer_test.cpp
             Tests/ReferenceAudioBufferBasic_test.cpp
             Tests/ReferenceAudioBufferConcurrent_test.cpp
