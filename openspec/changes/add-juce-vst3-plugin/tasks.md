@@ -67,7 +67,8 @@
 
 ## 8. MIDI Export
 
-- [ ] 8.1 Verify whether `acestep.cpp` exposes reliable note/event data or whether a post-processing analysis path is required for MIDI extraction.
+- [x] 8.1 Verify whether `acestep.cpp` exposes reliable note/event data or whether a post-processing analysis path is required for MIDI extraction.
+  Evidence: vendored `acestep.cpp` exposes WAV generation through `acestep_generate_wav`; its request/API surface carries generated `audio_codes`/FSQ tokens, not note, onset, or MIDI event data. No MIDI API is present in `src/` or `docs/`, so plugin MIDI export must remain unavailable until a post-processing analysis path is added.
 - [ ] 8.2 Add per-asset MIDI availability state that disables MIDI export when reliable note/event data is unavailable.
 - [ ] 8.3 Implement standards-compliant `.mid` file writing for eligible generated assets.
 - [ ] 8.4 Add MIDI drag-and-drop and Save As export paths with copy semantics.
