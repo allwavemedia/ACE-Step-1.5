@@ -40,7 +40,19 @@ Builds the stub plugin only — no CUDA or Vulkan required.
 This script configures, builds, and verifies that the stub VST3 bundle exists.
 Useful for host-load testing and CI on machines without GPU SDKs.
 
-## Real Backend Build (Task 3.7 — requires CUDA Toolkit 12.8)
+## Real Backend Build (Task 3.7 — requires CUDA Toolkit 12.8 and Vulkan SDK)
+
+### Prerequisites Validation Status
+
+**Task 3.7 and 12.3 Blocker:** Real bundle dependency validation requires:
+- ✅ `cmake` — Found
+- ✅ `dumpbin` — Found (Visual Studio 2022 installation)
+- ❌ `nvcc` — Missing (CUDA Toolkit 12.8 not installed)
+- ❌ `glslc` — Missing (Vulkan SDK not installed)
+
+Real backend build cannot proceed until CUDA Toolkit 12.8 and Vulkan SDK are installed.
+Tasks 3.7 and 12.3 remain unchecked until a successful real build with CPU, CUDA, and Vulkan
+backend DLL validation can be completed.
 
 Verify CUDA before building:
 
