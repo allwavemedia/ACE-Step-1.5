@@ -14,6 +14,7 @@
 - [x] 2.5 Add minimal `Source/PluginEditor.h` and `Source/PluginEditor.cpp` with a stub editor that opens reliably in JUCE AudioPluginHost.
 - [x] 2.6 Add `.vscode/settings.json`, `tasks.json`, and `launch.json` for MSVC kit selection, RelWithDebInfo VST3 build, and AudioPluginHost debugging.
 - [ ] 2.7 Verify the initial VST3 bundle loads in JUCE AudioPluginHost and Reaper with unchanged audio pass-through.
+  **Blocker:** AudioPluginHost build fails during BinaryData generation due to 4 missing JUCE example assets (cassette_recorder.wav, cello.wav, guitar_amp.wav, reverb_ir.wav). Reaper automated validation PASS (scan/load + pass-through at commit `cec0dd941e7b`). Evidence recorded in `ACE-Step-Plugin\docs\validate-host-load.md` and `ACE-Step-Plugin\docs\host-compatibility-matrix.md`. Task 2.7 cannot be checked until AudioPluginHost validation passes.
 
 ## 3. ACE-Step C++ Backend Integration
 

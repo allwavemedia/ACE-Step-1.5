@@ -25,10 +25,10 @@ Validation run:
 
 | Field | Value |
 |---|---|
-| Build commit | `e445150f76db` |
+| Build commit | `cec0dd941e7b` |
 | OS | Microsoft Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
 | Stub bundle | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
-| Result | Evidence collection in progress; OpenSpec validation gates remain unchecked until the records below pass. |
+| Result | Task 2.7 blocked: AudioPluginHost build fails due to missing JUCE example assets. Reaper automated validation passes. |
 
 The CLI validation-prep environment can build the stub VST3 bundle and can run
 isolated Reaper automation. Full evidence-gated manual host validation remains
@@ -56,7 +56,7 @@ commit, pass/fail results, and notes from interactive DAW validation.
 | Host | REAPER v7.71/x64 |
 | Host executable | `C:\Program Files\REAPER (x64)\reaper.exe` |
 | OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
-| Build commit | `7909e8460d88` |
+| Build commit | `cec0dd941e7b` (Task 2.7 validation), `7909e8460d88` (prior automated run) |
 | Bundle path | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
 | Tester | Copilot CLI automated ReaScript validation |
 | Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\reaper-validation-ace\` |
@@ -73,6 +73,8 @@ Recorded results:
   `baseline_peak=0.250000000`, `enabled_peak=0.250000000`,
   `peak_diff=0.000000000`, `baseline_rms=0.176771017`,
   `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
+
+**Task 2.7 status:** Reaper validation PASS, but AudioPluginHost validation BLOCKED by missing JUCE assets. Task 2.7 cannot be marked complete until both hosts pass.
 
 Remaining Reaper checks that still require interactive/manual validation:
 editor layout details, capture controls, generation UI state, WAV Save As, WAV
