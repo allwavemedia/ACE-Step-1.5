@@ -58,23 +58,43 @@ AudioPluginHost lives at:
 ACE-Step-Plugin\External\JUCE\extras\AudioPluginHost\
 ```
 
-If a pre-built binary is not available, build it with CMake + Visual Studio
-2022:
+If a pre-built binary is not available, build it from the vendored JUCE root
+with CMake + Visual Studio 2022. The `extras\AudioPluginHost\CMakeLists.txt`
+file is included by the JUCE root project and is not a standalone CMake entry
+point.
 
 ```powershell
-cd ACE-Step-Plugin\External\JUCE\extras\AudioPluginHost
+cd ACE-Step-Plugin\External\JUCE
 
-cmake -B build -G "Visual Studio 17 2022" -A x64 `
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+cmake -B build-audio-plugin-host -G "Visual Studio 17 2022" -A x64 `
+    -DJUCE_BUILD_EXTRAS=ON `
+    -DJUCE_BUILD_EXAMPLES=OFF
 
-cmake --build build --config RelWithDebInfo
+cmake --build build-audio-plugin-host --config RelWithDebInfo --target AudioPluginHost
 ```
 
 The resulting executable will be at a path similar to:
 
 ```
-ACE-Step-Plugin\External\JUCE\extras\AudioPluginHost\build\AudioPluginHost_artefacts\RelWithDebInfo\AudioPluginHost.exe
+ACE-Step-Plugin\External\JUCE\build-audio-plugin-host\extras\AudioPluginHost\AudioPluginHost_artefacts\RelWithDebInfo\AudioPluginHost.exe
 ```
+
+If the `AudioPluginHostData` target fails while generating `BinaryData*.cpp`
+with an unhandled exception, check that the vendored JUCE example assets
+referenced by `extras\AudioPluginHost\CMakeLists.txt` are present:
+
+```text
+ACE-Step-Plugin\External\JUCE\examples\Assets\cassette_recorder.wav
+ACE-Step-Plugin\External\JUCE\examples\Assets\cello.wav
+ACE-Step-Plugin\External\JUCE\examples\Assets\guitar_amp.wav
+ACE-Step-Plugin\External\JUCE\examples\Assets\reverb_ir.wav
+ACE-Step-Plugin\External\JUCE\examples\Assets\proaudio.path
+ACE-Step-Plugin\External\JUCE\examples\Assets\singing.ogg
+```
+
+Do not mark this task complete with a failed AudioPluginHost build. Restore the
+missing upstream JUCE assets or use a known-good prebuilt AudioPluginHost, then
+run the manual checklist below.
 
 ### 2. Add the VST3 scan path
 

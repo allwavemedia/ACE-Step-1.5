@@ -19,6 +19,27 @@ The supported v1 validation matrix is Windows VST3 in these hosts:
 Do not convert any pending cell to pass/fail without recording the exact host
 version, bundle path, build commit, tester, and result.
 
+## Current validation blocker
+
+The CLI validation-prep environment used for build commit `4c6116d89007`
+on Windows 11 Pro Insider Preview 10.0.26300 can build the stub VST3 bundle,
+but it cannot complete evidence-gated manual host validation because the target
+hosts are not installed:
+
+| Host | Checked executable path | Result |
+|---|---|---|
+| Reaper x64 | `C:\Program Files\REAPER (x64)\reaper.exe` | Missing |
+| Reaper | `C:\Program Files\REAPER\reaper.exe` | Missing |
+| FL Studio 21 | `C:\Program Files\Image-Line\FL Studio 21\FL64.exe` | Missing |
+| Cubase 13 | `C:\Program Files\Steinberg\Cubase 13\Cubase13.exe` | Missing |
+| Studio One 6 | `C:\Program Files\PreSonus\Studio One 6\Studio One.exe` | Missing |
+| Ableton Live 12 Suite | `C:\ProgramData\Ableton\Live 12 Suite\Program\Ableton Live 12 Suite.exe` | Missing |
+| Bitwig Studio | `C:\Program Files\Bitwig Studio\Bitwig Studio.exe` | Missing |
+
+This blocker is not a pass/fail result for Task 11.3 or 12.4. Those tasks
+remain pending until a tester records real host versions, bundle path, build
+commit, pass/fail results, and notes from interactive DAW validation.
+
 ## Plugin-owned behavior
 
 The plugin owns these behaviors and should keep them consistent across hosts:
