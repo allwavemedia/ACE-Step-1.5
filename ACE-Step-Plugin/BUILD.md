@@ -21,6 +21,23 @@ End users do not need CUDA Toolkit or Vulkan SDK. Those SDKs are build-time
 requirements only; the built VST3 bundle ships the GGML backend DLLs beside the
 plugin binary.
 
+### Real Backend Validation Status
+
+Validation run at commit `6f6d617fba2c` checked the release dependency tools from
+the standard PowerShell environment:
+
+| Tool | Result |
+|---|---|
+| `cmake` | Found at `C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe` |
+| `dumpbin` | Missing from `PATH`; run from a Visual Studio developer environment before dependency capture. |
+| `nvcc` | Missing; CUDA Toolkit 12.8 is required before real-backend validation. |
+| `glslc` | Missing; Vulkan SDK is required before Vulkan backend bundle validation. |
+
+OpenSpec tasks 3.7 and 12.3 remain unchecked until `dumpbin`, CUDA Toolkit
+12.8, and Vulkan SDK are available, the real backend VST3 builds, and the bundle
+directory plus `dumpbin /dependents` output prove the plugin DLL and CPU, CUDA,
+and Vulkan GGML backend DLL siblings.
+
 ## Vendored External Sources
 
 JUCE and `acestep.cpp` are currently checked in under `External/` as vendored

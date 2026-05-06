@@ -28,7 +28,7 @@ Validation run:
 | Build commit | `cec0dd941e7b` |
 | OS | Microsoft Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
 | Stub bundle | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
-| Result | Task 2.7 blocked: AudioPluginHost build fails due to missing JUCE example assets. Current run verified Reaper executable availability and stub bundle path only; prior automated PASS evidence exists at 7909e8460d88. |
+| Result | Task 2.7 blocked: AudioPluginHost build fails due to missing JUCE example assets. Current run verified Reaper executable availability and stub bundle path only; prior automated PASS evidence exists at 7909e8460d88. Real bundle validation for tasks 3.7 and 12.3 is blocked because `dumpbin`, CUDA Toolkit `nvcc`, and Vulkan SDK `glslc` are not available from the standard PowerShell environment. |
 
 The CLI validation-prep environment can build the stub VST3 bundle and can run
 isolated Reaper automation. Full evidence-gated manual host validation remains

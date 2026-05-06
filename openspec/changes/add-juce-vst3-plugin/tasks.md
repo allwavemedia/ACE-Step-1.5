@@ -25,6 +25,7 @@
 - [x] 3.5 Implement bundle-local GGML backend initialization that points the loader at the VST3 `Contents/x86_64-win/` directory.
 - [x] 3.6 Add `ACESTEP_PLUGIN_MODE=server` support that builds `ace-server` and bundles it as a sidecar only when selected.
 - [ ] 3.7 Verify `dumpbin /dependents` and bundle contents show expected plugin and GGML runtime DLL relationships.
+  **Blocker:** Real bundle dependency validation cannot run from the current PowerShell environment because `dumpbin` is not on `PATH`; CUDA Toolkit 12.8 (`nvcc`) and Vulkan SDK (`glslc`) are also unavailable. Evidence is recorded in `ACE-Step-Plugin\BUILD.md`.
 
 ## 4. Reference Audio Capture
 
@@ -107,6 +108,7 @@
 - [x] 12.2 Verify no allocation, logging, file I/O, mutex locking, or string construction occurs inside `processBlock` capture logic.
   Evidence: inspected `PluginProcessor::processBlock`; the audio callback only enters `ScopedNoDenormals`, ignores MIDI, calls `referenceAudioBuffer.push(buffer)`, and clears surplus output channels. `ReferenceAudioBuffer::push` uses atomics/preallocated storage and contains no allocation, logging, file I/O, mutex locking, or string construction on the audio thread.
 - [ ] 12.3 Verify the VST3 bundle contains the plugin DLL plus CPU, CUDA, and Vulkan GGML backend DLL siblings.
+  **Blocker:** CPU/CUDA/Vulkan backend sibling verification is pending until the real backend build can run with CUDA Toolkit 12.8, Vulkan SDK, and dependency tooling available. Evidence is recorded in `ACE-Step-Plugin\BUILD.md`.
 - [ ] 12.4 Verify external drag-and-drop in Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, with Save As as fallback.
 - [ ] 12.5 Verify missing model, checksum mismatch, out-of-memory, backend-load failure, cancellation, generation failure, MIDI unavailable state, stem failure, preset load failure, and host compatibility errors surface in the editor without crashing the host.
 - [x] 12.6 Update build and troubleshooting documentation with final external source pins, SDK versions, model manifest details, MIDI/stem capability details, preset storage details, and known host limitations.
