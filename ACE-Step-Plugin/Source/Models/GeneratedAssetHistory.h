@@ -8,6 +8,13 @@
 namespace acestep_plugin
 {
 
+/** Whether a generated asset can provide reliable MIDI note/event data. */
+enum class MidiExportAvailability
+{
+    unavailable,
+    available
+};
+
 /** Metadata for a single successfully generated WAV asset. */
 struct GeneratedAsset
 {
@@ -22,6 +29,9 @@ struct GeneratedAsset
 
     /** Wall-clock time when this asset was generated. */
     juce::Time timestamp;
+
+    /** MIDI export is unavailable until note/event data or analysis exists. */
+    MidiExportAvailability midiAvailability = MidiExportAvailability::unavailable;
 };
 
 /** Thread-safe ring buffer of the most recent generated assets.

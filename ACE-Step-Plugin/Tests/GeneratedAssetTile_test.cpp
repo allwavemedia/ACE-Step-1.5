@@ -48,6 +48,21 @@ public:
             tile.setOnSaveAs([](const GeneratedAsset&) {});
             expect(true);
         }
+
+        beginTest("MIDI export is disabled by default");
+        {
+            GeneratedAssetTile tile(makeTestAsset(0));
+            expect(!tile.canExportMidi());
+        }
+
+        beginTest("MIDI export is enabled when asset has reliable note data");
+        {
+            auto asset = makeTestAsset(0);
+            asset.midiAvailability = MidiExportAvailability::available;
+
+            GeneratedAssetTile tile(asset);
+            expect(tile.canExportMidi());
+        }
     }
 };
 

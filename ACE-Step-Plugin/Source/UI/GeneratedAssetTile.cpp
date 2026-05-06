@@ -29,10 +29,17 @@ GeneratedAssetTile::GeneratedAssetTile(const GeneratedAsset& a)
             onSaveAs(asset);
     };
 
+    const auto midiAvailable = canExportMidi();
+    midiExportButton.setButtonText(midiAvailable ? "MIDI" : "MIDI N/A");
+    midiExportButton.setEnabled(midiAvailable);
+    midiExportButton.setTooltip(
+        midiAvailable ? "Export MIDI" : "MIDI export unavailable: no reliable note/event data");
+
     addAndMakeVisible(filenameLabel);
     addAndMakeVisible(durationLabel);
     addAndMakeVisible(playStopButton);
     addAndMakeVisible(saveAsButton);
+    addAndMakeVisible(midiExportButton);
 }
 
 void GeneratedAssetTile::setPlaying(bool shouldPlay)
@@ -40,6 +47,11 @@ void GeneratedAssetTile::setPlaying(bool shouldPlay)
     playing = shouldPlay;
     playStopButton.setButtonText(playing ? "Stop" : "Play");
     repaint();
+}
+
+bool GeneratedAssetTile::canExportMidi() const noexcept
+{
+    return asset.midiAvailability == MidiExportAvailability::available;
 }
 
 void GeneratedAssetTile::paint(juce::Graphics& g)
@@ -68,6 +80,7 @@ void GeneratedAssetTile::resized()
     const auto buttonRow = bounds.removeFromBottom(26);
     playStopButton.setBounds(buttonRow.withWidth(60));
     saveAsButton.setBounds(buttonRow.withTrimmedLeft(64).withWidth(60));
+    midiExportButton.setBounds(buttonRow.withTrimmedLeft(128).withWidth(76));
 }
 
 void GeneratedAssetTile::mouseDown(const juce::MouseEvent& /*e*/)

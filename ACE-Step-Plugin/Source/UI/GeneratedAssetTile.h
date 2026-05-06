@@ -33,6 +33,7 @@ public:
     /** Update the playback state flag and repaint the play/stop button. */
     void setPlaying(bool shouldPlay);
     bool isPlaying() const noexcept { return playing; }
+    bool canExportMidi() const noexcept;
 
     void setOnSaveAs(SaveAsCallback cb) { onSaveAs = std::move(cb); }
     void setOnPlayStop(PlayStopCallback cb) { onPlayStop = std::move(cb); }
@@ -49,6 +50,7 @@ private:
 
     juce::TextButton playStopButton { "Play" };
     juce::TextButton saveAsButton { "Save As" };
+    juce::TextButton midiExportButton { "MIDI N/A" };
     juce::Label filenameLabel;
     juce::Label durationLabel;
 
