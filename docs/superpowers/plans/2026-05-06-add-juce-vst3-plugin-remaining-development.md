@@ -859,7 +859,7 @@ git push origin feat/add-juce-vst3-plugin-8-3-onwards
 - Test: `ACE-Step-Plugin\Tests\PresetStore_test.cpp`
 - Modify: `ACE-Step-Plugin\CMakeLists.txt`
 
-- [ ] **Step 1: Write failing preset store tests**
+- [x] **Step 1: Write failing preset store tests**
 
 Create tests for save/load/rename/delete and invalid JSON. Use `juce::File::createTempFile("presets")`, delete it, then create it as a directory.
 
@@ -872,7 +872,7 @@ expectEquals(loaded.schemaVersion, 1);
 expect(!invalidResult.success);
 ```
 
-- [ ] **Step 2: Define preset value type**
+- [x] **Step 2: Define preset value type**
 
 Create `PresetTypes.h`:
 
@@ -905,7 +905,7 @@ struct PresetOperationResult
 } // namespace acestep_plugin
 ```
 
-- [ ] **Step 3: Implement `PresetStore`**
+- [x] **Step 3: Implement `PresetStore`**
 
 `PresetStore` should:
 
@@ -915,7 +915,7 @@ struct PresetOperationResult
 - Reject invalid JSON with a clear error result.
 - Migrate schema version 0 by setting `schemaVersion = 1` and preserving known fields.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 Run standard validation, mark tasks 10.1 and 10.2 complete, then commit:
 
