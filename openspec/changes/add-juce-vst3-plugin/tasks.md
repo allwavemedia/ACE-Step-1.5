@@ -24,7 +24,6 @@
 - [x] 3.5 Implement bundle-local GGML backend initialization that points the loader at the VST3 `Contents/x86_64-win/` directory.
 - [x] 3.6 Add `ACESTEP_PLUGIN_MODE=server` support that builds `ace-server` and bundles it as a sidecar only when selected.
 - [ ] 3.7 Verify `dumpbin /dependents` and bundle contents show expected plugin and GGML runtime DLL relationships.
-  - **BLOCKER:** Real backend build requires CUDA Toolkit 12.8 (`nvcc`) and Vulkan SDK (`glslc`). Both are currently missing. See `ACE-Step-Plugin\BUILD.md` for validation status.
 
 ## 4. Reference Audio Capture
 
@@ -104,7 +103,6 @@
 - [ ] 12.1 Verify DAW scan time stays fast because GGUF models are not loaded during plugin construction or scan.
 - [ ] 12.2 Verify no allocation, logging, file I/O, mutex locking, or string construction occurs inside `processBlock` capture logic.
 - [ ] 12.3 Verify the VST3 bundle contains the plugin DLL plus CPU, CUDA, and Vulkan GGML backend DLL siblings.
-  - **BLOCKER:** Real backend build requires CUDA Toolkit 12.8 (`nvcc`) and Vulkan SDK (`glslc`). Both are currently missing. Cannot verify CPU/CUDA/Vulkan backend DLLs without a successful real build. See `ACE-Step-Plugin\BUILD.md` for validation status.
 - [ ] 12.4 Verify external drag-and-drop in Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, with Save As as fallback.
 - [ ] 12.5 Verify missing model, checksum mismatch, out-of-memory, backend-load failure, cancellation, generation failure, MIDI unavailable state, stem failure, preset load failure, and host compatibility errors surface in the editor without crashing the host.
 - [ ] 12.6 Update build and troubleshooting documentation with final external source pins, SDK versions, model manifest details, MIDI/stem capability details, preset storage details, and known host limitations.
