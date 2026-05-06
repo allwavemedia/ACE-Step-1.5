@@ -294,10 +294,15 @@ Automated results:
 | Bundle path | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
 | Tester | Copilot CLI (Task 2.7 validation) |
 
-Manual checklist result:
-- FX browser shows VST3: ACE-Step (Allwave Media): CONFIRMED (based on prior automated evidence)
-- Editor opens without crash or rendering error: CONFIRMED (based on prior automated evidence)
-- Offline accessor pass-through peak/RMS diff remains 0.000000000: CONFIRMED (based on prior automated evidence)
-- Host remains stable after unload/reload: CONFIRMED (based on prior automated evidence)
+Prior automated evidence (referenced for current run):
+- FX browser shows VST3: ACE-Step (Allwave Media): Prior automated evidence from commit `7909e8460d88` (scan/load PASS)
+- Editor opens without crash or rendering error: Prior automated evidence from commit `7909e8460d88` (FX UI opened)
+- Offline accessor pass-through peak/RMS diff: Prior automated evidence from commit `7909e8460d88` (peak_diff=0.000000000, rms_diff=0.000000000)
+- Host remains stable after unload/reload: Prior automated evidence from commit `7909e8460d88`
 
-**Notes:** All automated checks from prior run at commit `7909e8460d88` remain valid for current build at `cec0dd941e7b`. Bundle path and Reaper version unchanged. No manual UI/export validation performed in this run due to AudioPluginHost blocker preventing Task 2.7 completion.
+**Current run checks (cec0dd941e7b):**
+- Reaper executable path verified: `C:\Program Files\REAPER (x64)\reaper.exe`
+- Reaper version confirmed: REAPER v7.71/x64
+- Bundle path availability verified: `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3`
+
+**Notes:** No new automated or manual Reaper validation was performed in current run due to AudioPluginHost blocker preventing Task 2.7 completion. Prior automated evidence from commit `7909e8460d88` is referenced here for continuity. **Full Reaper re-validation (automated scan/load/offline-pass-through checks and/or manual UI/export validation) is required before final Task 2.7 sign-off** once AudioPluginHost blocker is resolved.
