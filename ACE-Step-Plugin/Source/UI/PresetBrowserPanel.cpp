@@ -12,9 +12,11 @@ PresetBrowserPanel::PresetBrowserPanel()
 
     presetFilterBox.setTextToShowWhenEmpty("Filter presets", juce::Colours::grey);
     presetFilterBox.onTextChange = [this] { applyFilter(); };
+    presetRenameBox.setTextToShowWhenEmpty("New preset name", juce::Colours::grey);
 
     addAndMakeVisible(presetHeadingLabel);
     addAndMakeVisible(presetFilterBox);
+    addAndMakeVisible(presetRenameBox);
     addAndMakeVisible(presetListBox);
     addAndMakeVisible(presetSaveButton);
     addAndMakeVisible(presetLoadButton);
@@ -32,6 +34,11 @@ void PresetBrowserPanel::setFilterText(const juce::String& filterText)
 {
     presetFilterBox.setText(filterText, false);
     applyFilter();
+}
+
+void PresetBrowserPanel::setRenameText(const juce::String& name)
+{
+    presetRenameBox.setText(name, false);
 }
 
 void PresetBrowserPanel::applyFilter()
@@ -69,6 +76,11 @@ juce::String PresetBrowserPanel::getSelectedPresetId() const
     return presetIds[static_cast<size_t>(selectedIndex)];
 }
 
+juce::String PresetBrowserPanel::getRenameText() const
+{
+    return presetRenameBox.getText().trim();
+}
+
 void PresetBrowserPanel::setOnSave(ActionCallback callback)
 {
     presetSaveButton.onClick = std::move(callback);
@@ -94,6 +106,7 @@ void PresetBrowserPanel::resized()
     auto bounds = getLocalBounds();
     presetHeadingLabel.setBounds(bounds.removeFromTop(22));
     presetFilterBox.setBounds(bounds.removeFromTop(24));
+    presetRenameBox.setBounds(bounds.removeFromTop(24));
 
     auto row = bounds.removeFromTop(28);
     presetListBox.setBounds(row.removeFromLeft(170));

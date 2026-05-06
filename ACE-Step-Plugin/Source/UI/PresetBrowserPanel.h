@@ -20,8 +20,10 @@ public:
 
     void setPresets(const std::vector<GenerationPreset>& presets);
     void setFilterText(const juce::String& filterText);
+    void setRenameText(const juce::String& name);
     int getPresetCount() const;
     juce::String getSelectedPresetId() const;
+    juce::String getRenameText() const;
 
     void setOnSave(ActionCallback callback);
     void setOnLoad(ActionCallback callback);
@@ -35,6 +37,7 @@ private:
 
     juce::Label presetHeadingLabel;
     juce::TextEditor presetFilterBox;
+    juce::TextEditor presetRenameBox;
     juce::ComboBox presetListBox;
     juce::TextButton presetSaveButton { "Save Preset" };
     juce::TextButton presetLoadButton { "Load" };

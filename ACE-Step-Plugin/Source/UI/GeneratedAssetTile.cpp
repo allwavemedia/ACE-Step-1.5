@@ -90,6 +90,14 @@ int GeneratedAssetTile::getExportableStemCount() const
     return count;
 }
 
+juce::File GeneratedAssetTile::getMidiExportFile() const
+{
+    if (canExportMidi() && asset.midiPath.isNotEmpty())
+        return juce::File(asset.midiPath);
+
+    return {};
+}
+
 juce::File GeneratedAssetTile::getStemExportFileAt(int exportableStemIndex) const
 {
     if (const auto* stem = getExportableStem(exportableStemIndex))
@@ -217,12 +225,8 @@ juce::File GeneratedAssetTile::getExternalDragFile(
             return getStemExportFileAt(index);
     }
 
-    if (midiExportButton.getBounds().contains(mouseDownPosition)
-        && canExportMidi()
-        && asset.midiPath.isNotEmpty())
-    {
-        return juce::File(asset.midiPath);
-    }
+    if (midiExportButton.getBounds().contains(mouseDownPosition))
+        return getMidiExportFile();
 
     return juce::File(asset.outputPath);
 }

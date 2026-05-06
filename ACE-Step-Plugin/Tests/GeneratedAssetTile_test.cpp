@@ -80,6 +80,19 @@ public:
             GeneratedAssetTile tile(asset);
             expect(tile.canExportMidi());
             expectEquals(tile.getAsset().midiPath, juce::String("C:\\temp\\generated.mid"));
+            expectEquals(
+                tile.getMidiExportFile().getFullPathName(),
+                juce::String("C:\\temp\\generated.mid"));
+        }
+
+        beginTest("MIDI export file is empty when no MIDI path exists");
+        {
+            auto asset = makeTestAsset(0);
+            asset.midiAvailability = MidiExportAvailability::available;
+
+            GeneratedAssetTile tile(asset);
+            expect(tile.canExportMidi());
+            expect(tile.getMidiExportFile().getFullPathName().isEmpty());
         }
 
         beginTest("stem export callback is not required when stems are absent");

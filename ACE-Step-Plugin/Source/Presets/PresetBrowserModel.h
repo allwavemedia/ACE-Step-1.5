@@ -24,12 +24,14 @@ public:
 
     void setGenerationSubmitCallback(GenerationSubmitCallback callback);
     const std::optional<GenerationPreset>& getCurrentPreset() const noexcept;
+    const std::optional<GenerationRequest>& getCurrentRequest() const noexcept;
     const std::vector<GenerationPreset>& getPresets() const noexcept;
 
 private:
     PresetStore store;
     std::vector<GenerationPreset> presets;
     std::optional<GenerationPreset> currentPreset;
+    std::optional<GenerationRequest> currentRequest;
     GenerationSubmitCallback generationSubmitCallback;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PresetBrowserModel)

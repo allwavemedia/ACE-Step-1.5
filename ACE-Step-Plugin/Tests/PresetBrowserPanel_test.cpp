@@ -39,6 +39,13 @@ public:
             expectEquals(panel.getPresetCount(), 1);
             expectEquals(panel.getSelectedPresetId(), juce::String("drum-sketch"));
         }
+
+        beginTest("rename text accepts user-provided preset name");
+        {
+            PresetBrowserPanel panel;
+            panel.setRenameText("Renamed sketch");
+            expectEquals(panel.getRenameText(), juce::String("Renamed sketch"));
+        }
     }
 };
 

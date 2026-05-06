@@ -139,12 +139,12 @@ PresetOperationResult PresetStore::save(const GenerationPreset& preset) const
         return { false, "Could not create preset directory: " + directory.getFullPathName() };
 
     const auto destination = getPresetFile(preset.id);
-    const auto temporary = destination.getSiblingFile(destination.getFileName() + ".tmp");
-    if (!temporary.replaceWithText(juce::JSON::toString(makeJson(preset), true)))
-        return { false, "Could not write temporary preset file: " + temporary.getFullPathName() };
+    juce::TemporaryFile temporary(destination, juce::TemporaryFile::useHiddenFile);
+    if (!temporary.getFile().replaceWithText(juce::JSON::toString(makeJson(preset), true)))
+        return { false, "Could not write temporary preset file: "
+            + temporary.getFile().getFullPathName() };
 
-    destination.deleteFile();
-    if (!temporary.moveFileTo(destination))
+    if (!temporary.overwriteTargetFileWithTemporary())
         return { false, "Could not replace preset file: " + destination.getFullPathName() };
 
     return { true, {} };

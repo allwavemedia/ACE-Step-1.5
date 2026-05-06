@@ -15,6 +15,7 @@ public:
         beginTest("saves and loads versioned generation preset JSON");
         {
             const auto directory = uniquePresetDirectory("acestep-presets-save-load");
+            expect(directory.isDirectory(), "precondition: created preset directory");
             PresetStore store(directory);
 
             auto preset = makePreset();
@@ -40,6 +41,7 @@ public:
         beginTest("rename updates preset name without changing id");
         {
             const auto directory = uniquePresetDirectory("acestep-presets-rename");
+            expect(directory.isDirectory(), "precondition: created preset directory");
             PresetStore store(directory);
             expect(store.save(makePreset()).success);
 
@@ -57,6 +59,7 @@ public:
         beginTest("delete removes preset file");
         {
             const auto directory = uniquePresetDirectory("acestep-presets-delete");
+            expect(directory.isDirectory(), "precondition: created preset directory");
             PresetStore store(directory);
             expect(store.save(makePreset()).success);
 
@@ -70,6 +73,7 @@ public:
         beginTest("invalid JSON returns explicit failure");
         {
             const auto directory = uniquePresetDirectory("acestep-presets-invalid");
+            expect(directory.isDirectory(), "precondition: created preset directory");
             expect(directory.getChildFile("broken.json").replaceWithText("{"));
 
             PresetStore store(directory);
@@ -83,6 +87,7 @@ public:
         beginTest("schema version zero migrates to current schema");
         {
             const auto directory = uniquePresetDirectory("acestep-presets-migrate");
+            expect(directory.isDirectory(), "precondition: created preset directory");
             expect(directory.getChildFile("legacy.json").replaceWithText(
                 R"json({"schemaVersion":0,"id":"legacy","name":"Legacy","prompt":"old prompt"})json"));
 
@@ -123,8 +128,8 @@ private:
         const auto file = juce::File::createTempFile(prefix);
         file.deleteFile();
         const auto created = file.createDirectory();
-        juce::ignoreUnused(created);
-        jassert(created);
+        if (!created)
+            return {};
         return file;
     }
 };

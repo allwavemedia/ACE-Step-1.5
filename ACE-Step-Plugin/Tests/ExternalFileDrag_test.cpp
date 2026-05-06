@@ -27,7 +27,7 @@ public:
 
             // Use a temp file so the existence check passes.
             juce::TemporaryFile tmp(".wav");
-            tmp.getFile().create();
+            expect(tmp.getFile().create(), "precondition: created WAV temp file");
 
             const bool result =
                 ExternalFileDrag::startCopyDrag(tmp.getFile(), performer);
@@ -64,7 +64,7 @@ public:
             };
 
             juce::TemporaryFile tmp(".mid");
-            tmp.getFile().create();
+            expect(tmp.getFile().create(), "precondition: created MIDI temp file");
 
             const bool result =
                 ExternalFileDrag::startCopyDrag(tmp.getFile(), performer);

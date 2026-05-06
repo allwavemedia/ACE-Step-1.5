@@ -40,6 +40,7 @@ public:
     bool isPlaying() const noexcept { return playing; }
     bool canExportMidi() const noexcept;
     int getExportableStemCount() const;
+    juce::File getMidiExportFile() const;
     juce::File getStemExportFileAt(int exportableStemIndex) const;
     bool toggleStemPreviewAt(int exportableStemIndex);
     bool exportStemAt(int exportableStemIndex);

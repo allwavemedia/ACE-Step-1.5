@@ -43,17 +43,28 @@ public:
 
             const auto* track = midiFile.getTrack(0);
             expect(track != nullptr);
-            expect(track->getNumEvents() >= 4);
+            expect(track->getNumEvents() >= 5);
 
-            const auto* firstEvent = track->getEventPointer(0);
-            expect(firstEvent->message.isNoteOn());
-            expectEquals(firstEvent->message.getNoteNumber(), 60);
-            expectEquals(static_cast<int>(firstEvent->message.getTimeStamp()), 0);
+            bool foundFirstNoteOn = false;
+            bool foundFirstNoteOff = false;
+            for (int i = 0; track != nullptr && i < track->getNumEvents(); ++i)
+            {
+                const auto& message = track->getEventPointer(i)->message;
+                if (message.isNoteOn() && message.getNoteNumber() == 60)
+                {
+                    foundFirstNoteOn = true;
+                    expectEquals(static_cast<int>(message.getTimeStamp()), 0);
+                }
 
-            const auto* secondEvent = track->getEventPointer(1);
-            expect(secondEvent->message.isNoteOff());
-            expectEquals(secondEvent->message.getNoteNumber(), 60);
-            expectEquals(static_cast<int>(secondEvent->message.getTimeStamp()), 960);
+                if (message.isNoteOff() && message.getNoteNumber() == 60)
+                {
+                    foundFirstNoteOff = true;
+                    expectEquals(static_cast<int>(message.getTimeStamp()), 960);
+                }
+            }
+
+            expect(foundFirstNoteOn);
+            expect(foundFirstNoteOff);
 
             tempFile.deleteFile();
         }
@@ -105,7 +116,19 @@ public:
 
             const auto* track = midiFile.getTrack(0);
             expect(track != nullptr);
-            expectEquals(track->getEventPointer(0)->message.getNoteNumber(), 60);
+
+            int firstNoteNumber = -1;
+            for (int i = 0; track != nullptr && i < track->getNumEvents(); ++i)
+            {
+                const auto& message = track->getEventPointer(i)->message;
+                if (message.isNoteOn())
+                {
+                    firstNoteNumber = message.getNoteNumber();
+                    break;
+                }
+            }
+
+            expectEquals(firstNoteNumber, 60);
 
             tempFile.deleteFile();
         }
@@ -129,6 +152,44 @@ public:
             expect(tempFile.existsAsFile());
 
             exportDirectory.deleteRecursively();
+        }
+
+        beginTest("writes tempo meta event for non-default bpm");
+        {
+            const auto tempFile = juce::File::createTempFile(".mid");
+            tempFile.deleteFile();
+
+            const std::vector<MidiNoteEvent> notes {
+                { 60, 0.0, 1.0, 96 },
+            };
+
+            const auto result = MidiFileWriter::writeType0(tempFile, notes, 90.0);
+            expect(result.success, result.errorMessage);
+
+            juce::FileInputStream input(tempFile);
+            juce::MidiFile midiFile;
+            expect(midiFile.readFrom(input));
+
+            const auto* track = midiFile.getTrack(0);
+            expect(track != nullptr);
+
+            bool foundTempo = false;
+            for (int i = 0; track != nullptr && i < track->getNumEvents(); ++i)
+            {
+                const auto& message = track->getEventPointer(i)->message;
+                if (!message.isTempoMetaEvent())
+                    continue;
+
+                foundTempo = true;
+                expectEquals(static_cast<int>(message.getTimeStamp()), 0);
+                expectWithinAbsoluteError(
+                    message.getTempoSecondsPerQuarterNote(),
+                    60.0 / 90.0,
+                    0.000001);
+            }
+
+            expect(foundTempo, "MIDI export must encode tempo for DAW imports");
+            tempFile.deleteFile();
         }
     }
 };

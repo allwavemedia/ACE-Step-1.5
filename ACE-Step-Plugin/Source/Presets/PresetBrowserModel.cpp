@@ -30,7 +30,10 @@ PresetLoadResult PresetBrowserModel::loadPreset(const juce::String& presetId)
 {
     auto result = store.load(presetId);
     if (result.success)
+    {
         currentPreset = result.preset;
+        currentRequest = result.preset.request;
+    }
 
     return result;
 }
@@ -62,6 +65,11 @@ void PresetBrowserModel::setGenerationSubmitCallback(GenerationSubmitCallback ca
 const std::optional<GenerationPreset>& PresetBrowserModel::getCurrentPreset() const noexcept
 {
     return currentPreset;
+}
+
+const std::optional<GenerationRequest>& PresetBrowserModel::getCurrentRequest() const noexcept
+{
+    return currentRequest;
 }
 
 const std::vector<GenerationPreset>& PresetBrowserModel::getPresets() const noexcept

@@ -27,6 +27,11 @@ double secondsToTicks(double seconds, double bpm) noexcept
         * static_cast<double>(MidiFileWriter::defaultTicksPerQuarterNote);
 }
 
+int microsecondsPerQuarterNote(double bpm) noexcept
+{
+    return juce::roundToInt(60000000.0 / bpm);
+}
+
 } // namespace
 
 MidiFileWriteResult MidiFileWriter::writeType0(
@@ -50,6 +55,7 @@ MidiFileWriteResult MidiFileWriter::writeType0(
     });
 
     juce::MidiMessageSequence sequence;
+    sequence.addEvent(juce::MidiMessage::tempoMetaEvent(microsecondsPerQuarterNote(bpm)), 0.0);
 
     for (const auto& note : sortedNotes)
     {
@@ -71,18 +77,22 @@ MidiFileWriteResult MidiFileWriter::writeType0(
     if (!destination.getParentDirectory().createDirectory())
         return { false, "Could not create MIDI destination directory." };
 
-    juce::FileOutputStream output(destination);
-    if (!output.openedOk())
-        return { false, "Could not open MIDI destination for writing." };
+    juce::TemporaryFile temporary(destination, juce::TemporaryFile::useHiddenFile);
 
-    output.setPosition(0);
-    if (output.truncate().failed())
+    {
+        juce::FileOutputStream output(temporary.getFile());
+        if (!output.openedOk())
+            return { false, "Could not open MIDI destination for writing." };
+
+        if (!midiFile.writeTo(output, 0))
+            return { false, "Could not write MIDI file." };
+
+        output.flush();
+    }
+
+    if (!temporary.overwriteTargetFileWithTemporary())
         return { false, "Could not replace existing MIDI destination." };
 
-    if (!midiFile.writeTo(output, 0))
-        return { false, "Could not write MIDI file." };
-
-    output.flush();
     return { true, {} };
 }
 

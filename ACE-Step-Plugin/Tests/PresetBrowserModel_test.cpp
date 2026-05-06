@@ -15,6 +15,7 @@ public:
         beginTest("loading a preset updates state without submitting generation");
         {
             const auto directory = uniquePresetDirectory("acestep-preset-browser-model");
+            expect(directory.isDirectory(), "precondition: created preset directory");
             PresetStore store(directory);
             expect(store.save(makePreset()).success);
 
@@ -30,6 +31,8 @@ public:
             expectEquals(
                 model.getCurrentPreset()->request.prompt,
                 juce::String("warm ambient pads"));
+            expect(model.getCurrentRequest().has_value());
+            expectEquals(model.getCurrentRequest()->prompt, juce::String("warm ambient pads"));
             expectEquals(generationSubmitCount, 0);
 
             directory.deleteRecursively();
@@ -51,8 +54,8 @@ private:
         const auto file = juce::File::createTempFile(prefix);
         file.deleteFile();
         const auto created = file.createDirectory();
-        juce::ignoreUnused(created);
-        jassert(created);
+        if (!created)
+            return {};
         return file;
     }
 };
