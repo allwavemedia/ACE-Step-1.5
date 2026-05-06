@@ -72,7 +72,7 @@
 - [x] 8.2 Add per-asset MIDI availability state that disables MIDI export when reliable note/event data is unavailable.
 - [x] 8.3 Implement standards-compliant `.mid` file writing for eligible generated assets.
 - [x] 8.4 Add MIDI drag-and-drop and Save As export paths with copy semantics.
-- [ ] 8.5 Add tests for MIDI availability gating, file writing, unavailable-state handling, and export path creation.
+- [x] 8.5 Add tests for MIDI availability gating, file writing, unavailable-state handling, and export path creation.
 
 ## 9. Stem Separation
 

@@ -482,7 +482,7 @@ git push origin feat/add-juce-vst3-plugin-8-3-onwards
 - Modify: `ACE-Step-Plugin\Tests\ExternalFileDrag_test.cpp`
 - Modify: `openspec\changes\add-juce-vst3-plugin\tasks.md`
 
-- [ ] **Step 1: Add explicit unavailable-state coverage**
+- [x] **Step 1: Add explicit unavailable-state coverage**
 
 Add a test proving no MIDI file is written when no note events are available:
 
@@ -499,7 +499,7 @@ beginTest("does not create midi file for unavailable note data");
 }
 ```
 
-- [ ] **Step 2: Run full standard validation**
+- [x] **Step 2: Run full standard validation**
 
 Run:
 
@@ -512,7 +512,7 @@ ctest --test-dir "ACE-Step-Plugin\build-codex-tests" -C RelWithDebInfo --output-
 
 Expected: all four commands pass.
 
-- [ ] **Step 3: Mark OpenSpec task 8.5 complete and commit**
+- [x] **Step 3: Mark OpenSpec task 8.5 complete and commit**
 
 Modify `openspec\changes\add-juce-vst3-plugin\tasks.md`:
 
@@ -528,7 +528,7 @@ git commit -m "test(plugin): cover MIDI writer and export gating" -m "Co-authore
 git push origin feat/add-juce-vst3-plugin-8-3-onwards
 ```
 
-- [ ] **Step 4: Request GitHub Copilot code review**
+- [x] **Step 4: Request GitHub Copilot code review**
 
 Request review on PR #2 after tasks 8.3-8.5 land because the PR will contain meaningful code and tests.
 

@@ -58,7 +58,7 @@ public:
             tempFile.deleteFile();
         }
 
-        beginTest("rejects empty note list");
+        beginTest("does not create midi file for unavailable note data");
         {
             const auto tempFile = juce::File::createTempFile(".mid");
             tempFile.deleteFile();
@@ -108,6 +108,27 @@ public:
             expectEquals(track->getEventPointer(0)->message.getNoteNumber(), 60);
 
             tempFile.deleteFile();
+        }
+
+        beginTest("creates parent directory for midi export path");
+        {
+            const auto exportDirectory =
+                juce::File::getSpecialLocation(juce::File::tempDirectory)
+                    .getChildFile("acestep-midi-writer-tests")
+                    .getChildFile(juce::Uuid().toString());
+            const auto tempFile = exportDirectory.getChildFile("generated.mid");
+
+            const std::vector<MidiNoteEvent> notes {
+                { 60, 0.0, 0.25, 96 },
+            };
+
+            const auto result = MidiFileWriter::writeType0(tempFile, notes, 120.0);
+
+            expect(result.success, result.errorMessage);
+            expect(exportDirectory.isDirectory());
+            expect(tempFile.existsAsFile());
+
+            exportDirectory.deleteRecursively();
         }
     }
 };

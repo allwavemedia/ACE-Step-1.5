@@ -48,6 +48,32 @@ public:
 
             expect(!result);
         }
+
+        beginTest("startCopyDrag accepts MIDI files with copy semantics");
+        {
+            bool performerCalled = false;
+            juce::String receivedPath;
+            bool receivedCanMove = true;
+
+            ExternalFileDrag::Performer performer =
+                [&](const juce::StringArray& files, bool canMoveFiles) -> bool {
+                performerCalled = true;
+                receivedPath = files[0];
+                receivedCanMove = canMoveFiles;
+                return true;
+            };
+
+            juce::TemporaryFile tmp(".mid");
+            tmp.getFile().create();
+
+            const bool result =
+                ExternalFileDrag::startCopyDrag(tmp.getFile(), performer);
+
+            expect(result);
+            expect(performerCalled);
+            expect(receivedPath.endsWithIgnoreCase(".mid"));
+            expect(!receivedCanMove, "MIDI drags should use copy semantics");
+        }
     }
 };
 
