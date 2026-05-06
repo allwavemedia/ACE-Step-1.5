@@ -544,7 +544,7 @@ Request review on PR #2 after tasks 8.3-8.5 land because the PR will contain mea
 - Create: `ACE-Step-Plugin\docs\stem-export-design.md`
 - Modify: `openspec\changes\add-juce-vst3-plugin\tasks.md`
 
-- [ ] **Step 1: Inspect backend source for stem APIs**
+- [x] **Step 1: Inspect backend source for stem APIs**
 
 Run:
 
@@ -555,7 +555,7 @@ rg -n "audio_codes|generate_wav|output_path" "ACE-Step-Plugin\External\acestep_c
 
 Expected: record whether there is a supported full-mix-to-stems path. Do not infer stems from FSQ tokens without an explicit backend/API path.
 
-- [ ] **Step 2: Write the stem design doc**
+- [x] **Step 2: Write the stem design doc**
 
 Create `ACE-Step-Plugin\docs\stem-export-design.md`:
 
@@ -581,7 +581,7 @@ never inside `processBlock`.
 
 Replace the first paragraph with the exact evidence from the command output before committing.
 
-- [ ] **Step 3: Mark task 9.1 complete and commit**
+- [x] **Step 3: Mark task 9.1 complete and commit**
 
 Modify:
 
