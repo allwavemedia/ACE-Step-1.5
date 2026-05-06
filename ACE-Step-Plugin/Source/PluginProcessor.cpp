@@ -144,6 +144,11 @@ void AceStepAudioProcessor::trackPluginOwnedGeneratedFile(const juce::File& gene
     generatedTempDirectories.trackGeneratedFile(generatedFile);
 }
 
+void AceStepAudioProcessor::trackPluginOwnedGeneratedAsset(const acestep_plugin::GeneratedAsset& asset)
+{
+    generatedTempDirectories.trackGeneratedAsset(asset);
+}
+
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new AceStepAudioProcessor();

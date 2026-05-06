@@ -69,6 +69,8 @@ public:
             GeneratedAssetHistoryView view;
             view.setOnPlayStop([](const GeneratedAsset&, bool) {});
             view.setOnSaveAs([](const GeneratedAsset&) {});
+            view.setOnStemPreview([](const GeneratedAsset&, const StemAsset&, bool) {});
+            view.setOnStemSaveAs([](const GeneratedAsset&, const StemAsset&) {});
 
             std::vector<GeneratedAsset> assets = { makeTestAsset(0), makeTestAsset(1) };
             view.refresh(assets);

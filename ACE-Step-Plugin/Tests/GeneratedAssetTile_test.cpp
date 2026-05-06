@@ -100,6 +100,50 @@ public:
             expectEquals(tile.getExportableStemCount(), 1);
             expectEquals(tile.getAsset().stems[1].errorMessage, juce::String("Stem model failed"));
         }
+
+        beginTest("stem save callback exports only successful stems independently");
+        {
+            auto asset = makeTestAsset(0);
+            asset.stems.push_back(StemAsset { StemGroup::vocals, "C:\\temp\\vocals.wav", true, {} });
+            asset.stems.push_back(StemAsset { StemGroup::drums, {}, false, "Stem model failed" });
+
+            GeneratedAssetTile tile(asset);
+            juce::String exportedPath;
+            tile.setOnStemSaveAs([&](const GeneratedAsset&, const StemAsset& stem) {
+                exportedPath = stem.outputPath;
+            });
+
+            expect(tile.exportStemAt(0));
+            expectEquals(exportedPath, juce::String("C:\\temp\\vocals.wav"));
+            expect(!tile.exportStemAt(1));
+            expectEquals(
+                tile.getStemExportFileAt(0).getFullPathName(),
+                juce::String("C:\\temp\\vocals.wav"));
+            expect(tile.getStemExportFileAt(1).getFullPathName().isEmpty());
+        }
+
+        beginTest("stem preview callback toggles each successful stem independently");
+        {
+            auto asset = makeTestAsset(0);
+            asset.stems.push_back(StemAsset { StemGroup::vocals, "C:\\temp\\vocals.wav", true, {} });
+            asset.stems.push_back(StemAsset { StemGroup::drums, {}, false, "Stem model failed" });
+
+            GeneratedAssetTile tile(asset);
+            bool previewPlaying = false;
+            juce::String previewPath;
+            tile.setOnStemPreview([&](const GeneratedAsset&, const StemAsset& stem, bool shouldPlay) {
+                previewPath = stem.outputPath;
+                previewPlaying = shouldPlay;
+            });
+
+            expect(tile.toggleStemPreviewAt(0));
+            expect(previewPlaying);
+            expectEquals(previewPath, juce::String("C:\\temp\\vocals.wav"));
+
+            expect(tile.toggleStemPreviewAt(0));
+            expect(!previewPlaying);
+            expect(!tile.toggleStemPreviewAt(1));
+        }
     }
 };
 

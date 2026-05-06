@@ -81,8 +81,8 @@
 - [x] 9.2 Add generation request options for enabling stem output and selecting available stem groups.
 - [x] 9.3 Add worker progress and error reporting for stem output separately from full-mix generation.
 - [x] 9.4 Represent full-mix and stem WAV files as grouped generated assets in history.
-- [ ] 9.5 Add independent preview, drag, Save As, and cleanup handling for each stem WAV.
-- [ ] 9.6 Add tests for successful stem grouping, partial stem failure, and individual stem export.
+- [x] 9.5 Add independent preview, drag, Save As, and cleanup handling for each stem WAV.
+- [x] 9.6 Add tests for successful stem grouping, partial stem failure, and individual stem export.
 
 ## 10. Preset Browser
 

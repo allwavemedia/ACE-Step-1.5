@@ -34,6 +34,15 @@ void GeneratedAssetTempDirectories::trackGeneratedFile(const juce::File& generat
         directories.push_back(directory);
 }
 
+void GeneratedAssetTempDirectories::trackGeneratedAsset(const GeneratedAsset& asset)
+{
+    trackGeneratedFile(juce::File(asset.outputPath));
+
+    for (const auto& stem : asset.stems)
+        if (stem.success && stem.outputPath.isNotEmpty())
+            trackGeneratedFile(juce::File(stem.outputPath));
+}
+
 bool GeneratedAssetTempDirectories::canTrackDirectory(const juce::File& directory) const
 {
     return directory.exists()

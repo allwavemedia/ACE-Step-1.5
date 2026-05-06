@@ -45,6 +45,9 @@ public:
     /** Track a plugin-owned generated WAV so its temporary directory is cleaned up. */
     void trackPluginOwnedGeneratedFile(const juce::File& generatedFile);
 
+    /** Track a generated asset and any successful stem outputs for cleanup. */
+    void trackPluginOwnedGeneratedAsset(const acestep_plugin::GeneratedAsset& asset);
+
     /** Returns the engine instance owned by this processor. */
     acestep_plugin::AceStepEngine& getEngine() noexcept { return engine; }
 

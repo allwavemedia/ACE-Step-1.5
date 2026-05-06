@@ -58,6 +58,34 @@ public:
             expect(savedCopy.exists(), "user-saved copy outside owned directory is untouched");
             tempRoot.deleteRecursively();
         }
+
+        beginTest("stem output directories are deleted on destruction");
+        {
+            const auto tempRoot = uniqueTempRoot("acestep-test-stem-cleanup");
+            const auto fullMixDirectory = tempRoot.getChildFile("full-mix-generation");
+            const auto stemDirectory = tempRoot.getChildFile("stem-generation");
+            const auto generatedWav = fullMixDirectory.getChildFile("generated.wav");
+            const auto vocalsWav = stemDirectory.getChildFile("vocals.wav");
+
+            expect(fullMixDirectory.createDirectory(), "precondition: created full-mix dir");
+            expect(stemDirectory.createDirectory(), "precondition: created stem dir");
+            expect(generatedWav.create(), "precondition: created generated WAV");
+            expect(vocalsWav.create(), "precondition: created stem WAV");
+
+            GeneratedAsset asset;
+            asset.outputPath = generatedWav.getFullPathName();
+            asset.stems.push_back(
+                StemAsset { StemGroup::vocals, vocalsWav.getFullPathName(), true, {} });
+
+            {
+                GeneratedAssetTempDirectories directories;
+                directories.trackGeneratedAsset(asset);
+            }
+
+            expect(!fullMixDirectory.exists(), "full-mix directory removed after destruction");
+            expect(!stemDirectory.exists(), "stem directory removed after destruction");
+            tempRoot.deleteRecursively();
+        }
     }
 
 private:

@@ -809,7 +809,7 @@ beginTest("history preserves grouped stem assets");
 }
 ```
 
-- [ ] **Step 3: Add independent stem export callbacks**
+- [x] **Step 3: Add independent stem export callbacks**
 
 Add a callback type to `GeneratedAssetTile`:
 
@@ -818,6 +818,8 @@ using StemSaveAsCallback = std::function<void(const GeneratedAsset&, const StemA
 ```
 
 Only render stem export controls when `asset.stems` contains successful stem files. Failed stems must be shown as unavailable text, not as draggable/exportable files.
+
+Implemented with independent stem preview and Save As callbacks, stem-specific external drag file selection, and generated-asset temp cleanup that tracks successful stem output directories.
 
 - [x] **Step 4: Add tests for partial stem failure**
 
@@ -830,7 +832,7 @@ asset.stems.push_back(StemAsset { StemGroup::drums, {}, false, "Stem model faile
 
 Expected: only the successful stem is exportable; the failure message remains available to the UI.
 
-- [ ] **Step 5: Run validation and commit**
+- [x] **Step 5: Run validation and commit**
 
 Run standard validation, then mark tasks 9.3-9.6 complete only when progress, grouped metadata, export callbacks, and tests are present.
 
