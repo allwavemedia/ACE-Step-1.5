@@ -31,8 +31,18 @@ Generated assets may contain a full mix and zero or more stem WAV files. Stem co
 are disabled unless the generation path reports reliable stem outputs for that asset.
 The plugin must not infer stems from FSQ tokens or expose empty placeholder files.
 
-## Implementation Boundary
+## Implemented Asset Workflow
 
 Stem metadata lives on generated assets. Stem production runs only on the background
-worker, never inside `processBlock`. The next implementation slice should add explicit
-request/capability types while keeping the default capability state unavailable.
+worker, never inside `processBlock`. The default capability state remains
+unavailable until the backend boundary can explicitly request and return stem WAVs.
+
+Implemented plugin-owned surfaces:
+
+- `GenerationRequest` carries gated stem request options.
+- `GenerationResult` and `GeneratedAsset` can carry grouped full-mix plus stem
+  `StemAsset` metadata, including partial stem failures.
+- `GeneratedAssetTile` exposes independent stem preview, drag, and Save As
+  callbacks only for successful stem WAV paths.
+- Plugin-owned temporary generation cleanup tracks successful stem output
+  directories as well as the full mix.

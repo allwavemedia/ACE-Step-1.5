@@ -36,21 +36,23 @@ MIDI export button as disabled and labelled "MIDI N/A" whenever `canExportMidi()
 `false`. This ensures the export path is exercisable in the UI without exposing broken
 functionality.
 
-## Planned Implementation Path (Tasks 8.3–8.5)
+## Implemented Infrastructure (Tasks 8.3–8.5)
 
-When an AMT path becomes available, the implementation steps are:
+When an AMT path becomes available, the existing plugin infrastructure can be
+unlocked per generated asset:
 
-1. **8.3 — MIDI file writer**: Implemented `MidiNoteEvent` and `MidiFileWriter` in
+1. **8.3 — MIDI file writer**: `MidiNoteEvent` and `MidiFileWriter` live in
    `Source/MIDI/`. The writer accepts explicit note events and writes a standards-compliant
    SMF Type 0 (single-track) `.mid` file using `juce::MidiFile` and
    `juce::MidiMessageSequence`.
 
-2. **8.4 — Export paths**: Wire MIDI drag-and-drop via `performExternalDragDropOfFiles` and
-   a "Save As" dialog using `juce::FileChooser`. Follow the same copy-semantics pattern as
-   WAV export in `GeneratedAssetTile`.
+2. **8.4 — Export paths**: `GeneratedAssetTile` routes MIDI drag-and-drop and
+   Save As callbacks only when `midiAvailability == available` and a `.mid` path
+   exists. External drag uses copy semantics.
 
-3. **8.5 — Tests**: Add unit tests for `MidiFileWriter` (valid output, empty sequence, error
-   path), `GeneratedAssetTile` MIDI button states, and the full gate→write→export path.
+3. **8.5 — Tests**: Unit tests cover `MidiFileWriter` valid output, unavailable
+   empty-note data, invalid notes, parent-directory creation, MIDI button gating,
+   and copy-style `.mid` external drag.
 
 ## Future AMT Integration Note
 

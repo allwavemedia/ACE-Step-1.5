@@ -1183,6 +1183,9 @@ Spec coverage:
 - MIDI 8.3-8.5: covered by Tasks 1-3.
 - Stems 9.1-9.6: covered by Tasks 4-6.
 - Presets 10.1-10.5: covered by Tasks 7-8.
+- Host docs 11.1, 11.2, 11.4 and release docs 12.6 are complete; evidence-gated
+  DAW/runtime validation remains pending until manual host/backend validation is run.
+- Presets 10.1-10.5: covered by Tasks 7-8.
 - Host compatibility 11.1-11.4: covered by Tasks 9-10.
 - Release readiness 12.1-12.6: covered by Tasks 10-12.
 - Blocked validation tasks 2.7, 3.7, and 6.9: covered by Tasks 10-11 with explicit evidence gates.

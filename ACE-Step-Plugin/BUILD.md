@@ -75,9 +75,39 @@ Expected output:
 
 The VST3 bundle should contain:
 
-- `AceStepPlugin.vst3/Contents/x86_64-win/AceStepPlugin.vst3`
-- `AceStepPlugin.vst3/Contents/x86_64-win/ggml-*.dll`
+- `ACE-Step.vst3/Contents/x86_64-win/ACE-Step.vst3`
+- `ACE-Step.vst3/Contents/x86_64-win/ggml-*.dll` for real-backend builds
 - `ace-server.exe` only when `ACESTEP_PLUGIN_MODE=server`
+
+## Model Manifest
+
+The v1 turbo profile expects these model files under
+`%LOCALAPPDATA%\AceStepPlugin\models\`:
+
+| Filename | Expected size |
+|---|---:|
+| `acestep-5Hz-lm-4B-Q5_K_M.gguf` | 3,025,965,984 bytes |
+| `acestep-v15-turbo-Q5_K_M.gguf` | 1,700,140,224 bytes |
+| `Qwen3-Embedding-0.6B-Q8_0.gguf` | 784,144,960 bytes |
+| `vae-BF16.gguf` | 337,420,928 bytes |
+
+The plugin validates file sizes during discovery and SHA-256 during download.
+The source of truth for URLs, hashes, and sizes is
+`Source\Models\ModelDiscovery.cpp`.
+
+## Feature Capability Notes
+
+- **MIDI export:** unavailable by default. The current backend boundary exposes
+  WAV output and FSQ audio tokens, not reliable note/onset events. The plugin
+  includes a standards-compliant MIDI writer for future explicit note data.
+- **Stem export:** unavailable by default unless a generated asset contains
+  successful stem WAV metadata. The vendored backend has internal stem task
+  modes, but the plugin-facing C API does not yet expose stem requests.
+- **Preset storage:** presets are stored as one JSON file per preset under
+  `%APPDATA%\ACE-Step\Presets` by default, with schema version `1`.
+- **Host differences:** scan UX, drag/drop insertion location, media import
+  prompts, and project media-copy behavior are host-owned. Save As is the
+  plugin-owned fallback when drag/drop differs.
 
 ## Smoke Verification
 
