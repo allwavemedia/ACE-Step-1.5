@@ -19,7 +19,8 @@ void GeneratedAssetHistoryView::ContentComponent::refresh(
     const std::vector<GeneratedAsset>& assets,
     GeneratedAssetTile::PlayStopCallback onPlayStop,
     GeneratedAssetTile::SaveAsCallback onSaveAs,
-    GeneratedAssetTile::MidiSaveAsCallback onMidiSaveAs)
+    GeneratedAssetTile::MidiSaveAsCallback onMidiSaveAs,
+    GeneratedAssetTile::StemSaveAsCallback onStemSaveAs)
 {
     tiles.clear();
 
@@ -35,6 +36,9 @@ void GeneratedAssetHistoryView::ContentComponent::refresh(
 
         if (onMidiSaveAs)
             tile->setOnMidiSaveAs(onMidiSaveAs);
+
+        if (onStemSaveAs)
+            tile->setOnStemSaveAs(onStemSaveAs);
 
         addAndMakeVisible(*tile);
         tiles.push_back(std::move(tile));
@@ -70,7 +74,12 @@ GeneratedAssetHistoryView::GeneratedAssetHistoryView()
 
 void GeneratedAssetHistoryView::refresh(const std::vector<GeneratedAsset>& assets)
 {
-    content.refresh(assets, onPlayStopCallback, onSaveAsCallback, onMidiSaveAsCallback);
+    content.refresh(
+        assets,
+        onPlayStopCallback,
+        onSaveAsCallback,
+        onMidiSaveAsCallback,
+        onStemSaveAsCallback);
 
     const int contentWidth = viewport.getMaximumVisibleWidth();
     content.setSize(contentWidth > 0 ? contentWidth : 1,
@@ -97,6 +106,11 @@ void GeneratedAssetHistoryView::setOnSaveAs(GeneratedAssetTile::SaveAsCallback c
 void GeneratedAssetHistoryView::setOnMidiSaveAs(GeneratedAssetTile::MidiSaveAsCallback callback)
 {
     onMidiSaveAsCallback = std::move(callback);
+}
+
+void GeneratedAssetHistoryView::setOnStemSaveAs(GeneratedAssetTile::StemSaveAsCallback callback)
+{
+    onStemSaveAsCallback = std::move(callback);
 }
 
 void GeneratedAssetHistoryView::resized()

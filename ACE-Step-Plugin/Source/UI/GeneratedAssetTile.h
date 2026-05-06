@@ -24,6 +24,7 @@ class GeneratedAssetTile final : public juce::Component
 public:
     using SaveAsCallback = std::function<void(const GeneratedAsset&)>;
     using MidiSaveAsCallback = std::function<void(const GeneratedAsset&)>;
+    using StemSaveAsCallback = std::function<void(const GeneratedAsset&, const StemAsset&)>;
     using PlayStopCallback = std::function<void(const GeneratedAsset&, bool play)>;
 
     explicit GeneratedAssetTile(const GeneratedAsset& asset);
@@ -35,9 +36,11 @@ public:
     void setPlaying(bool shouldPlay);
     bool isPlaying() const noexcept { return playing; }
     bool canExportMidi() const noexcept;
+    int getExportableStemCount() const;
 
     void setOnSaveAs(SaveAsCallback cb) { onSaveAs = std::move(cb); }
     void setOnMidiSaveAs(MidiSaveAsCallback cb) { onMidiSaveAs = std::move(cb); }
+    void setOnStemSaveAs(StemSaveAsCallback cb) { onStemSaveAs = std::move(cb); }
     void setOnPlayStop(PlayStopCallback cb) { onPlayStop = std::move(cb); }
 
     void paint(juce::Graphics& g) override;
@@ -59,6 +62,7 @@ private:
 
     SaveAsCallback onSaveAs;
     MidiSaveAsCallback onMidiSaveAs;
+    StemSaveAsCallback onStemSaveAs;
     PlayStopCallback onPlayStop;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GeneratedAssetTile)

@@ -59,6 +59,17 @@ bool GeneratedAssetTile::canExportMidi() const noexcept
     return asset.midiAvailability == MidiExportAvailability::available;
 }
 
+int GeneratedAssetTile::getExportableStemCount() const
+{
+    int count = 0;
+
+    for (const auto& stem : asset.stems)
+        if (stem.success && stem.outputPath.isNotEmpty())
+            ++count;
+
+    return count;
+}
+
 void GeneratedAssetTile::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colour(0xff2a2a2a));

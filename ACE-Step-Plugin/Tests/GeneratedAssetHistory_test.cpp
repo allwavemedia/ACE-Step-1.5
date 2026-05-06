@@ -52,6 +52,19 @@ public:
             history.clear();
             expectEquals(history.size(), 0);
         }
+
+        beginTest("history preserves grouped stem assets");
+        {
+            GeneratedAssetHistory history;
+            auto asset = makeTestAsset(0);
+            asset.stems.push_back(StemAsset { StemGroup::vocals, "C:\\temp\\vocals.wav", true, {} });
+
+            history.add(asset);
+
+            const auto assets = history.getAssets();
+            expectEquals(static_cast<int>(assets.front().stems.size()), 1);
+            expectEquals(assets.front().stems.front().outputPath, juce::String("C:\\temp\\vocals.wav"));
+        }
     }
 };
 

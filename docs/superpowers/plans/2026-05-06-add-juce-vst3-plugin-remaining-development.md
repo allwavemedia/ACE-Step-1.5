@@ -775,7 +775,7 @@ git push origin feat/add-juce-vst3-plugin-8-3-onwards
 - Test: `ACE-Step-Plugin\Tests\GeneratedAssetHistory_test.cpp`
 - Test: `ACE-Step-Plugin\Tests\GeneratedAssetTile_test.cpp`
 
-- [ ] **Step 1: Extend asset metadata for grouped stems**
+- [x] **Step 1: Extend asset metadata for grouped stems**
 
 Add to `GeneratedAsset`:
 
@@ -790,7 +790,7 @@ Include:
 #include "../Stems/StemTypes.h"
 ```
 
-- [ ] **Step 2: Add history tests for grouped stems**
+- [x] **Step 2: Add history tests for grouped stems**
 
 Add a test proving grouped stems are retained with their parent asset:
 
@@ -819,7 +819,7 @@ using StemSaveAsCallback = std::function<void(const GeneratedAsset&, const StemA
 
 Only render stem export controls when `asset.stems` contains successful stem files. Failed stems must be shown as unavailable text, not as draggable/exportable files.
 
-- [ ] **Step 4: Add tests for partial stem failure**
+- [x] **Step 4: Add tests for partial stem failure**
 
 Add a tile/history test with one successful stem and one failed stem:
 

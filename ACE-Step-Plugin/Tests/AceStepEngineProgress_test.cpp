@@ -57,6 +57,35 @@ public:
             engine.waitForAllJobs();
             expect(true, "no crash without progress callback");
         }
+
+        beginTest("stem progress is reported separately from full mix progress");
+        {
+            AceStepEngine engine;
+            engine.setBackendLoader([](const juce::File&) { return true; });
+            engine.loadModels({});
+
+            juce::StringArray received;
+            juce::CriticalSection cs;
+
+            engine.setProgressCallback([&](const juce::String& msg) {
+                juce::ScopedLock sl(cs);
+                received.add(msg);
+            });
+
+            engine.setGenerationRunner(
+                [&engine](const GenerationRequest&, const std::atomic<bool>&) {
+                    engine.reportProgress("Full mix: complete");
+                    engine.reportStemProgress(StemGroup::vocals, "separating");
+                    return GenerationResult {};
+                });
+
+            engine.submitAsync({}, [](const GenerationResult&) {});
+            engine.waitForAllJobs();
+
+            juce::ScopedLock sl(cs);
+            expect(received.contains("Full mix: complete"));
+            expect(received.contains("Stem vocals: separating"));
+        }
     }
 };
 

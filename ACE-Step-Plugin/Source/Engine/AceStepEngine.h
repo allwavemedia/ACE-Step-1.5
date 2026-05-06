@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GenerationRequest.h"
+#include "../Stems/StemTypes.h"
 
 #include <juce_core/juce_core.h>
 
@@ -48,6 +49,9 @@ public:
      *  Safe to call from the generation runner inside generate().
      */
     void reportProgress(const juce::String& message);
+
+    /** Report progress for an individual stem group separately from the full mix. */
+    void reportStemProgress(StemGroup group, const juce::String& message);
 
     bool loadModels(const juce::File& modelsDirectory);
     bool isReady() const;

@@ -79,8 +79,8 @@
 - [x] 9.1 Verify the selected ACE-Step or post-processing path for producing separated stem WAV files from generated songs.
   Evidence: vendored `acestep.cpp` has internal stem task modes (`lego`, `extract`, `complete`) and documented track names, with `extract` described as stem isolation from source audio. The current plugin-facing `acestep_capi.h` only exposes `acestep_generate_wav` with prompt/lyrics/models/output WAV/duration/seed/scheduler fields and does not expose `task_type`, `track`, source-audio input, base-model selection, or multi-output stem metadata, so plugin stem controls remain gated until that backend boundary is implemented.
 - [x] 9.2 Add generation request options for enabling stem output and selecting available stem groups.
-- [ ] 9.3 Add worker progress and error reporting for stem output separately from full-mix generation.
-- [ ] 9.4 Represent full-mix and stem WAV files as grouped generated assets in history.
+- [x] 9.3 Add worker progress and error reporting for stem output separately from full-mix generation.
+- [x] 9.4 Represent full-mix and stem WAV files as grouped generated assets in history.
 - [ ] 9.5 Add independent preview, drag, Save As, and cleanup handling for each stem WAV.
 - [ ] 9.6 Add tests for successful stem grouping, partial stem failure, and individual stem export.
 

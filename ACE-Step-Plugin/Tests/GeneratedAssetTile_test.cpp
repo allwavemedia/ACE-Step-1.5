@@ -81,6 +81,25 @@ public:
             expect(tile.canExportMidi());
             expectEquals(tile.getAsset().midiPath, juce::String("C:\\temp\\generated.mid"));
         }
+
+        beginTest("stem export callback is not required when stems are absent");
+        {
+            GeneratedAssetTile tile(makeTestAsset(0));
+            tile.setOnStemSaveAs([](const GeneratedAsset&, const StemAsset&) {});
+            expectEquals(tile.getExportableStemCount(), 0);
+        }
+
+        beginTest("only successful stems are exportable and failures remain visible");
+        {
+            auto asset = makeTestAsset(0);
+            asset.stems.push_back(StemAsset { StemGroup::vocals, "C:\\temp\\vocals.wav", true, {} });
+            asset.stems.push_back(StemAsset { StemGroup::drums, {}, false, "Stem model failed" });
+
+            GeneratedAssetTile tile(asset);
+
+            expectEquals(tile.getExportableStemCount(), 1);
+            expectEquals(tile.getAsset().stems[1].errorMessage, juce::String("Stem model failed"));
+        }
     }
 };
 

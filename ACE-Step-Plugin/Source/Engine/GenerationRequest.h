@@ -62,6 +62,9 @@ struct GenerationResult
 
     /** Human-readable error description on failure; empty on success. */
     juce::String errorMessage;
+
+    /** Stem WAV outputs and per-stem failures produced after the full mix. */
+    std::vector<StemAsset> stems;
 };
 
 } // namespace acestep_plugin
