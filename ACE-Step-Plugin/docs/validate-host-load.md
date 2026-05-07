@@ -264,7 +264,26 @@ ACE-Step-Plugin\External\JUCE\build-audio-plugin-host\extras\AudioPluginHost\Aud
 
 ## Host B (Reaper) Validation Status
 
-**Status:** PENDING RE-VALIDATION (prior automated PASS evidence exists)
+**Status:** REAPER CURRENT REAL-BUNDLE AUTOMATION PASSED; AUDIOPLUGINHOST PENDING
+
+### Current Real-Bundle Automated Reaper Validation Record
+
+| Field | Value |
+|---|---|
+| Reaper version | REAPER v7.71/x64 |
+| Host executable | `C:\Program Files\REAPER (x64)\reaper.exe` |
+| OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
+| Build commit | `a17af3ea` |
+| Bundle path | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
+| Bundle DLL size | 13,638,144 bytes |
+| Bundle timestamp | 2026-05-06 21:51 |
+| Tester | Copilot CLI automated ReaScript validation |
+| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\reaper-validation-current-real-fast\` |
+
+Automated results:
+- Scan/load: PASS - `EnumInstalledFX` found `VST3: ACE-Step (Allwave Media)`, `TrackFX_AddByName` inserted the current real bundle on a track with FX index `0`, and the FX UI reported open.
+- Offline pass-through: PASS - A 48 kHz stereo sine WAV was measured with `CreateTrackAudioAccessor` / `GetAudioAccessorSamples` with ACE-Step bypassed and enabled: `baseline_peak=0.250000000`, `enabled_peak=0.250000000`, `peak_diff=0.000000000`, `baseline_rms=0.176771017`, `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
+- Scan-time signal: PASS for Reaper automation scope - the scan/load probe found ACE-Step within `318 ms` of script start and the pass-through probe found it within `182 ms`; no GGUF models were loaded during construction or scan.
 
 ### Automated Reaper Validation Record (Prior Run)
 
@@ -282,7 +301,7 @@ Automated results:
 - Scan/load: PASS - `EnumInstalledFX` found `VST3: ACE-Step (Allwave Media)`, `TrackFX_AddByName` inserted it on a track with FX index `0`, and the FX UI reported open.
 - Offline pass-through: PASS - A 48 kHz stereo sine WAV was measured with `CreateTrackAudioAccessor` / `GetAudioAccessorSamples` with ACE-Step bypassed and enabled: `baseline_peak=0.250000000`, `enabled_peak=0.250000000`, `peak_diff=0.000000000`, `baseline_rms=0.176771017`, `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
 
-### Current Reaper Availability Check (e3269c299203)
+### Current Reaper Availability Check (superseded by current real-bundle automation)
 
 | Field | Value |
 |---|---|
@@ -309,11 +328,7 @@ scan/load or offline pass-through run for commit `e3269c299203`.
 
 **Current validation conclusion:**
 
-Prior Reaper evidence remains useful context, but it is not a substitute for a
-fresh current-build Reaper validation record. Task 2.7 must not be checked until
-AudioPluginHost validation passes and Reaper scan/load plus pass-through are
-rerun or otherwise recorded with current-build evidence.
-
-**Revalidation needed:** Rerun the isolated ReaScript scan/load and offline
-accessor pass-through probes against the current bundle, then record the status
-files and measured peak/RMS values in this document.
+Prior Reaper evidence remains useful context, but the current real-bundle
+automation above is the active Reaper evidence for scan/load, FX UI-open, and
+offline pass-through. Task 2.7 must still not be checked until AudioPluginHost
+validation also passes.

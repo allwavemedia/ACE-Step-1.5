@@ -5,8 +5,8 @@ function(acestep_bundle_backends vst3_target)
 
     add_custom_command(TARGET ${vst3_target} POST_BUILD
         COMMAND "${CMAKE_COMMAND}"
-            -DACESTEP_BUILD_DIR="$<SHELL_PATH:${CMAKE_BINARY_DIR}>"
-            -DPLUGIN_BINARY_DIR="$<SHELL_PATH:$<TARGET_FILE_DIR:${vst3_target}>>"
+            -DACESTEP_BUILD_DIR=$<SHELL_PATH:${CMAKE_BINARY_DIR}>
+            -DPLUGIN_BINARY_DIR=$<SHELL_PATH:$<TARGET_FILE_DIR:${vst3_target}>>
             -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/CopyBackends.cmake"
         COMMENT "Copying GGML backend DLLs into the VST3 bundle"
         VERBATIM

@@ -25,12 +25,12 @@ Validation run:
 
 | Field | Value |
 |---|---|
-| Build commit | `e3269c299203157b8551c719435dfa6d88aaa611` |
+| Build commit | `a17af3ea` |
 | OS | Microsoft Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
-| Stub bundle | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
-| Bundle DLL size | 8,459,264 bytes |
-| Bundle DLL timestamp | 2026-05-06 14:38:26 |
-| Result | Reaper executable/version and stub bundle path verified for the current run. Prior automated Reaper PASS evidence exists at 7909e8460d88, but current-build ReaScript scan/load and pass-through are still pending. AudioPluginHost can now build with generated stub JUCE assets, but its validation checklist remains pending. Real bundle validation for tasks 3.7 and 12.3 remains blocked until CUDA `nvcc` and Vulkan `glslc` are available. |
+| Real bundle | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
+| Bundle DLL size | 13,638,144 bytes |
+| Bundle DLL timestamp | 2026-05-06 21:51 |
+| Result | Real bundle validation passed for CPU/CUDA/Vulkan GGML sibling DLLs. Current real-bundle Reaper automation passed scan/load, FX UI-open, and offline pass-through. AudioPluginHost validation remains pending. Full DAW matrix validation remains pending for FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, which are not installed in this environment. |
 
 The CLI validation-prep environment can build the stub VST3 bundle and can run
 isolated Reaper automation. Full evidence-gated manual host validation remains
@@ -39,7 +39,7 @@ still require interactive UI/export checks.
 
 | Host | Checked executable path | Result |
 |---|---|---|
-| Reaper x64 | `C:\Program Files\REAPER (x64)\reaper.exe` | Installed; partial automated evidence recorded below |
+| Reaper x64 | `C:\Program Files\REAPER (x64)\reaper.exe` | Installed; current real-bundle automated scan/load and pass-through evidence recorded below |
 | Reaper | `C:\Program Files\REAPER\reaper.exe` | Missing |
 | FL Studio 21 | `C:\Program Files\Image-Line\FL Studio 21\FL64.exe` | Missing |
 | Cubase 13 | `C:\Program Files\Steinberg\Cubase 13\Cubase13.exe` | Missing |
@@ -47,43 +47,44 @@ still require interactive UI/export checks.
 | Ableton Live 12 Suite | `C:\ProgramData\Ableton\Live 12 Suite\Program\Ableton Live 12 Suite.exe` | Missing |
 | Bitwig Studio | `C:\Program Files\Bitwig Studio\Bitwig Studio.exe` | Missing |
 
-This blocker is not a pass/fail result for Task 11.3 or 12.4. Those tasks
-remain pending until a tester records real host versions, bundle path, build
-commit, pass/fail results, and notes from interactive DAW validation.
+The Reaper automation below is valid evidence for current real-bundle scan/load,
+FX UI-open, and pass-through only. It is not a complete pass/fail result for
+Task 11.3 or 12.4 because interactive UI/export checks and the other target
+hosts are still pending.
 
 ## Reaper validation record
 
-### Current run availability check (e3269c299203157b8551c719435dfa6d88aaa611)
+### Current real-bundle automated check (a17af3ea)
 
 | Field | Value |
 |---|---|
 | Host | REAPER v7.71/x64 |
 | Host executable | `C:\Program Files\REAPER (x64)\reaper.exe` |
 | OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
-| Build commit | `e3269c299203157b8551c719435dfa6d88aaa611` |
-| Bundle path | `ACE-Step-Plugin\build-vst3-stub\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
-| Bundle DLL size | 8,459,264 bytes |
-| Bundle timestamp | 2026-05-06 14:38:26 |
-| Tester | Copilot CLI availability/source review |
-| Evidence artifacts | Not committed; no current-run automated ReaScript result was produced. |
-
-**Source code analysis:**
-
-Stub VST3 sources show NO changes between prior validated commit `7909e8460d88` and current commit `e3269c299203`:
-
-```powershell
-git log --oneline 7909e8460d88..e3269c299203 -- ACE-Step-Plugin/src ACE-Step-Plugin/include ACE-Step-Plugin/CMakeLists.txt
-# Result: no output (no changes)
-```
-
-The source identity check is useful context, but it is not a replacement for a
-fresh current-build Reaper validation record.
+| Build commit | `a17af3ea` |
+| Bundle path | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
+| Bundle DLL size | 13,638,144 bytes |
+| Bundle timestamp | 2026-05-06 21:51 |
+| Tester | Copilot CLI automated ReaScript validation |
+| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\reaper-validation-current-real-fast\` |
 
 **Current validation status:**
 
-- **Scan/load:** Pending re-validation for the current build.
-- **Offline pass-through:** Pending re-validation for the current build.
-- **FX UI:** Pending re-validation for the current build.
+- **Scan/load:** PASS. `EnumInstalledFX` found
+  `VST3: ACE-Step (Allwave Media)` at index `3`, and
+  `TrackFX_AddByName` inserted the current real bundle with FX index `0`.
+- **FX UI:** PASS. `TrackFX_GetOpen` reported the FX UI opened.
+- **Offline pass-through:** PASS. A 48 kHz stereo sine WAV was measured with
+  ACE-Step bypassed and enabled; peak/RMS values were identical:
+  `baseline_peak=0.250000000`, `enabled_peak=0.250000000`,
+  `peak_diff=0.000000000`, `baseline_rms=0.176771017`,
+  `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
+- **Scan-time signal:** The probe found the plugin within `318 ms` of script
+  start and the pass-through probe found it within `182 ms`; no GGUF models
+  were loaded during construction or scan. After all four GGUF model files were
+  installed under `%LOCALAPPDATA%\AceStepPlugin\models`, a fresh isolated Reaper
+  profile found the same real bundle within `199 ms` of ReaScript start
+  (`wall_ms=17105`, including REAPER startup wait).
 
 ### Prior automated validation evidence (7909e8460d88)
 
@@ -106,9 +107,9 @@ Prior automated results:
   `peak_diff=0.000000000`, `baseline_rms=0.176771017`,
   `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
 
-**Task 2.7 status:** Reaper current-build scan/load and pass-through remain
-pending re-validation. AudioPluginHost validation also remains pending. Task 2.7
-cannot be marked complete until both hosts pass with current evidence.
+**Task 2.7 status:** Reaper current real-bundle scan/load, FX UI-open, and
+pass-through pass. AudioPluginHost validation remains pending. Task 2.7 cannot
+be marked complete until both hosts pass with current evidence.
 
 Remaining Reaper checks that still require interactive/manual validation:
 editor layout details, capture controls, generation UI state, WAV Save As, WAV

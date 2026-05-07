@@ -258,7 +258,7 @@ if(ACESTEP_BUILD_REAL_SMOKE_TEST)
     # C++11 raw string literal so Windows backslashes are not misinterpreted as
     # C escape sequences (e.g. \b, \t) by the compiler.
     file(GENERATE
-        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/AceSynthPath.h"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/AceSynthPath.h"
         CONTENT "#pragma once\n#define ACESTEP_ACE_SYNTH_PATH R\"path($<TARGET_FILE:ace-synth>)path\"\n"
     )
 
@@ -275,7 +275,7 @@ if(ACESTEP_BUILD_REAL_SMOKE_TEST)
 
     target_include_directories(AceStepRealSmokeTest
         PRIVATE
-            "${CMAKE_CURRENT_BINARY_DIR}"
+            "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
             "${CMAKE_CURRENT_SOURCE_DIR}"
     )
 

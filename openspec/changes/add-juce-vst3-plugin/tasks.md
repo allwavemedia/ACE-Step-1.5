@@ -14,7 +14,7 @@
 - [x] 2.5 Add minimal `Source/PluginEditor.h` and `Source/PluginEditor.cpp` with a stub editor that opens reliably in JUCE AudioPluginHost.
 - [x] 2.6 Add `.vscode/settings.json`, `tasks.json`, and `launch.json` for MSVC kit selection, RelWithDebInfo VST3 build, and AudioPluginHost debugging.
 - [ ] 2.7 Verify the initial VST3 bundle loads in JUCE AudioPluginHost and Reaper with unchanged audio pass-through.
-  **Reaper:** Pending current-build re-validation. Prior automated ReaScript evidence at commit `7909e8460d88` confirms scan/load and offline pass-through, but no fresh automated/manual Reaper run was completed for the current build. Evidence scope is recorded in `ACE-Step-Plugin\docs\validate-host-load.md` and `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
+  **Reaper:** PASS for current real-bundle automated scope at commit `a17af3ea`. REAPER v7.71/x64 scanned and loaded `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3`, opened the FX UI, and passed offline pass-through with identical measured peak/RMS (`peak_diff=0.000000000`, `rms_diff=0.000000000`). Evidence is recorded in `ACE-Step-Plugin\docs\validate-host-load.md` and `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
   **AudioPluginHost:** UNBLOCKED (stub assets workaround applied) but validation pending. Generated stub silent WAV files satisfy build requirements without redistributing copyrighted JUCE assets, and AudioPluginHost now builds. The host validation checklist is not yet executed.
   **Task 2.7 status:** Cannot be marked complete until both AudioPluginHost and Reaper pass with current evidence.
 
@@ -26,8 +26,8 @@
 - [x] 3.4 Add `Source/Engine/AceStepCApi.h` and `.cpp` as the only plugin-owned boundary that includes upstream `acestep.cpp` internals.
 - [x] 3.5 Implement bundle-local GGML backend initialization that points the loader at the VST3 `Contents/x86_64-win/` directory.
 - [x] 3.6 Add `ACESTEP_PLUGIN_MODE=server` support that builds `ace-server` and bundles it as a sidecar only when selected.
-- [ ] 3.7 Verify `dumpbin /dependents` and bundle contents show expected plugin and GGML runtime DLL relationships.
-  **Blocker:** Real bundle dependency validation remains blocked because CUDA Toolkit 12.8 (`nvcc`) and Vulkan SDK (`glslc`) are unavailable, so the real backend bundle cannot be built. `dumpbin` is available through the Visual Studio developer environment for dependency capture after a real bundle exists. Evidence is recorded in `ACE-Step-Plugin\BUILD.md`.
+- [x] 3.7 Verify `dumpbin /dependents` and bundle contents show expected plugin and GGML runtime DLL relationships.
+  Evidence: real backend VST3 built successfully in `C:\b\ace-ninja` using Visual Studio 2022, CUDA Toolkit 13.2.1, Vulkan SDK 1.4.341.1, Ninja 1.12.1, and `-DCMAKE_CUDA_ARCHITECTURES=89-real` for the local RTX 4090 validation machine. `scripts\validate-bundle.ps1 -BuildDir C:\b\ace-ninja -Config RelWithDebInfo` passed. Raw `dumpbin /dependents` output shows `ACE-Step.vst3` imports `ggml.dll` without direct CUDA runtime imports; `ggml-cuda.dll` imports `ggml-base.dll` and `cublas64_13.dll`; `ggml-vulkan.dll` imports `ggml-base.dll` and `vulkan-1.dll`. Full evidence is recorded in `ACE-Step-Plugin\BUILD.md`.
 
 ## 4. Reference Audio Capture
 
@@ -58,7 +58,8 @@
 - [x] 6.6 Add progress messages for model loading, LM planning, DiT steps, VAE decode, WAV write, completion, cancellation, and failure.
 - [x] 6.7 Add cancellation polling at supported pipeline points and join/cleanup behavior during processor destruction.
 - [x] 6.8 Add mock-engine tests proving UI responsiveness, cancellation behavior, pass-through stability, and successful temporary WAV result handling.
-- [ ] 6.9 Run a real-engine smoke test with turbo generation once model files and GGML backends are available.
+- [x] 6.9 Run a real-engine smoke test with turbo generation once model files and GGML backends are available.
+  Evidence: downloaded all four required GGUF files into `%LOCALAPPDATA%\AceStepPlugin\models` with manifest-matching sizes, then ran `C:\b\ace-ninja\AceStepRealSmokeTest_artefacts\RelWithDebInfo\AceStepRealSmokeTest.exe`. The test launched `C:\b\ace-ninja\ace-synth.exe` with the smoke request and produced `%TEMP%\acestep_smoke_request0.wav` at `967,724` bytes.
 
 ## 7. Generated WAV Export UI
 
@@ -101,16 +102,17 @@
 - [x] 11.1 Define the supported v1 DAW validation matrix and the plugin-owned behaviors expected to match across hosts.
 - [x] 11.2 Add compatibility notes for host-controlled differences such as external drag insertion location, file import prompts, and scan behavior.
 - [ ] 11.3 Verify scan/load, pass-through, editor layout, capture controls, generation UI state, WAV export, MIDI export when available, stem export, and preset browsing across Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig.
-  **Reaper:** Prior automated validation PASS at commit `7909e8460d88` for scan/load and offline pass-through remains recorded as historical evidence. Current-build Reaper re-validation plus remaining Reaper UI/export checks and FL Studio, Cubase, Studio One, Ableton Live, and Bitwig validation are still pending. Evidence scope is recorded in `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
+  **Reaper:** Current real-bundle automated validation PASS at commit `a17af3ea` for scan/load, FX UI-open, and offline pass-through. Remaining Reaper interactive UI/export checks and FL Studio, Cubase, Studio One, Ableton Live, and Bitwig validation are still pending. Evidence scope is recorded in `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
 - [x] 11.4 Add fallback documentation for hosts where external drag-and-drop differs from the common path.
 
 ## 12. Validation and Release Readiness
 
-- [ ] 12.1 Verify DAW scan time stays fast because GGUF models are not loaded during plugin construction or scan.
+- [x] 12.1 Verify DAW scan time stays fast because GGUF models are not loaded during plugin construction or scan.
+  Evidence: current real-bundle Reaper automation found `VST3: ACE-Step (Allwave Media)` within `318 ms` of ReaScript start for the scan/load probe and within `182 ms` for the pass-through probe. After all four GGUF model files were installed under `%LOCALAPPDATA%\AceStepPlugin\models`, a fresh isolated Reaper profile found the same real bundle within `199 ms` of ReaScript start (`wall_ms=17105`, including REAPER startup wait). No model load occurred during plugin construction or scan.
 - [x] 12.2 Verify no allocation, logging, file I/O, mutex locking, or string construction occurs inside `processBlock` capture logic.
   Evidence: inspected `PluginProcessor::processBlock`; the audio callback only enters `ScopedNoDenormals`, ignores MIDI, calls `referenceAudioBuffer.push(buffer)`, and clears surplus output channels. `ReferenceAudioBuffer::push` uses atomics/preallocated storage and contains no allocation, logging, file I/O, mutex locking, or string construction on the audio thread.
-- [ ] 12.3 Verify the VST3 bundle contains the plugin DLL plus CPU, CUDA, and Vulkan GGML backend DLL siblings.
-  **Blocker:** CPU/CUDA/Vulkan backend sibling verification is pending until the real backend build can run with CUDA Toolkit 12.8 and Vulkan SDK available. Evidence is recorded in `ACE-Step-Plugin\BUILD.md`.
+- [x] 12.3 Verify the VST3 bundle contains the plugin DLL plus CPU, CUDA, and Vulkan GGML backend DLL siblings.
+  Evidence: the real bundle directory `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3\Contents\x86_64-win` contains `ACE-Step.vst3`, `ggml.dll`, `ggml-base.dll`, `ggml-cpu.dll`, `ggml-cuda.dll`, and `ggml-vulkan.dll`; `scripts\validate-bundle.ps1` passed against that bundle.
 - [ ] 12.4 Verify external drag-and-drop in Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, with Save As as fallback.
 - [ ] 12.5 Verify missing model, checksum mismatch, out-of-memory, backend-load failure, cancellation, generation failure, MIDI unavailable state, stem failure, preset load failure, and host compatibility errors surface in the editor without crashing the host.
 - [x] 12.6 Update build and troubleshooting documentation with final external source pins, SDK versions, model manifest details, MIDI/stem capability details, preset storage details, and known host limitations.
