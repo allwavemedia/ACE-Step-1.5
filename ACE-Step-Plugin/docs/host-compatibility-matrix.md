@@ -9,7 +9,7 @@ The supported v1 validation matrix is Windows VST3 in these hosts:
 
 | Host | Scan/load | Pass-through | Editor layout | Capture controls | Generation UI state | WAV Save As | WAV drag/drop | MIDI gated unavailable state | Stem gated unavailable state | Preset browsing | Host-owned differences |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Reaper | Pending re-validation; prior automated PASS at 7909e8460d88 | Pending re-validation; prior automated PASS at 7909e8460d88 | Partial: prior evidence shows FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
+| Reaper | Current real-bundle automated PASS | Current real-bundle automated PASS | Partial: current evidence shows FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
 | FL Studio | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Browser/drop target behavior, channel rack vs playlist placement |
 | Cubase | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pool import prompts, project media copy policy |
 | Studio One | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Browser/import prompts, arrange view insertion behavior |
@@ -30,7 +30,7 @@ Validation run:
 | Real bundle | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
 | Bundle DLL size | 13,638,144 bytes |
 | Bundle DLL timestamp | 2026-05-06 21:51 |
-| Result | Real bundle validation passed for CPU/CUDA/Vulkan GGML sibling DLLs. Current real-bundle Reaper automation passed scan/load, FX UI-open, and offline pass-through. AudioPluginHost validation remains pending. Full DAW matrix validation remains pending for FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, which are not installed in this environment. |
+| Result | Real bundle validation passed for CPU/CUDA/Vulkan GGML sibling DLLs. Current real-bundle Reaper automation passed scan/load, FX UI-open, and offline pass-through. Current AudioPluginHost generated-graph launch opened the ACE-Step editor, but AudioPluginHost pass-through remains pending. Full DAW matrix validation remains pending for FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, which are not installed in this environment. |
 
 The CLI validation-prep environment can build the stub VST3 bundle and can run
 isolated Reaper automation. Full evidence-gated manual host validation remains
@@ -51,6 +51,28 @@ The Reaper automation below is valid evidence for current real-bundle scan/load,
 FX UI-open, and pass-through only. It is not a complete pass/fail result for
 Task 11.3 or 12.4 because interactive UI/export checks and the other target
 hosts are still pending.
+
+## JUCE AudioPluginHost validation record
+
+### Current real-bundle generated-graph load/editor check
+
+| Field | Value |
+|---|---|
+| Host executable | `ACE-Step-Plugin\External\JUCE\build-audio-plugin-host\extras\AudioPluginHost\AudioPluginHost_artefacts\RelWithDebInfo\AudioPluginHost.exe` |
+| OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
+| Bundle path | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
+| Tester | Copilot CLI generated-graph launch validation |
+| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\audiopluginhost-validation-current-real\` |
+
+**Current validation status:**
+
+- **Load/editor:** PASS. AudioPluginHost launched a generated
+  `.filtergraph` containing the current real-bundle ACE-Step VST3, and the
+  process main window title was `ACE-Step (VST3)`.
+- **Stability:** PARTIAL PASS. The host stayed alive for evidence capture and
+  was stopped cleanly by exact PID.
+- **Pass-through:** PENDING. AudioPluginHost audio routing and level-matched
+  pass-through have not yet been measured.
 
 ## Reaper validation record
 

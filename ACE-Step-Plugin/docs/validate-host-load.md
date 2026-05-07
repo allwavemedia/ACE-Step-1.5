@@ -233,7 +233,7 @@ Notes:       <any observations, e.g. "editor opens as blank stub - expected">
 
 ## Host A (AudioPluginHost) Validation Status
 
-**Status:** UNBLOCKED (stub assets workaround applied)
+**Status:** PARTIAL PASS (current real-bundle load/editor); PASS-THROUGH PENDING
 
 **Previous Blocker (RESOLVED):** AudioPluginHost build failed during BinaryData generation due to missing JUCE example assets (cassette_recorder.wav, cello.wav, guitar_amp.wav, reverb_ir.wav). These are copyrighted JUCE example files referenced by demo plugins.
 
@@ -258,7 +258,26 @@ cmake --build build-audio-plugin-host --config RelWithDebInfo --target AudioPlug
 ACE-Step-Plugin\External\JUCE\build-audio-plugin-host\extras\AudioPluginHost\AudioPluginHost_artefacts\RelWithDebInfo\AudioPluginHost.exe
 ```
 
-**Next Step:** Execute AudioPluginHost validation checklist (sections 2-5 above) to verify ACE-Step VST3 scan/load/editor/pass-through.
+### Current Real-Bundle AudioPluginHost Load/Editor Evidence
+
+| Field | Value |
+|---|---|
+| Host executable | `ACE-Step-Plugin\External\JUCE\build-audio-plugin-host\extras\AudioPluginHost\AudioPluginHost_artefacts\RelWithDebInfo\AudioPluginHost.exe` |
+| OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
+| Bundle path | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
+| Tester | Copilot CLI generated-graph launch validation |
+| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\audiopluginhost-validation-current-real\` |
+
+Automated results:
+- Load/editor: PASS - AudioPluginHost launched
+  `ace-step-open-editor.filtergraph` against the current real bundle, and the
+  host process exposed the main window title `ACE-Step (VST3)`.
+- Stability: PARTIAL PASS - the host process stayed alive long enough to record
+  the editor window evidence and was stopped cleanly by exact PID.
+- Pass-through: PENDING - AudioPluginHost audio routing and level-matched
+  pass-through have not yet been measured in this host.
+
+**Next Step:** Complete AudioPluginHost pass-through validation from sections 3-5 above before marking Task 2.7 complete.
 
 **Full Investigation:** See `ACE-Step-Plugin\docs\audiopluginhost-blocker-investigation.md` for detailed analysis and alternative solutions.
 

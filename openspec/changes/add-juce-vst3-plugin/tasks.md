@@ -15,7 +15,7 @@
 - [x] 2.6 Add `.vscode/settings.json`, `tasks.json`, and `launch.json` for MSVC kit selection, RelWithDebInfo VST3 build, and AudioPluginHost debugging.
 - [ ] 2.7 Verify the initial VST3 bundle loads in JUCE AudioPluginHost and Reaper with unchanged audio pass-through.
   **Reaper:** PASS for current real-bundle automated scope at commit `a17af3ea`. REAPER v7.71/x64 scanned and loaded `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3`, opened the FX UI, and passed offline pass-through with identical measured peak/RMS (`peak_diff=0.000000000`, `rms_diff=0.000000000`). Evidence is recorded in `ACE-Step-Plugin\docs\validate-host-load.md` and `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
-  **AudioPluginHost:** UNBLOCKED (stub assets workaround applied) but validation pending. Generated stub silent WAV files satisfy build requirements without redistributing copyrighted JUCE assets, and AudioPluginHost now builds. The host validation checklist is not yet executed.
+  **AudioPluginHost:** PARTIAL PASS for current real-bundle load/editor evidence. The built JUCE AudioPluginHost launched a generated `.filtergraph` for `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3`; the process main window title was `ACE-Step (VST3)`, proving the plugin instance and editor opened without a crash. AudioPluginHost pass-through measurement remains pending.
   **Task 2.7 status:** Cannot be marked complete until both AudioPluginHost and Reaper pass with current evidence.
 
 ## 3. ACE-Step C++ Backend Integration
