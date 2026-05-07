@@ -21,9 +21,11 @@ public:
     void setPresets(const std::vector<GenerationPreset>& presets);
     void setFilterText(const juce::String& filterText);
     void setRenameText(const juce::String& name);
+    void setSaveEnabled(bool shouldEnable);
     int getPresetCount() const;
     juce::String getSelectedPresetId() const;
     juce::String getRenameText() const;
+    bool isSaveEnabled() const;
 
     void setOnSave(ActionCallback callback);
     void setOnLoad(ActionCallback callback);

@@ -180,7 +180,10 @@ void AceStepAudioProcessorEditor::loadSelectedPreset()
 
     const auto result = presetBrowserModel.loadPreset(presetId);
     if (result.success)
+    {
         presetBrowserPanel.setRenameText(result.preset.name);
+        presetBrowserPanel.setSaveEnabled(true);
+    }
 
     statusLabel.setText(
         result.success ? "Preset loaded: " + result.preset.name

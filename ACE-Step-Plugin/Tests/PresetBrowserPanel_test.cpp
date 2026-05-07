@@ -46,6 +46,15 @@ public:
             panel.setRenameText("Renamed sketch");
             expectEquals(panel.getRenameText(), juce::String("Renamed sketch"));
         }
+
+        beginTest("save preset action is disabled until a preset is loaded");
+        {
+            PresetBrowserPanel panel;
+            expect(!panel.isSaveEnabled());
+
+            panel.setSaveEnabled(true);
+            expect(panel.isSaveEnabled());
+        }
     }
 };
 

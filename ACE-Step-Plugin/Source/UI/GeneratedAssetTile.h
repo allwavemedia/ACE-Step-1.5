@@ -69,6 +69,7 @@ private:
     std::vector<std::unique_ptr<juce::TextButton>> stemPreviewButtons;
     std::vector<std::unique_ptr<juce::TextButton>> stemExportButtons;
     std::vector<bool> stemPreviewStates;
+    std::vector<size_t> exportableStemIndices;
     juce::Label filenameLabel;
     juce::Label durationLabel;
 

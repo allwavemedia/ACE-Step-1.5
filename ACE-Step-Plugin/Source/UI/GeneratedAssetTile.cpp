@@ -41,15 +41,24 @@ GeneratedAssetTile::GeneratedAssetTile(const GeneratedAsset& a)
     };
     midiExportButton.addMouseListener(this, true);
 
-    for (int index = 0; index < getExportableStemCount(); ++index)
+    for (size_t stemIndex = 0; stemIndex < asset.stems.size(); ++stemIndex)
     {
-        const auto* stem = getExportableStem(index);
-        const auto stemName = StemCapability::getDisplayName(stem->group);
+        const auto& stem = asset.stems[stemIndex];
+        if (!stem.success || stem.outputPath.isEmpty())
+            continue;
+
+        exportableStemIndices.push_back(stemIndex);
+        const auto exportableStemIndex = static_cast<int>(exportableStemIndices.size() - 1);
+        const auto stemName = StemCapability::getDisplayName(stem.group);
         auto previewButton = std::make_unique<juce::TextButton>("Play " + stemName);
         auto exportButton = std::make_unique<juce::TextButton>("Save " + stemName);
 
-        previewButton->onClick = [this, index] { toggleStemPreviewAt(index); };
-        exportButton->onClick = [this, index] { exportStemAt(index); };
+        previewButton->onClick = [this, exportableStemIndex] {
+            toggleStemPreviewAt(exportableStemIndex);
+        };
+        exportButton->onClick = [this, exportableStemIndex] {
+            exportStemAt(exportableStemIndex);
+        };
         previewButton->addMouseListener(this, true);
         exportButton->addMouseListener(this, true);
 
@@ -81,13 +90,7 @@ bool GeneratedAssetTile::canExportMidi() const noexcept
 
 int GeneratedAssetTile::getExportableStemCount() const
 {
-    int count = 0;
-
-    for (const auto& stem : asset.stems)
-        if (stem.success && stem.outputPath.isNotEmpty())
-            ++count;
-
-    return count;
+    return static_cast<int>(exportableStemIndices.size());
 }
 
 juce::File GeneratedAssetTile::getMidiExportFile() const
@@ -199,19 +202,15 @@ const StemAsset* GeneratedAssetTile::getExportableStem(int exportableStemIndex) 
     if (exportableStemIndex < 0)
         return nullptr;
 
-    int currentIndex = 0;
-    for (const auto& stem : asset.stems)
-    {
-        if (!stem.success || stem.outputPath.isEmpty())
-            continue;
+    const auto vectorIndex = static_cast<size_t>(exportableStemIndex);
+    if (vectorIndex >= exportableStemIndices.size())
+        return nullptr;
 
-        if (currentIndex == exportableStemIndex)
-            return &stem;
+    const auto assetStemIndex = exportableStemIndices[vectorIndex];
+    if (assetStemIndex >= asset.stems.size())
+        return nullptr;
 
-        ++currentIndex;
-    }
-
-    return nullptr;
+    return &asset.stems[assetStemIndex];
 }
 
 juce::File GeneratedAssetTile::getExternalDragFile(

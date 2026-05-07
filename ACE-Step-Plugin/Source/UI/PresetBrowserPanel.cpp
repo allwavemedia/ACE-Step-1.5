@@ -13,6 +13,7 @@ PresetBrowserPanel::PresetBrowserPanel()
     presetFilterBox.setTextToShowWhenEmpty("Filter presets", juce::Colours::grey);
     presetFilterBox.onTextChange = [this] { applyFilter(); };
     presetRenameBox.setTextToShowWhenEmpty("New preset name", juce::Colours::grey);
+    presetSaveButton.setEnabled(false);
 
     addAndMakeVisible(presetHeadingLabel);
     addAndMakeVisible(presetFilterBox);
@@ -39,6 +40,11 @@ void PresetBrowserPanel::setFilterText(const juce::String& filterText)
 void PresetBrowserPanel::setRenameText(const juce::String& name)
 {
     presetRenameBox.setText(name, false);
+}
+
+void PresetBrowserPanel::setSaveEnabled(bool shouldEnable)
+{
+    presetSaveButton.setEnabled(shouldEnable);
 }
 
 void PresetBrowserPanel::applyFilter()
@@ -79,6 +85,11 @@ juce::String PresetBrowserPanel::getSelectedPresetId() const
 juce::String PresetBrowserPanel::getRenameText() const
 {
     return presetRenameBox.getText().trim();
+}
+
+bool PresetBrowserPanel::isSaveEnabled() const
+{
+    return presetSaveButton.isEnabled();
 }
 
 void PresetBrowserPanel::setOnSave(ActionCallback callback)
