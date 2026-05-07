@@ -9,12 +9,12 @@ The supported v1 validation matrix is Windows VST3 in these hosts:
 
 | Host | Scan/load | Pass-through | Editor layout | Capture controls | Generation UI state | WAV Save As | WAV drag/drop | MIDI gated unavailable state | Stem gated unavailable state | Preset browsing | Host-owned differences |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Reaper | Current real-bundle automated PASS | Current real-bundle automated PASS | Partial: current evidence shows FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
-| FL Studio | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Browser/drop target behavior, channel rack vs playlist placement |
-| Cubase | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pool import prompts, project media copy policy |
-| Studio One | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Browser/import prompts, arrange view insertion behavior |
-| Ableton Live | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Audio clip placement, browser import prompts |
-| Bitwig | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Launcher/arranger drop interpretation, import prompts |
+| Reaper | Prior automated PASS; current PR-head host rerun pending | Prior automated PASS; current PR-head host rerun pending | Partial: prior evidence shows FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
+| FL Studio | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | Browser/drop target behavior, channel rack vs playlist placement |
+| Cubase | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | Pool import prompts, project media copy policy |
+| Studio One | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | Browser/import prompts, arrange view insertion behavior |
+| Ableton Live | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | Audio clip placement, browser import prompts |
+| Bitwig | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | Launcher/arranger drop interpretation, import prompts |
 
 Do not convert any pending cell to pass/fail without recording the exact host
 version, bundle path, build commit, tester, and result.
@@ -25,12 +25,12 @@ Validation run:
 
 | Field | Value |
 |---|---|
-| Build commit | `a17af3ea` |
+| Build commit | `f58ab9e75975` |
 | OS | Microsoft Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
 | Real bundle | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
 | Bundle DLL size | 13,638,144 bytes |
-| Bundle DLL timestamp | 2026-05-06 21:51 |
-| Result | Real bundle validation passed for CPU/CUDA/Vulkan GGML sibling DLLs. Current real-bundle Reaper automation passed scan/load, FX UI-open, and offline pass-through. Current AudioPluginHost generated-graph launch opened the ACE-Step editor, but AudioPluginHost pass-through remains pending. Full DAW matrix validation remains pending for FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, which are not installed in this environment. |
+| Bundle DLL timestamp | 2026-05-07 03:36 |
+| Result | Current PR-head real bundle rebuilt successfully and `scripts\validate-bundle.ps1 -BuildDir C:\b\ace-ninja -Config RelWithDebInfo` passed in a VS 2022 developer environment. Current PR-head host pass-through and interactive UI/export validation remain pending. Prior Reaper and AudioPluginHost evidence below is retained as historical context only where its build commit differs from `f58ab9e75975`. Full DAW matrix validation is blocked for FL Studio, Cubase, Studio One, Ableton Live, and Bitwig because they are not installed at the checked paths in this environment. |
 
 The CLI validation-prep environment can build the stub VST3 bundle and can run
 isolated Reaper automation. Full evidence-gated manual host validation remains
@@ -39,18 +39,18 @@ still require interactive UI/export checks.
 
 | Host | Checked executable path | Result |
 |---|---|---|
-| Reaper x64 | `C:\Program Files\REAPER (x64)\reaper.exe` | Installed; current real-bundle automated scan/load and pass-through evidence recorded below |
+| Reaper x64 | `C:\Program Files\REAPER (x64)\reaper.exe` | Installed; prior automated scan/load and pass-through evidence recorded below; current PR-head rerun remains pending |
 | Reaper | `C:\Program Files\REAPER\reaper.exe` | Missing |
-| FL Studio 21 | `C:\Program Files\Image-Line\FL Studio 21\FL64.exe` | Missing |
-| Cubase 13 | `C:\Program Files\Steinberg\Cubase 13\Cubase13.exe` | Missing |
-| Studio One 6 | `C:\Program Files\PreSonus\Studio One 6\Studio One.exe` | Missing |
-| Ableton Live 12 Suite | `C:\ProgramData\Ableton\Live 12 Suite\Program\Ableton Live 12 Suite.exe` | Missing |
-| Bitwig Studio | `C:\Program Files\Bitwig Studio\Bitwig Studio.exe` | Missing |
+| FL Studio 21 | `C:\Program Files\Image-Line\FL Studio 21\FL64.exe` | BLOCKED - host not installed at checked path |
+| Cubase 13 | `C:\Program Files\Steinberg\Cubase 13\Cubase13.exe` | BLOCKED - host not installed at checked path |
+| Studio One 6 | `C:\Program Files\PreSonus\Studio One 6\Studio One.exe` | BLOCKED - host not installed at checked path |
+| Ableton Live 12 Suite | `C:\ProgramData\Ableton\Live 12 Suite\Program\Ableton Live 12 Suite.exe` | BLOCKED - host not installed at checked path |
+| Bitwig Studio | `C:\Program Files\Bitwig Studio\Bitwig Studio.exe` | BLOCKED - host not installed at checked path |
 
-The Reaper automation below is valid evidence for current real-bundle scan/load,
-FX UI-open, and pass-through only. It is not a complete pass/fail result for
-Task 11.3 or 12.4 because interactive UI/export checks and the other target
-hosts are still pending.
+The Reaper automation below is valid evidence for the recorded build commit's
+scan/load, FX UI-open, and pass-through only. It is not a complete pass/fail
+result for Task 11.3 or 12.4 because current PR-head host reruns, interactive
+UI/export checks, and the other target hosts are still pending or blocked.
 
 ## JUCE AudioPluginHost validation record
 

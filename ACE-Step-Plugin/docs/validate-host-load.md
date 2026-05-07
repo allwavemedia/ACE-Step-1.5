@@ -235,6 +235,22 @@ Notes:       <any observations, e.g. "editor opens as blank stub - expected">
 
 **Status:** PARTIAL PASS (current real-bundle load/editor); PASS-THROUGH PENDING
 
+### Current PR-Head Bundle Rebuild Preflight
+
+| Field | Value |
+|---|---|
+| Build commit | `f58ab9e75975` |
+| OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
+| Bundle path | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
+| Bundle DLL timestamp | 2026-05-07 03:36 |
+| Tester | Codex CLI build and bundle validation |
+| Result | PASS for rebuild and bundle structure; AudioPluginHost pass-through still pending |
+
+Build and bundle validation results:
+- Real VST3 target: PASS - `cmake --build C:\b\ace-ninja --target AceStepPlugin_VST3 --parallel` succeeded after loading the Visual Studio 2022 `vcvarsall.bat x64` environment.
+- Bundle validation: PASS - `scripts\validate-bundle.ps1 -BuildDir C:\b\ace-ninja -Config RelWithDebInfo` found `ACE-Step.vst3`, `ggml.dll`, `ggml-base.dll`, `ggml-cpu.dll`, `ggml-cuda.dll`, and `ggml-vulkan.dll`, and confirmed the plugin binary has no direct CUDA imports.
+- Host validation: PENDING - no current PR-head AudioPluginHost audio routing or level-matched pass-through measurement has been produced.
+
 **Previous Blocker (RESOLVED):** AudioPluginHost build failed during BinaryData generation due to missing JUCE example assets (cassette_recorder.wav, cello.wav, guitar_amp.wav, reverb_ir.wav). These are copyrighted JUCE example files referenced by demo plugins.
 
 **Resolution Applied:** Generated stub silent WAV files using `ACE-Step-Plugin\scripts\generate-stub-juce-assets.py`. These minimal files satisfy the build requirements without requiring copyrighted assets.
@@ -283,7 +299,7 @@ Automated results:
 
 ## Host B (Reaper) Validation Status
 
-**Status:** REAPER CURRENT REAL-BUNDLE AUTOMATION PASSED; AUDIOPLUGINHOST PENDING
+**Status:** PRIOR REAPER REAL-BUNDLE AUTOMATION PASSED; CURRENT PR-HEAD HOST RERUN PENDING; AUDIOPLUGINHOST PASS-THROUGH PENDING
 
 ### Current Real-Bundle Automated Reaper Validation Record
 
@@ -345,9 +361,9 @@ scan/load or offline pass-through run for commit `e3269c299203`.
 - Scan/load: PASS - `VST3: ACE-Step (Allwave Media)` found, `TrackFX_AddByName` inserted (FX index 0), FX UI opened
 - Offline pass-through: PASS - `baseline_peak=0.250000000`, `enabled_peak=0.250000000`, `peak_diff=0.000000000`, `baseline_rms=0.176771017`, `enabled_rms=0.176771017`, `rms_diff=0.000000000`
 
-**Current validation conclusion:**
+**Validation conclusion:**
 
-Prior Reaper evidence remains useful context, but the current real-bundle
-automation above is the active Reaper evidence for scan/load, FX UI-open, and
-offline pass-through. Task 2.7 must still not be checked until AudioPluginHost
-validation also passes.
+Prior Reaper evidence remains useful context for scan/load, FX UI-open, and
+offline pass-through, but it is not a current PR-head host rerun for commit
+`f58ab9e75975`. Task 2.7 must still not be checked until current PR-head Reaper
+validation and AudioPluginHost pass-through validation both pass.

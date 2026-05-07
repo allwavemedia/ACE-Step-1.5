@@ -16,6 +16,7 @@
 - [ ] 2.7 Verify the initial VST3 bundle loads in JUCE AudioPluginHost and Reaper with unchanged audio pass-through.
   **Reaper:** PASS for current real-bundle automated scope at commit `a17af3ea`. REAPER v7.71/x64 scanned and loaded `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3`, opened the FX UI, and passed offline pass-through with identical measured peak/RMS (`peak_diff=0.000000000`, `rms_diff=0.000000000`). Evidence is recorded in `ACE-Step-Plugin\docs\validate-host-load.md` and `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
   **AudioPluginHost:** PARTIAL PASS for current real-bundle load/editor evidence. The built JUCE AudioPluginHost launched a generated `.filtergraph` for `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3`; the process main window title was `ACE-Step (VST3)`, proving the plugin instance and editor opened without a crash. AudioPluginHost pass-through measurement remains pending.
+  **Current PR-head preflight:** PASS for rebuild and bundle validation at commit `f58ab9e75975`. `cmake --build C:\b\ace-ninja --target AceStepPlugin_VST3 --parallel` succeeded in a VS 2022 developer environment, and `scripts\validate-bundle.ps1 -BuildDir C:\b\ace-ninja -Config RelWithDebInfo` confirmed the required plugin/backend DLLs and no direct CUDA imports from the plugin binary. Current PR-head AudioPluginHost pass-through and Reaper host reruns remain pending.
   **Task 2.7 status:** Cannot be marked complete until both AudioPluginHost and Reaper pass with current evidence.
 
 ## 3. ACE-Step C++ Backend Integration
@@ -103,6 +104,7 @@
 - [x] 11.2 Add compatibility notes for host-controlled differences such as external drag insertion location, file import prompts, and scan behavior.
 - [ ] 11.3 Verify scan/load, pass-through, editor layout, capture controls, generation UI state, WAV export, MIDI export when available, stem export, and preset browsing across Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig.
   **Reaper:** Current real-bundle automated validation PASS at commit `a17af3ea` for scan/load, FX UI-open, and offline pass-through. Remaining Reaper interactive UI/export checks and FL Studio, Cubase, Studio One, Ableton Live, and Bitwig validation are still pending. Evidence scope is recorded in `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
+  **Current blocker:** Host availability checked at commit `f58ab9e75975`: Reaper v7.71/x64 is installed at `C:\Program Files\REAPER (x64)\reaper.exe`, but FL Studio 21, Cubase 13, Studio One 6, Ableton Live 12 Suite, and Bitwig Studio are blocked because they are not installed at the checked paths. Do not mark this task complete until every required host is validated or the OpenSpec scope explicitly accepts the blockers.
 - [x] 11.4 Add fallback documentation for hosts where external drag-and-drop differs from the common path.
 
 ## 12. Validation and Release Readiness
@@ -114,5 +116,7 @@
 - [x] 12.3 Verify the VST3 bundle contains the plugin DLL plus CPU, CUDA, and Vulkan GGML backend DLL siblings.
   Evidence: the real bundle directory `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3\Contents\x86_64-win` contains `ACE-Step.vst3`, `ggml.dll`, `ggml-base.dll`, `ggml-cpu.dll`, `ggml-cuda.dll`, and `ggml-vulkan.dll`; `scripts\validate-bundle.ps1` passed against that bundle.
 - [ ] 12.4 Verify external drag-and-drop in Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig, with Save As as fallback.
+  **Current blocker:** Reaper drag/drop remains pending manual validation, and FL Studio 21, Cubase 13, Studio One 6, Ableton Live 12 Suite, and Bitwig Studio are blocked because they are not installed at the checked paths. Do not mark this task complete until every required host is validated or the OpenSpec scope explicitly accepts the blockers.
 - [ ] 12.5 Verify missing model, checksum mismatch, out-of-memory, backend-load failure, cancellation, generation failure, MIDI unavailable state, stem failure, preset load failure, and host compatibility errors surface in the editor without crashing the host.
+  **Current blocker:** Model root exists at `%LOCALAPPDATA%\AceStepPlugin\models` with the four expected GGUF files, but destructive/manual error-state validation has not been executed for commit `f58ab9e75975`. Do not mark this task complete until all non-blocked error states pass and any blocked unsafe cases are explicitly accepted by scope.
 - [x] 12.6 Update build and troubleshooting documentation with final external source pins, SDK versions, model manifest details, MIDI/stem capability details, preset storage details, and known host limitations.
