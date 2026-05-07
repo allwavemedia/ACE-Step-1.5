@@ -159,7 +159,17 @@ void AceStepAudioProcessorEditor::refreshPresetBrowser()
 {
     const auto result = presetBrowserModel.refresh();
     if (result.success)
+    {
         presetBrowserPanel.setPresets(presetBrowserModel.getPresets());
+
+        if (result.errorMessage.isNotEmpty())
+            statusLabel.setText(result.errorMessage, juce::dontSendNotification);
+    }
+    else
+    {
+        presetBrowserPanel.setPresets({});
+        statusLabel.setText(result.errorMessage, juce::dontSendNotification);
+    }
 }
 
 void AceStepAudioProcessorEditor::loadSelectedPreset()

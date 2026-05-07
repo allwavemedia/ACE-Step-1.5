@@ -84,6 +84,24 @@ public:
             directory.deleteRecursively();
         }
 
+        beginTest("list skips invalid presets and returns valid presets with warning");
+        {
+            const auto directory = uniquePresetDirectory("acestep-presets-list-invalid");
+            expect(directory.isDirectory(), "precondition: created preset directory");
+            PresetStore store(directory);
+            expect(store.save(makePreset()).success);
+            expect(directory.getChildFile("broken.json").replaceWithText("{"));
+
+            const auto listed = store.list();
+            expect(listed.success, listed.errorMessage);
+            expectEquals(static_cast<int>(listed.presets.size()), 1);
+            if (!listed.presets.empty())
+                expectEquals(listed.presets.front().id, juce::String("ambient-sketch"));
+            expect(listed.errorMessage.contains("broken"), listed.errorMessage);
+
+            directory.deleteRecursively();
+        }
+
         beginTest("schema version zero migrates to current schema");
         {
             const auto directory = uniquePresetDirectory("acestep-presets-migrate");

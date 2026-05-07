@@ -182,7 +182,16 @@ PresetListResult PresetStore::list() const
     {
         auto loaded = load(file.getFileNameWithoutExtension());
         if (!loaded.success)
-            return { false, {}, loaded.errorMessage };
+        {
+            if (result.errorMessage.isNotEmpty())
+                result.errorMessage += "\n";
+
+            result.errorMessage += "Skipped preset '"
+                + file.getFileNameWithoutExtension()
+                + "': "
+                + loaded.errorMessage;
+            continue;
+        }
 
         result.presets.push_back(std::move(loaded.preset));
     }

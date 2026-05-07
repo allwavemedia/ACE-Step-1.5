@@ -37,6 +37,25 @@ public:
 
             directory.deleteRecursively();
         }
+
+        beginTest("refresh keeps valid presets available when another preset is invalid");
+        {
+            const auto directory = uniquePresetDirectory("acestep-preset-browser-invalid");
+            expect(directory.isDirectory(), "precondition: created preset directory");
+            PresetStore store(directory);
+            expect(store.save(makePreset()).success);
+            expect(directory.getChildFile("broken.json").replaceWithText("{"));
+
+            PresetBrowserModel model(directory);
+            const auto result = model.refresh();
+            expect(result.success, result.errorMessage);
+            expect(result.errorMessage.contains("broken"), result.errorMessage);
+            expectEquals(static_cast<int>(model.getPresets().size()), 1);
+            if (!model.getPresets().empty())
+                expectEquals(model.getPresets().front().id, juce::String("ambient-sketch"));
+
+            directory.deleteRecursively();
+        }
     }
 
 private:
