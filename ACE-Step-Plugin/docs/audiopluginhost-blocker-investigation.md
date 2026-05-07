@@ -344,6 +344,25 @@ Once built, load the real-backend VST3 bundle
 open the ACE-Step editor, route Audio Input → ACE-Step (VST3) → Audio Output,
 and confirm pass-through as described in `validate-host-load.md`.
 
+### AudioPluginHost Build Verification
+
+AudioPluginHost was built locally from the vendored JUCE 8.0.10 tree using Visual Studio 2022 and CMake.
+
+| Field | Value |
+|---|---|
+| Branch | `agents/stage-commit-remove-blockers` |
+| Commit | `160d9a98` |
+| Generator | `Visual Studio 17 2022` |
+| Platform | `x64` |
+| Config | `RelWithDebInfo` |
+| Build directory | `ACE-Step-Plugin\External\JUCE\build-audio-plugin-host` |
+| Executable | `ACE-Step-Plugin\External\JUCE\build-audio-plugin-host\extras\AudioPluginHost\AudioPluginHost_artefacts\RelWithDebInfo\AudioPluginHost.exe` |
+| Executable size | 14,129,664 bytes |
+| Build timestamp | 2026-05-07 15:21:00 |
+| Result | **PASS** |
+
+The previous missing `extras\Build\`, harfbuzz `OT\Var\VARC\`, and Ogg/Vorbis vendored-source blockers did not recur.
+
 ### Files Changed (2026-05-07, resolution)
 
 - Restored `ACE-Step-Plugin\External\JUCE\modules\juce_graphics\fonts\harfbuzz\OT\Var\VARC\VARC.cc`
