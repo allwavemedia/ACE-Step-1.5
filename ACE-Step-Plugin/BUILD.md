@@ -23,7 +23,24 @@ plugin binary.
 
 ### Real Backend Validation Status
 
-Real-backend validation was run on Windows 11 with Visual Studio 2022
+**Current build baseline:** commit `9ca3ce1a518c`, validated 2026-05-07 on
+Windows 11 Pro Insider Preview 10.0.26300 x64.
+
+| Check | Result |
+|---|---|
+| Bundle DLL present (`ACE-Step.vst3`) | PASS — 13,638,656 bytes |
+| `ggml.dll` present | PASS — 360,960 bytes |
+| `ggml-base.dll` present | PASS — 1,067,520 bytes |
+| `ggml-cpu.dll` present | PASS — 1,393,152 bytes |
+| `ggml-cuda.dll` present | PASS — 163,799,040 bytes |
+| `ggml-vulkan.dll` present | PASS — 75,120,640 bytes |
+| No direct CUDA imports from plugin binary | PASS — only `ggml.dll` from the above list |
+
+`dumpbin /dependents ACE-Step.vst3` shows `ggml.dll` and standard Windows
+system DLLs only. No `cudart64_*.dll`, `nvcuda.dll`, or `cublas64_*.dll`
+appear as direct plugin imports.
+
+Prior real-backend validation was run on Windows 11 with Visual Studio 2022
 Professional, CUDA Toolkit 13.2.1, and Vulkan SDK 1.4.341.1.
 
 | Tool | Result |
