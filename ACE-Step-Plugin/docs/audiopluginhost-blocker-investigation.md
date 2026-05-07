@@ -351,7 +351,7 @@ AudioPluginHost was built locally from the vendored JUCE 8.0.10 tree using Visua
 | Field | Value |
 |---|---|
 | Branch | `agents/stage-commit-remove-blockers` |
-| Commit | `160d9a98` |
+| Build commit | `160d9a98` |
 | Generator | `Visual Studio 17 2022` |
 | Platform | `x64` |
 | Config | `RelWithDebInfo` |
