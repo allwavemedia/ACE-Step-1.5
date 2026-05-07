@@ -15,8 +15,8 @@
 - [x] 2.6 Add `.vscode/settings.json`, `tasks.json`, and `launch.json` for MSVC kit selection, RelWithDebInfo VST3 build, and AudioPluginHost debugging.
 - [ ] 2.7 Verify the initial VST3 bundle loads in JUCE AudioPluginHost and Reaper with unchanged audio pass-through.
   **Reaper:** PASS for current PR-head automated validation (2026-05-07). REAPER v7.71/x64 scanned and loaded `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3`, opened the FX UI (at 448 ms), and passed offline pass-through: `baseline_peak=0.249969482`, `enabled_peak=0.249969482`, `peak_diff=0.000000000`, `rms_diff=0.000000000`. Evidence is recorded in `ACE-Step-Plugin\docs\validate-host-load.md` and `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
-  **AudioPluginHost:** BLOCKED — vendored JUCE 8.0.10 tree is missing `extras/Build/` CMake infrastructure and has an incomplete harfbuzz source. AudioPluginHost cannot be built locally. A developer with a complete JUCE 8.0.10 checkout must build AudioPluginHost and run the pass-through validation. See `ACE-Step-Plugin\docs\audiopluginhost-blocker-investigation.md` for details.
-  **Task 2.7 status:** Cannot be marked complete until AudioPluginHost pass-through evidence is collected. Reaper evidence is current as of 2026-05-07.
+  **AudioPluginHost:** Build blockers resolved 2026-05-07. The `extras/Build/` CMake infrastructure and the missing harfbuzz `OT/Var/VARC/` files have been restored from the official JUCE 8.0.10 GitHub release. A developer with Visual Studio 2022 and CMake can now build AudioPluginHost from the vendored tree using `python ACE-Step-Plugin\scripts\generate-stub-juce-assets.py` followed by the CMake commands in `ACE-Step-Plugin\docs\audiopluginhost-blocker-investigation.md`. Pass-through validation must still be executed and evidence recorded before this task can be marked complete.
+  **Task 2.7 status:** Reaper evidence is current (2026-05-07). AudioPluginHost build is now unblocked; pass-through evidence still pending.
 
 ## 3. ACE-Step C++ Backend Integration
 
@@ -104,7 +104,7 @@
 - [ ] 11.3 Verify scan/load, pass-through, editor layout, capture controls, generation UI state, WAV export, MIDI export when available, stem export, and preset browsing across Reaper, FL Studio, Cubase, Studio One, Ableton Live, and Bitwig.
   **Reaper:** PASS for current PR-head automated validation (2026-05-07) for scan/load, FX UI-open, and offline pass-through. Remaining Reaper interactive UI/export checks and all other DAH validations still pending.
   **Current blocker:** FL Studio 21, Cubase 13, Studio One 6, Ableton Live 12 Suite, and Bitwig Studio are blocked because they are not installed. Do not mark this task complete until every required host is validated or the OpenSpec scope explicitly accepts the blockers.
-  **AudioPluginHost:** BLOCKED — vendored JUCE tree incomplete; cannot build AudioPluginHost locally. Evidence scope is recorded in `ACE-Step-Plugin\docs\host-compatibility-matrix.md`.
+  **AudioPluginHost:** Build blockers resolved 2026-05-07; see task 2.7 and `audiopluginhost-blocker-investigation.md`. Pass-through validation still pending.
 - [x] 11.4 Add fallback documentation for hosts where external drag-and-drop differs from the common path.
 
 ## 12. Validation and Release Readiness

@@ -282,73 +282,83 @@ The missing assets are a **JUCE AudioPluginHost build blocker**, not an **ACE-St
 
 ---
 
-## New Blocker Discovered 2026-05-07: Missing JUCE extras/Build CMake Infrastructure
+## Blocker Resolved 2026-05-07: Missing JUCE extras/Build and harfbuzz VARC Files Restored
 
 **Investigation date:** 2026-05-07
+**Resolution date:** 2026-05-07
 **Branch:** `agents/stage-commit-remove-blockers`
 
 After the stub WAV blocker was resolved, a build attempt on the current branch
-revealed a second structural gap in the vendored JUCE tree.
+revealed two structural gaps in the vendored JUCE tree. Both have been resolved.
 
-### Root Cause
+### Root Cause (Resolved)
 
-The vendored JUCE 8.0.10 tree was trimmed to include only the modules and
-source files required by the ACE-Step VST3 plugin. The `extras/Build/`
-subdirectory — which contains the CMake build infrastructure (`JUCEModuleSupport.cmake`,
-`JUCEUtils.cmake`, `juceaide/`, `juce_build_tools/`) — was omitted during
-vendoring. When configuring AudioPluginHost from the JUCE root `CMakeLists.txt`,
-the first `include(extras/Build/CMake/JUCEModuleSupport.cmake)` call at line 50
-fails immediately because the file does not exist.
+**Gap 1:** The `extras/Build/` subdirectory was missing from the vendored tree.
+All 43 files were restored from the official JUCE 8.0.10 GitHub release and are
+now committed in `ACE-Step-Plugin/External/JUCE/extras/Build/`.
 
-A session-local recovery of all 43 missing files from the official JUCE 8.0.10
-GitHub release was attempted. Configure then proceeded further but failed at
-compile time with:
+**Gap 2:** The harfbuzz source tree at
+`modules/juce_graphics/fonts/harfbuzz/OT/Var/VARC/` was missing. `harfbuzz.cc`
+includes `OT/Var/VARC/VARC.cc` as its first include, causing a compile error:
 
 ```
 harfbuzz.cc(1,10): error C1083: Cannot open include file:
 'OT/Var/VARC/VARC.cc': No such file or directory
 ```
 
-This confirmed that the harfbuzz source tree embedded in
-`modules/juce_graphics/fonts/harfbuzz/` is also incomplete in the vendored
-copy. The depth of missing files makes restoring the full tree impractical
-without downloading the complete JUCE 8.0.10 archive.
+The three missing files were fetched directly from the official JUCE 8.0.10
+GitHub release (`https://raw.githubusercontent.com/juce-framework/JUCE/8.0.10/`)
+and committed to the vendored tree:
 
-### Impact
+- `modules/juce_graphics/fonts/harfbuzz/OT/Var/VARC/VARC.cc`
+- `modules/juce_graphics/fonts/harfbuzz/OT/Var/VARC/VARC.hh`
+- `modules/juce_graphics/fonts/harfbuzz/OT/Var/VARC/coord-setter.hh`
 
-AudioPluginHost cannot be built from the vendored JUCE source tree in its
-current form. AudioPluginHost pass-through evidence for Task 2.7 cannot be
-collected from a local build in this session.
+All transitive includes from `VARC.cc` (`hb-draw.hh`, `hb-geometry.hh`,
+`hb-ot-layout-common.hh`, `hb-ot-layout-gdef-table.hh`) and all other
+`harfbuzz.cc` root-level includes have been verified present in the vendored
+tree. No further missing harfbuzz files were found.
 
-### Required Resolution
+### Impact (Post-Resolution)
 
-A developer with access to a complete JUCE 8.0.10 source tree must build
-AudioPluginHost using the following commands on a Windows 11 machine:
+The known build blockers for AudioPluginHost are now resolved. A developer
+with Visual Studio 2022 and CMake can build AudioPluginHost directly from
+the vendored tree using the commands below.
+
+### Build Instructions (Unblocked)
 
 ```powershell
 # 1. Generate stub WAV assets to satisfy BinaryData inputs
 python ACE-Step-Plugin\scripts\generate-stub-juce-assets.py
 
-# 2. Configure and build AudioPluginHost from the complete JUCE tree
-#    (path below assumes a separate full JUCE 8.0.10 checkout at C:\juce-src)
-cmake -S C:\juce-src -B C:\juce-src\build-aph -G "Visual Studio 17 2022" -A x64 ^
-    -DJUCE_BUILD_EXTRAS=ON -DJUCE_BUILD_EXAMPLES=OFF
-cmake --build C:\juce-src\build-aph --config RelWithDebInfo --target AudioPluginHost
+# 2. Configure and build AudioPluginHost from the vendored JUCE tree
+cd ACE-Step-Plugin\External\JUCE
+cmake -B build-audio-plugin-host -G "Visual Studio 17 2022" -A x64 `
+    -DJUCE_BUILD_EXTRAS=ON `
+    -DJUCE_BUILD_EXAMPLES=OFF
+cmake --build build-audio-plugin-host --config RelWithDebInfo --target AudioPluginHost
 ```
 
-Alternatively, download the pre-built AudioPluginHost.exe from the JUCE 8.0.10
-release page at https://github.com/juce-framework/JUCE/releases/tag/8.0.10 if a
-pre-built binary is published there.
-
-Once a working AudioPluginHost.exe is available, load the real-backend VST3
-bundle (`C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3`),
+Once built, load the real-backend VST3 bundle
+(`C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3`),
 open the ACE-Step editor, route Audio Input → ACE-Step (VST3) → Audio Output,
 and confirm pass-through as described in `validate-host-load.md`.
 
-### Files Changed (2026-05-07)
+### Files Changed (2026-05-07, resolution)
+
+- Restored `ACE-Step-Plugin\External\JUCE\modules\juce_graphics\fonts\harfbuzz\OT\Var\VARC\VARC.cc`
+  from JUCE 8.0.10 official GitHub release.
+- Restored `ACE-Step-Plugin\External\JUCE\modules\juce_graphics\fonts\harfbuzz\OT\Var\VARC\VARC.hh`
+  from JUCE 8.0.10 official GitHub release.
+- Restored `ACE-Step-Plugin\External\JUCE\modules\juce_graphics\fonts\harfbuzz\OT\Var\VARC\coord-setter.hh`
+  from JUCE 8.0.10 official GitHub release.
+- Updated `ACE-Step-Plugin\docs\audiopluginhost-blocker-investigation.md` (this document)
+  to reflect the resolved blocker and provide updated build instructions.
+
+### Files Changed (2026-05-07, investigation)
 
 - Updated `ACE-Step-Plugin\docs\audiopluginhost-blocker-investigation.md`
-  (this document) with new build-system blocker evidence.
+  with new build-system blocker evidence.
 - Updated `ACE-Step-Plugin\BUILD.md` with current build baseline evidence.
 
 ---

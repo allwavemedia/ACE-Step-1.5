@@ -18,6 +18,8 @@ External/JUCE/examples/Assets/reverb_ir.wav
 # Un-negate plugin source/test directories that the root .gitignore shadows on Windows
 !Tests/
 !Source/
+# Un-negate harfbuzz OT/Var/ directory (root .gitignore has `var/` which matches on Windows)
+!External/JUCE/modules/juce_graphics/fonts/harfbuzz/OT/Var/
 *.sln
 *.vcxproj
 *.vcxproj.filters
