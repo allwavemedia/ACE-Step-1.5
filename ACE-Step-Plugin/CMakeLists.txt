@@ -55,6 +55,17 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/Engine/GenerationRequest.h
     Source/Engine/ReferenceAudioResampler.cpp
     Source/Engine/ReferenceAudioResampler.h
+    Source/MIDI/MidiFileWriter.cpp
+    Source/MIDI/MidiFileWriter.h
+    Source/MIDI/MidiNoteEvent.h
+    Source/Presets/PresetStore.cpp
+    Source/Presets/PresetStore.h
+    Source/Presets/PresetTypes.h
+    Source/Presets/PresetBrowserModel.cpp
+    Source/Presets/PresetBrowserModel.h
+    Source/Stems/StemCapability.cpp
+    Source/Stems/StemCapability.h
+    Source/Stems/StemTypes.h
     Source/Models/GeneratedAssetHistory.cpp
     Source/Models/GeneratedAssetHistory.h
     Source/Models/GeneratedAssetTempDirectories.cpp
@@ -73,6 +84,8 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/UI/GeneratedAssetHistoryView.h
     Source/UI/GeneratedAssetTile.cpp
     Source/UI/GeneratedAssetTile.h
+    Source/UI/PresetBrowserPanel.cpp
+    Source/UI/PresetBrowserPanel.h
     Source/UI/PreviewPlayer.cpp
     Source/UI/PreviewPlayer.h
     Source/PluginEditor.cpp
@@ -142,6 +155,17 @@ if(ACESTEP_BUILD_TESTS)
             Source/Engine/GenerationRequest.h
             Source/Engine/ReferenceAudioResampler.cpp
             Source/Engine/ReferenceAudioResampler.h
+            Source/MIDI/MidiFileWriter.cpp
+            Source/MIDI/MidiFileWriter.h
+            Source/MIDI/MidiNoteEvent.h
+            Source/Presets/PresetStore.cpp
+            Source/Presets/PresetStore.h
+            Source/Presets/PresetTypes.h
+            Source/Presets/PresetBrowserModel.cpp
+            Source/Presets/PresetBrowserModel.h
+            Source/Stems/StemCapability.cpp
+            Source/Stems/StemCapability.h
+            Source/Stems/StemTypes.h
             Source/Models/GeneratedAssetHistory.cpp
             Source/Models/GeneratedAssetHistory.h
             Source/Models/GeneratedAssetTempDirectories.cpp
@@ -160,6 +184,8 @@ if(ACESTEP_BUILD_TESTS)
             Source/UI/GeneratedAssetHistoryView.h
             Source/UI/GeneratedAssetTile.cpp
             Source/UI/GeneratedAssetTile.h
+            Source/UI/PresetBrowserPanel.cpp
+            Source/UI/PresetBrowserPanel.h
             Source/UI/PreviewPlayer.cpp
             Source/UI/PreviewPlayer.h
             Tests/AceStepCApi_test.cpp
@@ -178,10 +204,15 @@ if(ACESTEP_BUILD_TESTS)
             Tests/ModelDownloader_test.cpp
             Tests/ModelDownloaderErrors_test.cpp
             Tests/ModelSetupState_test.cpp
+            Tests/MidiFileWriter_test.cpp
+            Tests/PresetStore_test.cpp
+            Tests/PresetBrowserModel_test.cpp
+            Tests/PresetBrowserPanel_test.cpp
             Tests/PreviewPlayer_test.cpp
             Tests/ReferenceAudioBufferBasic_test.cpp
             Tests/ReferenceAudioBufferConcurrent_test.cpp
             Tests/ReferenceAudioResampler_test.cpp
+            Tests/StemCapability_test.cpp
             Tests/ReferenceAudioBufferTestMain.cpp
             Tests/ReferenceAudioBufferTestUtils.h
     )
@@ -227,7 +258,7 @@ if(ACESTEP_BUILD_REAL_SMOKE_TEST)
     # C++11 raw string literal so Windows backslashes are not misinterpreted as
     # C escape sequences (e.g. \b, \t) by the compiler.
     file(GENERATE
-        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/AceSynthPath.h"
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/AceSynthPath.h"
         CONTENT "#pragma once\n#define ACESTEP_ACE_SYNTH_PATH R\"path($<TARGET_FILE:ace-synth>)path\"\n"
     )
 
@@ -244,7 +275,7 @@ if(ACESTEP_BUILD_REAL_SMOKE_TEST)
 
     target_include_directories(AceStepRealSmokeTest
         PRIVATE
-            "${CMAKE_CURRENT_BINARY_DIR}"
+            "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
             "${CMAKE_CURRENT_SOURCE_DIR}"
     )
 

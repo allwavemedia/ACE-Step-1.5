@@ -1,6 +1,7 @@
 #include "GeneratedAssetTile.h"
 
 #include "ExternalFileDrag.h"
+#include "../Stems/StemCapability.h"
 
 namespace acestep_plugin
 {
@@ -34,6 +35,39 @@ GeneratedAssetTile::GeneratedAssetTile(const GeneratedAsset& a)
     midiExportButton.setEnabled(midiAvailable);
     midiExportButton.setTooltip(
         midiAvailable ? "Export MIDI" : "MIDI export unavailable: no reliable note/event data");
+    midiExportButton.onClick = [this] {
+        if (canExportMidi() && onMidiSaveAs)
+            onMidiSaveAs(asset);
+    };
+    midiExportButton.addMouseListener(this, true);
+
+    for (size_t stemIndex = 0; stemIndex < asset.stems.size(); ++stemIndex)
+    {
+        const auto& stem = asset.stems[stemIndex];
+        if (!stem.success || stem.outputPath.isEmpty())
+            continue;
+
+        exportableStemIndices.push_back(stemIndex);
+        const auto exportableStemIndex = static_cast<int>(exportableStemIndices.size() - 1);
+        const auto stemName = StemCapability::getDisplayName(stem.group);
+        auto previewButton = std::make_unique<juce::TextButton>("Play " + stemName);
+        auto exportButton = std::make_unique<juce::TextButton>("Save " + stemName);
+
+        previewButton->onClick = [this, exportableStemIndex] {
+            toggleStemPreviewAt(exportableStemIndex);
+        };
+        exportButton->onClick = [this, exportableStemIndex] {
+            exportStemAt(exportableStemIndex);
+        };
+        previewButton->addMouseListener(this, true);
+        exportButton->addMouseListener(this, true);
+
+        addAndMakeVisible(*previewButton);
+        addAndMakeVisible(*exportButton);
+        stemPreviewButtons.push_back(std::move(previewButton));
+        stemExportButtons.push_back(std::move(exportButton));
+        stemPreviewStates.push_back(false);
+    }
 
     addAndMakeVisible(filenameLabel);
     addAndMakeVisible(durationLabel);
@@ -52,6 +86,58 @@ void GeneratedAssetTile::setPlaying(bool shouldPlay)
 bool GeneratedAssetTile::canExportMidi() const noexcept
 {
     return asset.midiAvailability == MidiExportAvailability::available;
+}
+
+int GeneratedAssetTile::getExportableStemCount() const
+{
+    return static_cast<int>(exportableStemIndices.size());
+}
+
+juce::File GeneratedAssetTile::getMidiExportFile() const
+{
+    if (canExportMidi() && asset.midiPath.isNotEmpty())
+        return juce::File(asset.midiPath);
+
+    return {};
+}
+
+juce::File GeneratedAssetTile::getStemExportFileAt(int exportableStemIndex) const
+{
+    if (const auto* stem = getExportableStem(exportableStemIndex))
+        return juce::File(stem->outputPath);
+
+    return {};
+}
+
+bool GeneratedAssetTile::toggleStemPreviewAt(int exportableStemIndex)
+{
+    const auto* stem = getExportableStem(exportableStemIndex);
+    if (stem == nullptr)
+        return false;
+
+    const auto index = static_cast<size_t>(exportableStemIndex);
+    if (index >= stemPreviewStates.size())
+        return false;
+
+    stemPreviewStates[index] = !stemPreviewStates[index];
+    stemPreviewButtons[index]->setButtonText(
+        (stemPreviewStates[index] ? "Stop " : "Play ")
+        + StemCapability::getDisplayName(stem->group));
+
+    if (onStemPreview)
+        onStemPreview(asset, *stem, stemPreviewStates[index]);
+
+    return true;
+}
+
+bool GeneratedAssetTile::exportStemAt(int exportableStemIndex)
+{
+    const auto* stem = getExportableStem(exportableStemIndex);
+    if (stem == nullptr || onStemSaveAs == nullptr)
+        return false;
+
+    onStemSaveAs(asset, *stem);
+    return true;
 }
 
 void GeneratedAssetTile::paint(juce::Graphics& g)
@@ -77,6 +163,19 @@ void GeneratedAssetTile::resized()
     filenameLabel.setBounds(bounds.removeFromTop(18));
     durationLabel.setBounds(bounds.removeFromTop(14));
 
+    if (!stemExportButtons.empty())
+    {
+        auto stemRow = bounds.removeFromBottom(24);
+        const auto stemButtonCount = static_cast<int>(stemExportButtons.size() * 2);
+        const int stemWidth = juce::jmax(1, stemRow.getWidth() / stemButtonCount);
+
+        for (size_t index = 0; index < stemExportButtons.size(); ++index)
+        {
+            stemPreviewButtons[index]->setBounds(stemRow.removeFromLeft(stemWidth).reduced(1, 0));
+            stemExportButtons[index]->setBounds(stemRow.removeFromLeft(stemWidth).reduced(1, 0));
+        }
+    }
+
     const auto buttonRow = bounds.removeFromBottom(26);
     playStopButton.setBounds(buttonRow.withWidth(60));
     saveAsButton.setBounds(buttonRow.withTrimmedLeft(64).withWidth(60));
@@ -89,10 +188,46 @@ void GeneratedAssetTile::mouseDown(const juce::MouseEvent& /*e*/)
 
 void GeneratedAssetTile::mouseDrag(const juce::MouseEvent& e)
 {
-    if (e.getDistanceFromDragStart() > 8)
+    const auto eventInTile = e.getEventRelativeTo(this);
+
+    if (eventInTile.getDistanceFromDragStart() > 8)
     {
-        ExternalFileDrag::startCopyDrag(juce::File(asset.outputPath));
+        ExternalFileDrag::startCopyDrag(
+            getExternalDragFile(eventInTile.getMouseDownPosition()));
     }
+}
+
+const StemAsset* GeneratedAssetTile::getExportableStem(int exportableStemIndex) const
+{
+    if (exportableStemIndex < 0)
+        return nullptr;
+
+    const auto vectorIndex = static_cast<size_t>(exportableStemIndex);
+    if (vectorIndex >= exportableStemIndices.size())
+        return nullptr;
+
+    const auto assetStemIndex = exportableStemIndices[vectorIndex];
+    if (assetStemIndex >= asset.stems.size())
+        return nullptr;
+
+    return &asset.stems[assetStemIndex];
+}
+
+juce::File GeneratedAssetTile::getExternalDragFile(
+    const juce::Point<int>& mouseDownPosition) const
+{
+    for (int index = 0; index < static_cast<int>(stemExportButtons.size()); ++index)
+    {
+        const auto vectorIndex = static_cast<size_t>(index);
+        if (stemPreviewButtons[vectorIndex]->getBounds().contains(mouseDownPosition)
+            || stemExportButtons[vectorIndex]->getBounds().contains(mouseDownPosition))
+            return getStemExportFileAt(index);
+    }
+
+    if (midiExportButton.getBounds().contains(mouseDownPosition))
+        return getMidiExportFile();
+
+    return juce::File(asset.outputPath);
 }
 
 } // namespace acestep_plugin

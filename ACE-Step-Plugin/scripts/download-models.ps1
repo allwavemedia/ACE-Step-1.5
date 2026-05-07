@@ -122,6 +122,12 @@ foreach ($Model in $Models) {
             -Headers @{ "User-Agent" = "ACE-Step-Plugin/0.1" } `
             -UseBasicParsing
 
+        $DownloadedFile = Get-Item -LiteralPath $PartPath
+        if ($Model.ExpectedSize -gt 0 -and $DownloadedFile.Length -ne $Model.ExpectedSize) {
+            throw "Downloaded size mismatch for $($Model.Filename): expected " +
+                  "$($Model.ExpectedSize) bytes, found $($DownloadedFile.Length)"
+        }
+
         Move-Item -LiteralPath $PartPath -Destination $DestPath
         $SizeMB = [math]::Round((Get-Item -LiteralPath $DestPath).Length / 1MB, 1)
         Write-Host "  OK - saved $SizeMB MB to $DestPath"

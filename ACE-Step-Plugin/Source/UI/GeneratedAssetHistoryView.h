@@ -32,6 +32,9 @@ public:
 
     void setOnPlayStop(GeneratedAssetTile::PlayStopCallback callback);
     void setOnSaveAs(GeneratedAssetTile::SaveAsCallback callback);
+    void setOnMidiSaveAs(GeneratedAssetTile::MidiSaveAsCallback callback);
+    void setOnStemPreview(GeneratedAssetTile::StemPreviewCallback callback);
+    void setOnStemSaveAs(GeneratedAssetTile::StemSaveAsCallback callback);
 
     void resized() override;
     void paint(juce::Graphics& g) override;
@@ -50,7 +53,10 @@ public:
         void refresh(
             const std::vector<GeneratedAsset>& assets,
             GeneratedAssetTile::PlayStopCallback onPlayStop,
-            GeneratedAssetTile::SaveAsCallback onSaveAs);
+            GeneratedAssetTile::SaveAsCallback onSaveAs,
+            GeneratedAssetTile::MidiSaveAsCallback onMidiSaveAs,
+            GeneratedAssetTile::StemPreviewCallback onStemPreview,
+            GeneratedAssetTile::StemSaveAsCallback onStemSaveAs);
 
         int getTileCount() const noexcept { return static_cast<int>(tiles.size()); }
 
@@ -69,6 +75,9 @@ private:
 
     GeneratedAssetTile::PlayStopCallback onPlayStopCallback;
     GeneratedAssetTile::SaveAsCallback onSaveAsCallback;
+    GeneratedAssetTile::MidiSaveAsCallback onMidiSaveAsCallback;
+    GeneratedAssetTile::StemPreviewCallback onStemPreviewCallback;
+    GeneratedAssetTile::StemSaveAsCallback onStemSaveAsCallback;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(GeneratedAssetHistoryView)
 };

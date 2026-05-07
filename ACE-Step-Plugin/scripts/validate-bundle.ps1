@@ -87,12 +87,12 @@ if (-not (Test-Path $bundleDir)) {
 # Verify plugin binary
 # ---------------------------------------------------------------------------
 
-$pluginBinary = Join-Path $bundleDir "AceStepPlugin.vst3"
+$pluginBinary = Join-Path $bundleDir "ACE-Step.vst3"
 
 if (-not (Test-Path $pluginBinary)) {
     Add-Failure "Plugin binary not found: $pluginBinary"
 } else {
-    Write-Pass "Plugin binary exists: AceStepPlugin.vst3"
+    Write-Pass "Plugin binary exists: ACE-Step.vst3"
 }
 
 # ---------------------------------------------------------------------------
@@ -100,6 +100,7 @@ if (-not (Test-Path $pluginBinary)) {
 # ---------------------------------------------------------------------------
 
 $requiredDlls = @(
+    "ggml.dll",
     "ggml-base.dll",
     "ggml-cpu.dll",
     "ggml-cuda.dll",
@@ -136,26 +137,19 @@ if ($failures.Count -eq 0) {
         throw "dumpbin failed (exit $LASTEXITCODE).  Ensure you are running from a VS 2022 Developer PowerShell."
     }
 
-    # Extract DLL names from dumpbin output.
-    # dumpbin prints lines like "    kernel32.dll" under the "Image has the following dependencies:" header.
     $dependents = [System.Collections.Generic.List[string]]::new()
-    $inSection  = $false
 
-    foreach ($line in $dumpbinOutput) {
-        if ($line -match "Image has the following dependencies") {
-            $inSection = $true
-            continue
-        }
-        if ($inSection) {
-            # A blank line or a "Summary" header ends the section.
-            if ($line -match "^\s*$" -or $line -match "^\s*Summary") {
-                $inSection = $false
-                continue
-            }
-            $trimmed = $line.Trim()
-            if ($trimmed -ne "" -and $trimmed -match "\.dll$") {
-                $dependents.Add($trimmed.ToLower())
-            }
+    # dumpbin can emit CR-only text when captured by PowerShell, so parse the
+    # dependency section as one text block rather than assuming line boundaries.
+    $dumpbinText = $dumpbinOutput -join "`n"
+    $sectionMatch = [regex]::Match(
+        $dumpbinText,
+        "Image has the following dependencies:\s*(?<deps>.*?)(?:\s+Summary\b|$)",
+        [System.Text.RegularExpressions.RegexOptions]::Singleline)
+
+    if ($sectionMatch.Success) {
+        foreach ($match in [regex]::Matches($sectionMatch.Groups["deps"].Value, "[A-Za-z0-9_.+-]+\.dll")) {
+            $dependents.Add($match.Value.ToLower())
         }
     }
 

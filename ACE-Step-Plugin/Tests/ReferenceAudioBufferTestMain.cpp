@@ -1,6 +1,7 @@
 /** Test runner entry point.
  *
- *  Runs all juce::UnitTest subclasses registered in the binary.
+ *  Runs all juce::UnitTest subclasses registered in the binary, or tests with a
+ *  specific name when one command-line argument is provided.
  *  Returns the number of failures (0 = pass).
  */
 
@@ -14,13 +15,16 @@
 
 #include <iostream>
 
-int main()
+int main(int argc, char* argv[])
 {
     juce::ScopedJuceInitialiser_GUI guiInit;
 
     juce::UnitTestRunner runner;
     runner.setAssertOnFailure(false);
-    runner.runAllTests();
+    if (argc > 1)
+        runner.runTestsWithName(argv[1]);
+    else
+        runner.runAllTests();
 
     int failures = 0;
 

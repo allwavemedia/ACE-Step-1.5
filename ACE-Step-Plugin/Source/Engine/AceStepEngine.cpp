@@ -1,5 +1,7 @@
 #include "AceStepEngine.h"
 
+#include "../Stems/StemCapability.h"
+
 namespace acestep_plugin
 {
 
@@ -51,6 +53,11 @@ void AceStepEngine::reportProgress(const juce::String& message)
 {
     if (progressCallback)
         progressCallback(message);
+}
+
+void AceStepEngine::reportStemProgress(StemGroup group, const juce::String& message)
+{
+    reportProgress("Stem " + StemCapability::getDisplayName(group) + ": " + message);
 }
 
 bool AceStepEngine::loadModels(const juce::File& modelsDirectory)

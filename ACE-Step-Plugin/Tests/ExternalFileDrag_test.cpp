@@ -27,7 +27,7 @@ public:
 
             // Use a temp file so the existence check passes.
             juce::TemporaryFile tmp(".wav");
-            tmp.getFile().create();
+            expect(tmp.getFile().create(), "precondition: created WAV temp file");
 
             const bool result =
                 ExternalFileDrag::startCopyDrag(tmp.getFile(), performer);
@@ -47,6 +47,32 @@ public:
                     juce::File("/nonexistent/path/missing.wav"), performer);
 
             expect(!result);
+        }
+
+        beginTest("startCopyDrag accepts MIDI files with copy semantics");
+        {
+            bool performerCalled = false;
+            juce::String receivedPath;
+            bool receivedCanMove = true;
+
+            ExternalFileDrag::Performer performer =
+                [&](const juce::StringArray& files, bool canMoveFiles) -> bool {
+                performerCalled = true;
+                receivedPath = files[0];
+                receivedCanMove = canMoveFiles;
+                return true;
+            };
+
+            juce::TemporaryFile tmp(".mid");
+            expect(tmp.getFile().create(), "precondition: created MIDI temp file");
+
+            const bool result =
+                ExternalFileDrag::startCopyDrag(tmp.getFile(), performer);
+
+            expect(result);
+            expect(performerCalled);
+            expect(receivedPath.endsWithIgnoreCase(".mid"));
+            expect(!receivedCanMove, "MIDI drags should use copy semantics");
         }
     }
 };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../Stems/StemTypes.h"
+
 #include <juce_core/juce_core.h>
 
 #include <mutex>
@@ -32,6 +34,12 @@ struct GeneratedAsset
 
     /** MIDI export is unavailable until note/event data or analysis exists. */
     MidiExportAvailability midiAvailability = MidiExportAvailability::unavailable;
+
+    /** Absolute path to the generated MIDI file when MIDI export is available. */
+    juce::String midiPath;
+
+    /** Stem files associated with this generation result. Empty when unavailable. */
+    std::vector<StemAsset> stems;
 };
 
 /** Thread-safe ring buffer of the most recent generated assets.

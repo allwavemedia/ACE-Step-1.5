@@ -42,6 +42,19 @@ public:
             expect(!result.success);
             expect(result.errorMessage.isNotEmpty());
         }
+
+        beginTest("GenerationResult carries partial stem failures");
+        {
+            GenerationResult result;
+            result.success = true;
+            result.stems.push_back(StemAsset { StemGroup::vocals, "C:\\temp\\vocals.wav", true, {} });
+            result.stems.push_back(StemAsset { StemGroup::drums, {}, false, "Stem model failed" });
+
+            expectEquals(static_cast<int>(result.stems.size()), 2);
+            expect(result.stems[0].success);
+            expect(!result.stems[1].success);
+            expectEquals(result.stems[1].errorMessage, juce::String("Stem model failed"));
+        }
     }
 };
 

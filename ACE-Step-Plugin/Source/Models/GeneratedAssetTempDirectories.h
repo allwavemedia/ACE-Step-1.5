@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GeneratedAssetHistory.h"
+
 #include <juce_core/juce_core.h>
 
 #include <mutex>
@@ -21,6 +23,9 @@ public:
 
     /** Track the parent directory of a plugin-generated WAV file. */
     void trackGeneratedFile(const juce::File& generatedFile);
+
+    /** Track full-mix and successful stem output directories for an asset. */
+    void trackGeneratedAsset(const GeneratedAsset& asset);
 
 private:
     bool canTrackDirectory(const juce::File& directory) const;
