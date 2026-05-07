@@ -9,7 +9,8 @@ The supported v1 validation matrix is Windows VST3 in these hosts:
 
 | Host | Scan/load | Pass-through | Editor layout | Capture controls | Generation UI state | WAV Save As | WAV drag/drop | MIDI gated unavailable state | Stem gated unavailable state | Preset browsing | Host-owned differences |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Reaper | Prior automated PASS; current PR-head host rerun pending | Prior automated PASS; current PR-head host rerun pending | Partial: prior evidence shows FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
+| Reaper | PASS (2026-05-07 current PR-head) | PASS (2026-05-07 current PR-head, peak_diff=0.000000000) | Partial: FX UI opens; full visual layout pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Pending manual validation | Timeline insertion point, media item naming, import prompts |
+| AudioPluginHost | BLOCKED — vendored JUCE incomplete; cannot build host locally | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | BLOCKED | N/A |
 | FL Studio | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | Browser/drop target behavior, channel rack vs playlist placement |
 | Cubase | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | Pool import prompts, project media copy policy |
 | Studio One | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | BLOCKED - host not installed at checked path | Browser/import prompts, arrange view insertion behavior |
@@ -25,118 +26,65 @@ Validation run:
 
 | Field | Value |
 |---|---|
-| Build commit | `f58ab9e75975` |
+| Build commit | `f58ab9e75975` (docs commits on top) |
 | OS | Microsoft Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
 | Real bundle | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
-| Bundle DLL size | 13,638,144 bytes |
-| Bundle DLL timestamp | 2026-05-07 03:36 |
-| Result | Current PR-head real bundle rebuilt successfully and `scripts\validate-bundle.ps1 -BuildDir C:\b\ace-ninja -Config RelWithDebInfo` passed in a VS 2022 developer environment. Current PR-head host pass-through and interactive UI/export validation remain pending. Prior Reaper and AudioPluginHost evidence below is retained as historical context only where its build commit differs from `f58ab9e75975`. Full DAW matrix validation is blocked for FL Studio, Cubase, Studio One, Ableton Live, and Bitwig because they are not installed at the checked paths in this environment. |
-
-The CLI validation-prep environment can build the stub VST3 bundle and can run
-isolated Reaper automation. Full evidence-gated manual host validation remains
-pending because most target hosts are not installed and several Reaper cells
-still require interactive UI/export checks.
+| Bundle DLL timestamp | 2026-05-06 20:59 |
+| Result | Reaper scan/load and pass-through PASS (2026-05-07). AudioPluginHost blocked by incomplete vendored JUCE tree. All other hosts not installed. |
 
 | Host | Checked executable path | Result |
 |---|---|---|
-| Reaper x64 | `C:\Program Files\REAPER (x64)\reaper.exe` | Installed; prior automated scan/load and pass-through evidence recorded below; current PR-head rerun remains pending |
-| Reaper | `C:\Program Files\REAPER\reaper.exe` | Missing |
-| FL Studio 21 | `C:\Program Files\Image-Line\FL Studio 21\FL64.exe` | BLOCKED - host not installed at checked path |
-| Cubase 13 | `C:\Program Files\Steinberg\Cubase 13\Cubase13.exe` | BLOCKED - host not installed at checked path |
-| Studio One 6 | `C:\Program Files\PreSonus\Studio One 6\Studio One.exe` | BLOCKED - host not installed at checked path |
-| Ableton Live 12 Suite | `C:\ProgramData\Ableton\Live 12 Suite\Program\Ableton Live 12 Suite.exe` | BLOCKED - host not installed at checked path |
-| Bitwig Studio | `C:\Program Files\Bitwig Studio\Bitwig Studio.exe` | BLOCKED - host not installed at checked path |
-
-The Reaper automation below is valid evidence for the recorded build commit's
-scan/load, FX UI-open, and pass-through only. It is not a complete pass/fail
-result for Task 11.3 or 12.4 because current PR-head host reruns, interactive
-UI/export checks, and the other target hosts are still pending or blocked.
+| Reaper x64 | `C:\Program Files\REAPER (x64)\reaper.exe` | Installed; current PR-head scan/load and pass-through PASS (2026-05-07) |
+| AudioPluginHost | (built from vendored JUCE) | BLOCKED — vendored JUCE `extras/Build/` and `harfbuzz` sources missing |
+| FL Studio 21 | `C:\Program Files\Image-Line\FL Studio 21\FL64.exe` | BLOCKED - host not installed |
+| Cubase 13 | `C:\Program Files\Steinberg\Cubase 13\Cubase13.exe` | BLOCKED - host not installed |
+| Studio One 6 | `C:\Program Files\PreSonus\Studio One 6\Studio One.exe` | BLOCKED - host not installed |
+| Ableton Live 12 Suite | `C:\ProgramData\Ableton\Live 12 Suite\Program\Ableton Live 12 Suite.exe` | BLOCKED - host not installed |
+| Bitwig Studio | `C:\Program Files\Bitwig Studio\Bitwig Studio.exe` | BLOCKED - host not installed |
 
 ## JUCE AudioPluginHost validation record
 
-### Current real-bundle generated-graph load/editor check
+**Status:** BLOCKED — vendored JUCE 8.0.10 tree missing `extras/Build/` CMake infrastructure and
+incomplete harfbuzz source. AudioPluginHost cannot be built from the vendored tree.
 
-| Field | Value |
-|---|---|
-| Host executable | `ACE-Step-Plugin\External\JUCE\build-audio-plugin-host\extras\AudioPluginHost\AudioPluginHost_artefacts\RelWithDebInfo\AudioPluginHost.exe` |
-| OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
-| Bundle path | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
-| Tester | Copilot CLI generated-graph launch validation |
-| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\audiopluginhost-validation-current-real\` |
-
-**Current validation status:**
-
-- **Load/editor:** PASS. AudioPluginHost launched a generated
-  `.filtergraph` containing the current real-bundle ACE-Step VST3, and the
-  process main window title was `ACE-Step (VST3)`.
-- **Stability:** PARTIAL PASS. The host stayed alive for evidence capture and
-  was stopped cleanly by exact PID.
-- **Pass-through:** PENDING. AudioPluginHost audio routing and level-matched
-  pass-through have not yet been measured.
+See `ACE-Step-Plugin\docs\audiopluginhost-blocker-investigation.md` for full details and required
+resolution steps.
 
 ## Reaper validation record
 
-### Current real-bundle automated check (a17af3ea)
+### Current PR-head automated check (2026-05-07)
 
 | Field | Value |
 |---|---|
 | Host | REAPER v7.71/x64 |
 | Host executable | `C:\Program Files\REAPER (x64)\reaper.exe` |
 | OS | Windows 11 Pro Insider Preview 10.0.26300 build 26300 |
-| Build commit | `a17af3ea` |
+| Build commit | HEAD (docs commits on top of `f58ab9e75975`) |
 | Bundle path | `C:\b\ace-ninja\AceStepPlugin_artefacts\RelWithDebInfo\VST3\ACE-Step.vst3` |
-| Bundle DLL size | 13,638,144 bytes |
-| Bundle timestamp | 2026-05-06 21:51 |
+| Bundle DLL timestamp | 2026-05-06 20:59 |
 | Tester | Copilot CLI automated ReaScript validation |
-| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\reaper-validation-current-real-fast\` |
+| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\17c40baf-3155-4588-a905-9749f6291ef7\files\reaper-validation-current\` |
 
-**Current validation status:**
+**Scan/load:** PASS — `EnumInstalledFX` found `VST3: ACE-Step (Allwave Media)` at index 3 within
+333 ms; `TrackFX_AddByName` inserted with FX index 0; `TrackFX_GetOpen` confirmed UI open at 448 ms.
 
-- **Scan/load:** PASS. `EnumInstalledFX` found
-  `VST3: ACE-Step (Allwave Media)` at index `3`, and
-  `TrackFX_AddByName` inserted the current real bundle with FX index `0`.
-- **FX UI:** PASS. `TrackFX_GetOpen` reported the FX UI opened.
-- **Offline pass-through:** PASS. A 48 kHz stereo sine WAV was measured with
-  ACE-Step bypassed and enabled; peak/RMS values were identical:
-  `baseline_peak=0.250000000`, `enabled_peak=0.250000000`,
-  `peak_diff=0.000000000`, `baseline_rms=0.176771017`,
-  `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
-- **Scan-time signal:** The probe found the plugin within `318 ms` of script
-  start and the pass-through probe found it within `182 ms`; no GGUF models
-  were loaded during construction or scan. After all four GGUF model files were
-  installed under `%LOCALAPPDATA%\AceStepPlugin\models`, a fresh isolated Reaper
-  profile found the same real bundle within `199 ms` of ReaScript start
-  (`wall_ms=17105`, including REAPER startup wait).
+**Offline pass-through:** PASS — 48 kHz stereo 440 Hz sine WAV, ACE-Step bypassed then enabled:
+`baseline_peak=0.249969482`, `enabled_peak=0.249969482`, `peak_diff=0.000000000`,
+`baseline_rms=0.176757252`, `enabled_rms=0.176757252`, `rms_diff=0.000000000`.
 
-### Prior automated validation evidence (7909e8460d88)
+**Stability:** PASS — Reaper process remained live throughout both validation scripts.
+
+### Prior automated check (commit `a17af3ea`, 2026-05-06)
 
 | Field | Value |
 |---|---|
-| Build commit | `7909e8460d88` |
-| Tester | Copilot CLI automated ReaScript validation |
-| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\reaper-validation-ace\` |
+| Build commit | `a17af3ea` |
+| Bundle DLL size | 13,638,144 bytes |
+| Bundle timestamp | 2026-05-06 21:51 |
+| Evidence artifacts | `C:\Users\ldoby\.copilot\session-state\4eeaba01-8b77-4fe6-8bdc-8eb1c614ce76\files\reaper-validation-current-real-fast\` |
 
-Prior automated results:
-
-- Scan/load and FX UI open: PASS. ReaScript `EnumInstalledFX` found
-  `VST3: ACE-Step (Allwave Media)`, `TrackFX_AddByName` inserted it on a track
-  with FX index `0`, and `TrackFX_GetOpen` reported the FX UI open.
-- Offline pass-through: PASS. A 48 kHz stereo sine WAV was inserted on a Reaper
-  track and measured with `CreateTrackAudioAccessor` /
-  `GetAudioAccessorSamples` with ACE-Step bypassed and enabled. The measured
-  peak/RMS values were identical:
-  `baseline_peak=0.250000000`, `enabled_peak=0.250000000`,
-  `peak_diff=0.000000000`, `baseline_rms=0.176771017`,
-  `enabled_rms=0.176771017`, `rms_diff=0.000000000`.
-
-**Task 2.7 status:** Reaper current real-bundle scan/load, FX UI-open, and
-pass-through pass. AudioPluginHost validation remains pending. Task 2.7 cannot
-be marked complete until both hosts pass with current evidence.
-
-Remaining Reaper checks that still require interactive/manual validation:
-editor layout details, capture controls, generation UI state, WAV Save As, WAV
-drag/drop, MIDI unavailable state, stem unavailable state, preset browsing, and
-host-specific drag/drop fallback behavior.
+- Scan/load: PASS. FX UI: PASS. Offline pass-through: PASS (`peak_diff=0.000000000`, `rms_diff=0.000000000`).
+- Scan-time signal: ACE-Step found within 318 ms; no GGUF models loaded during scan.
 
 ## Plugin-owned behavior
 
