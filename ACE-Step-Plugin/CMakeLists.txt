@@ -63,6 +63,13 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/Presets/PresetTypes.h
     Source/Presets/PresetBrowserModel.cpp
     Source/Presets/PresetBrowserModel.h
+    Source/Sidecar/SidecarNamedPipeClient.cpp
+    Source/Sidecar/SidecarNamedPipeClient.h
+    Source/Sidecar/SidecarPaths.cpp
+    Source/Sidecar/SidecarPaths.h
+    Source/Sidecar/SidecarProcess.cpp
+    Source/Sidecar/SidecarProcess.h
+    Source/Sidecar/SidecarRequest.h
     Source/Stems/StemCapability.cpp
     Source/Stems/StemCapability.h
     Source/Stems/StemTypes.h
@@ -163,6 +170,13 @@ if(ACESTEP_BUILD_TESTS)
             Source/Presets/PresetTypes.h
             Source/Presets/PresetBrowserModel.cpp
             Source/Presets/PresetBrowserModel.h
+            Source/Sidecar/SidecarNamedPipeClient.cpp
+            Source/Sidecar/SidecarNamedPipeClient.h
+            Source/Sidecar/SidecarPaths.cpp
+            Source/Sidecar/SidecarPaths.h
+            Source/Sidecar/SidecarProcess.cpp
+            Source/Sidecar/SidecarProcess.h
+            Source/Sidecar/SidecarRequest.h
             Source/Stems/StemCapability.cpp
             Source/Stems/StemCapability.h
             Source/Stems/StemTypes.h
@@ -212,6 +226,9 @@ if(ACESTEP_BUILD_TESTS)
             Tests/ReferenceAudioBufferBasic_test.cpp
             Tests/ReferenceAudioBufferConcurrent_test.cpp
             Tests/ReferenceAudioResampler_test.cpp
+            Tests/SidecarNamedPipeClient_test.cpp
+            Tests/SidecarPaths_test.cpp
+            Tests/SidecarProcess_test.cpp
             Tests/StemCapability_test.cpp
             Tests/ReferenceAudioBufferTestMain.cpp
             Tests/ReferenceAudioBufferTestUtils.h
