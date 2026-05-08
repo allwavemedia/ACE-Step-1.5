@@ -6,15 +6,15 @@
 
 ## 2. Runtime Boundary and Sidecar Contract
 
-- [ ] 2.1 Define the lazy per-host-process sidecar lifecycle, including launch only after explicit user action.
-- [ ] 2.2 Start the helper by absolute `CreateProcessW` path and attach it to a kill-on-close Windows job object.
-- [ ] 2.3 Define versioned JSON request/response schemas over Windows named pipes.
-- [ ] 2.4 Verify no sidecar launch, model load, file I/O, or IPC occurs during host scan, editor creation, or `processBlock`.
+- [x] 2.1 Define the lazy per-host-process sidecar lifecycle, including launch only after explicit user action.
+- [x] 2.2 Start the helper by absolute `CreateProcessW` path and attach it to a kill-on-close Windows job object.
+- [x] 2.3 Define versioned JSON request/response schemas over Windows named pipes.
+- [x] 2.4 Verify no sidecar launch, model load, file I/O, or IPC occurs during host scan, editor creation, or `processBlock`.
 
 ## 3. Artifact Workspace and Result Verification
 
-- [ ] 3.1 Create per-job artifact directories under LocalAppData/temp with deterministic cleanup rules.
-- [ ] 3.2 Require schema version, request ID, byte size, SHA-256, expected artifact count, and readability checks before promoting results.
+- [x] 3.1 Create per-job artifact directories under LocalAppData/temp with deterministic cleanup rules.
+- [x] 3.2 Require schema version, request ID, byte size, SHA-256, expected artifact count, and readability checks before promoting results.
 - [ ] 3.3 Prevent partial or malformed outputs from creating success-shaped generated asset tiles.
 - [ ] 3.4 Preserve successful full-mix output when later MIDI or stem work partially fails.
 
