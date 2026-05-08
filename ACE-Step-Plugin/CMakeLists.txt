@@ -238,6 +238,7 @@ if(ACESTEP_BUILD_TESTS)
             Tests/PresetStore_test.cpp
             Tests/PresetBrowserModel_test.cpp
             Tests/PresetBrowserPanel_test.cpp
+            Tests/PluginEditor_test.cpp
             Tests/PreviewPlayer_test.cpp
             Tests/ReferenceAudioBufferBasic_test.cpp
             Tests/ReferenceAudioBufferConcurrent_test.cpp
