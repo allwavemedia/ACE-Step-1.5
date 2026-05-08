@@ -20,10 +20,10 @@
 
 ## 4. Single-Scroll Editor Shell
 
-- [ ] 4.1 Replace hidden or unreachable generation/export surfaces with one fixed-size, single-scroll workflow.
-- [ ] 4.2 Add visible sections for setup, generation form, capture, progress, generated assets, exports, presets, and diagnostics.
-- [ ] 4.3 Keep the editor usable in constrained VST3 host windows without tabs, wizard steps, or resize-dependent controls.
-- [ ] 4.4 Add accessibility labels and deterministic layout behavior for host validation.
+- [x] 4.1 Replace hidden or unreachable generation/export surfaces with one fixed-size, single-scroll workflow.
+- [x] 4.2 Add visible sections for setup, generation form, capture, progress, generated assets, exports, presets, and diagnostics.
+- [x] 4.3 Keep the editor usable in constrained VST3 host windows without tabs, wizard steps, or resize-dependent controls.
+- [x] 4.4 Add accessibility labels and deterministic layout behavior for host validation.
 
 ## 5. Model and Tool Setup
 

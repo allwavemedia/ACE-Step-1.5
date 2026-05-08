@@ -5,6 +5,20 @@
 namespace acestep_plugin
 {
 
+namespace
+{
+
+void setAccessibilityText(juce::Component& component,
+                          const juce::String& title,
+                          const juce::String& description)
+{
+    component.setTitle(title);
+    component.setDescription(description);
+    component.setHelpText(description);
+}
+
+} // namespace
+
 int GenerationFormPanel::parseSeedText(const juce::String& text)
 {
     const auto trimmed = text.trim();
@@ -31,30 +45,72 @@ int GenerationFormPanel::parseSeedText(const juce::String& text)
 
 GenerationFormPanel::GenerationFormPanel()
 {
+    setAccessibilityText(*this,
+                         "Generation form",
+                         "Controls prompt-to-WAV generation parameters and actions.");
+
     promptEditor.setTextToShowWhenEmpty("Describe the music style and mood...", juce::Colours::grey);
+    setAccessibilityText(promptLabel, "Prompt label", "Label for the music prompt editor.");
+    setAccessibilityText(promptEditor,
+                         "Prompt",
+                         "Enter the style, mood, and direction for music generation.");
 
     lyricsEditor.setTextToShowWhenEmpty("Optional lyrics...", juce::Colours::grey);
     lyricsEditor.setMultiLine(true, true);
     lyricsEditor.setReturnKeyStartsNewLine(true);
+    setAccessibilityText(lyricsLabel, "Lyrics label", "Label for optional lyrics.");
+    setAccessibilityText(lyricsEditor,
+                         "Lyrics",
+                         "Enter optional lyrics for vocal generation.");
 
     durationSlider.setRange(1.0, 300.0, 1.0);
     durationSlider.setValue(30.0, juce::dontSendNotification);
     durationSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 60, 22);
+    setAccessibilityText(durationLabel, "Duration label", "Label for generation length in seconds.");
+    setAccessibilityText(durationSlider,
+                         "Duration seconds",
+                         "Sets generated audio length from 1 to 300 seconds.");
 
     seedEditor.setText("-1", false);
     seedEditor.setInputRestrictions(11, "-0123456789");
+    setAccessibilityText(seedLabel, "Seed label", "Label for deterministic generation seed.");
+    setAccessibilityText(seedEditor,
+                         "Seed",
+                         "Enter -1 for random seed or a non-negative integer for repeatable generation.");
 
     cfgScaleSlider.setRange(1.0, 20.0, 0.5);
     cfgScaleSlider.setValue(7.0, juce::dontSendNotification);
     cfgScaleSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 60, 22);
+    setAccessibilityText(cfgScaleLabel, "CFG scale label", "Label for classifier-free guidance scale.");
+    setAccessibilityText(cfgScaleSlider,
+                         "CFG scale",
+                         "Sets prompt guidance strength from 1 to 20.");
 
     lmSeedEditor.setText("-1", false);
     lmSeedEditor.setInputRestrictions(11, "-0123456789");
+    setAccessibilityText(lmSeedLabel, "LM seed label", "Label for language model seed.");
+    setAccessibilityText(lmSeedEditor,
+                         "LM seed",
+                         "Enter -1 for random language model seed or a non-negative integer.");
 
     schedulerCombo.addItem("euler",    1);
     schedulerCombo.addItem("dpmpp_2m", 2);
     schedulerCombo.addItem("dpmpp_3m", 3);
     schedulerCombo.setSelectedItemIndex(0, juce::dontSendNotification);
+    setAccessibilityText(schedulerLabel, "Scheduler label", "Label for the diffusion scheduler selector.");
+    setAccessibilityText(schedulerCombo,
+                         "Scheduler",
+                         "Selects the diffusion scheduler used for generation.");
+
+    setAccessibilityText(capturedReferenceToggle,
+                         "Use captured reference",
+                         "Includes the current immutable captured reference snapshot in the generation request.");
+    setAccessibilityText(generateButton,
+                         "Generate",
+                         "Starts prompt-to-WAV generation when the form is valid.");
+    setAccessibilityText(cancelButton,
+                         "Cancel generation",
+                         "Cancels the active generation request.");
 
     cancelButton.setEnabled(false);
 

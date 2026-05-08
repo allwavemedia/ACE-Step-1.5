@@ -27,6 +27,15 @@ juce::String formatDownloadSize(juce::int64 bytes)
     return juce::File::descriptionOfSizeInBytes(bytes);
 }
 
+void setAccessibilityText(juce::Component& component,
+                          const juce::String& title,
+                          const juce::String& description)
+{
+    component.setTitle(title);
+    component.setDescription(description);
+    component.setHelpText(description);
+}
+
 } // namespace
 
 AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& processor)
@@ -41,7 +50,13 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     scrollViewport.setViewedComponent(&scrollContent, false);
     scrollViewport.setScrollBarsShown(true, false);
     scrollViewport.setName("Single-scroll editor viewport");
+    setAccessibilityText(scrollViewport,
+                         "Single-scroll editor viewport",
+                         "Scrolls through the full ACE-Step generation workflow.");
     scrollContent.setName("Single-scroll editor content");
+    setAccessibilityText(scrollContent,
+                         "Single-scroll editor workflow",
+                         "Contains setup, generation, capture, assets, exports, presets, and diagnostics.");
     addAndMakeVisible(scrollViewport);
 
     auto configureHeading = [](juce::Label& label, const juce::String& text)
@@ -62,6 +77,21 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     captureHeadingLabel.setName("Capture section");
     generatedAssetsHeadingLabel.setName("Generated assets section");
     diagnosticsHeadingLabel.setName("Diagnostics section");
+    setAccessibilityText(setupHeadingLabel,
+                         "Setup section",
+                         "Shows model readiness and setup actions.");
+    setAccessibilityText(generationHeadingLabel,
+                         "Generation section",
+                         "Contains prompt-to-WAV generation controls.");
+    setAccessibilityText(captureHeadingLabel,
+                         "Capture section",
+                         "Controls host input reference capture.");
+    setAccessibilityText(generatedAssetsHeadingLabel,
+                         "Generated assets section",
+                         "Shows generated full-mix assets and export actions.");
+    setAccessibilityText(diagnosticsHeadingLabel,
+                         "Diagnostics section",
+                         "Shows sidecar state, request IDs, artifacts, and validation failures.");
 
     scrollContent.addAndMakeVisible(titleLabel);
     scrollContent.addAndMakeVisible(setupHeadingLabel);
@@ -75,10 +105,16 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     captureSourceLabel.setJustificationType(juce::Justification::centredLeft);
     captureSourceLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     captureSourceLabel.setFont(juce::FontOptions(15.0f));
+    setAccessibilityText(captureSourceLabel,
+                         "Capture source",
+                         "Shows the current host input routing used for reference capture.");
     scrollContent.addAndMakeVisible(captureSourceLabel);
 
     armButton.setButtonText("Arm");
     armButton.setName("Arm reference capture");
+    setAccessibilityText(armButton,
+                         "Arm reference capture",
+                         "Toggles recording host input as the generation reference.");
     armButton.onClick = [this] {
         audioProcessor.setReferenceCaptureEnabled(armButton.getToggleState());
     };
@@ -86,6 +122,9 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
 
     clearButton.setButtonText("Clear");
     clearButton.setName("Clear reference capture");
+    setAccessibilityText(clearButton,
+                         "Clear reference capture",
+                         "Clears captured reference audio and resets the capture meter.");
     clearButton.onClick = [this] {
         audioProcessor.requestReferenceClear();
         meterLevel = 0.0f;
@@ -97,30 +136,48 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     captureMeterLabel.setJustificationType(juce::Justification::centredLeft);
     captureMeterLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     captureMeterLabel.setFont(juce::FontOptions(13.0f));
+    setAccessibilityText(captureMeterLabel,
+                         "Capture meter",
+                         "Shows the current captured reference input level.");
     scrollContent.addAndMakeVisible(captureMeterLabel);
 
     statusLabel.setText("Audio passes through unchanged.", juce::dontSendNotification);
     statusLabel.setJustificationType(juce::Justification::centredLeft);
     statusLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     statusLabel.setFont(juce::FontOptions(15.0f));
+    setAccessibilityText(statusLabel,
+                         "Setup status",
+                         "Shows current model setup and plugin workflow status.");
     scrollContent.addAndMakeVisible(statusLabel);
 
     modelSetupHeadingLabel.setJustificationType(juce::Justification::centredLeft);
     modelSetupHeadingLabel.setColour(juce::Label::textColourId, juce::Colours::orange);
     modelSetupHeadingLabel.setFont(juce::FontOptions(15.0f, juce::Font::bold));
+    setAccessibilityText(modelSetupHeadingLabel,
+                         "Model setup status",
+                         "Shows missing ACE-Step model files.");
     scrollContent.addChildComponent(modelSetupHeadingLabel);
 
     modelDestinationLabel.setJustificationType(juce::Justification::centredLeft);
     modelDestinationLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     modelDestinationLabel.setFont(juce::FontOptions(13.0f));
+    setAccessibilityText(modelDestinationLabel,
+                         "Model destination",
+                         "Shows where required ACE-Step models should be installed.");
     scrollContent.addChildComponent(modelDestinationLabel);
 
     modelDownloadSizeLabel.setJustificationType(juce::Justification::centredLeft);
     modelDownloadSizeLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     modelDownloadSizeLabel.setFont(juce::FontOptions(13.0f));
+    setAccessibilityText(modelDownloadSizeLabel,
+                         "Model download size",
+                         "Shows the approximate download size for missing models.");
     scrollContent.addChildComponent(modelDownloadSizeLabel);
 
     modelSetupButton.setButtonText("Set Up Models");
+    setAccessibilityText(modelSetupButton,
+                         "Set up models",
+                         "Starts or explains the ACE-Step model setup workflow.");
     modelSetupButton.onClick = [this] {
         statusLabel.setText(
             "Model setup action pending: use the ACE-Step model setup workflow to download missing models.",
@@ -174,6 +231,9 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
         }
     });
     scrollContent.addAndMakeVisible(presetBrowserPanel);
+    setAccessibilityText(presetBrowserPanel,
+                         "Preset browser",
+                         "Loads, saves, renames, and deletes generation presets.");
     refreshPresetBrowser();
 
     generatedAssetsBodyLabel.setText(
@@ -183,6 +243,9 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     generatedAssetsBodyLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     generatedAssetsBodyLabel.setFont(juce::FontOptions(13.0f));
     generatedAssetsBodyLabel.setName("Generated asset history");
+    setAccessibilityText(generatedAssetsBodyLabel,
+                         "Generated asset history",
+                         "Lists completed full-mix WAV assets after verification succeeds.");
     scrollContent.addAndMakeVisible(generatedAssetsBodyLabel);
 
     exportStatusLabel.setName("Export actions");
@@ -193,6 +256,9 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     exportStatusLabel.setJustificationType(juce::Justification::centredLeft);
     exportStatusLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     exportStatusLabel.setFont(juce::FontOptions(13.0f));
+    setAccessibilityText(exportStatusLabel,
+                         "Export actions",
+                         "Shows per-asset WAV, MIDI, and stem export availability.");
     scrollContent.addAndMakeVisible(exportStatusLabel);
 
     diagnosticsBodyLabel.setText(
@@ -201,6 +267,9 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     diagnosticsBodyLabel.setJustificationType(juce::Justification::topLeft);
     diagnosticsBodyLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     diagnosticsBodyLabel.setFont(juce::FontOptions(13.0f));
+    setAccessibilityText(diagnosticsBodyLabel,
+                         "Diagnostics details",
+                         "Reports sidecar state, last request, artifact paths, and validation failures.");
     scrollContent.addAndMakeVisible(diagnosticsBodyLabel);
 
     startTimerHz(30);

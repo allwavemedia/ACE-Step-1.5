@@ -6,6 +6,25 @@
 namespace acestep_plugin
 {
 
+namespace
+{
+
+juce::Component* findComponentWithTitle(juce::Component& component, const juce::String& title)
+{
+    if (component.getTitle().containsIgnoreCase(title))
+        return &component;
+
+    for (int i = 0; i < component.getNumChildComponents(); ++i)
+    {
+        if (auto* child = findComponentWithTitle(*component.getChildComponent(i), title))
+            return child;
+    }
+
+    return nullptr;
+}
+
+} // namespace
+
 class GenerationFormPanelTests final : public juce::UnitTest
 {
 public:
@@ -78,6 +97,37 @@ public:
             panel.setState(state);
             const auto roundtripped = panel.getState();
             expect(roundtripped.useCapturedReference);
+        }
+
+        beginTest("form controls have accessibility titles and descriptions");
+        {
+            GenerationFormPanel panel;
+
+            for (const auto title : {
+                     "Generation form",
+                     "Prompt",
+                     "Lyrics",
+                     "Duration seconds",
+                     "Seed",
+                     "CFG scale",
+                     "LM seed",
+                     "Scheduler",
+                     "Use captured reference",
+                     "Generate",
+                     "Cancel generation",
+                 })
+            {
+                auto* component = findComponentWithTitle(panel, title);
+                expect(component != nullptr, "expected accessible title: " + juce::String(title));
+
+                if (component != nullptr)
+                {
+                    expect(component->getDescription().isNotEmpty(),
+                           "accessible control must include a description: " + juce::String(title));
+                    expect(component->getHelpText().isNotEmpty(),
+                           "accessible control must include help text: " + juce::String(title));
+                }
+            }
         }
 
         beginTest("panel setState and getState roundtrip");
