@@ -48,6 +48,8 @@
 - [x] 5.5 Verify downloaded files with SHA-256 before making them available to the engine.
 - [x] 5.6 Add error handling for failed downloads, checksum mismatch, partial files, and insufficient disk space.
 
+> Functional parity note: runtime validation showed the current VST3 editor exposes only pass-through, capture, model status, and preset surfaces. Full prompt-to-WAV generation, generated assets, MIDI export, and stem export are superseded by `openspec/changes/add-vst3-functional-parity/`.
+
 ## 6. Background Generation Engine
 
 - [x] 6.1 Add `GenerationRequest` and `GenerationResult` types covering prompt, lyrics, duration, seed, CFG scale, LM seed, scheduler, optional reference audio, output path, and error state.
