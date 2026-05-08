@@ -10,13 +10,22 @@
 namespace acestep_plugin
 {
 
-SidecarProcess::SidecarProcess() = default;
+SidecarProcess::SidecarProcess()
+{
+#if JUCE_WINDOWS
+    _jobAssignFn = [](void* job, void* process) -> bool {
+        return AssignProcessToJobObject(static_cast<HANDLE>(job),
+                                       static_cast<HANDLE>(process)) != FALSE;
+    };
+#endif
+}
 
 SidecarProcess::~SidecarProcess()
 {
     cancel();
 
 #if JUCE_WINDOWS
+    // cancel() closes and nulls _processHandle; this is a safe no-op guard.
     if (_processHandle != nullptr)
     {
         CloseHandle(static_cast<HANDLE>(_processHandle));
@@ -54,6 +63,10 @@ SidecarProcessError SidecarProcess::launch()
         return SidecarProcessError::helperNotFound;
 
 #if JUCE_WINDOWS
+    // Reject second launch while a process is already running.
+    if (_processHandle != nullptr)
+        return SidecarProcessError::alreadyRunning;
+
     // Create a job object with kill-on-close so the helper process tree is
     // terminated when this SidecarProcess is destroyed.
     auto* job = CreateJobObjectW(nullptr, nullptr);
@@ -92,8 +105,17 @@ SidecarProcessError SidecarProcess::launch()
 
     // Assign to job object before resuming to avoid a race where the helper
     // exits before we can assign it.
-    if (job != nullptr)
-        AssignProcessToJobObject(job, pi.hProcess);
+    if (job != nullptr && !_jobAssignFn(job, pi.hProcess))
+    {
+        // Assignment failed: terminate the suspended process and clean up all
+        // handles before returning the error.
+        TerminateProcess(pi.hProcess, 1u);
+        WaitForSingleObject(pi.hProcess, 1000);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        CloseHandle(job);
+        return SidecarProcessError::jobAssignmentFailed;
+    }
 
     ResumeThread(pi.hThread);
     CloseHandle(pi.hThread);
@@ -110,13 +132,26 @@ SidecarProcessError SidecarProcess::launch()
 void SidecarProcess::cancel()
 {
 #if JUCE_WINDOWS
-    if (_processHandle != nullptr)
-    {
-        if (_cancellationCallback)
-            _cancellationCallback();
+    if (_processHandle == nullptr)
+        return;
 
-        TerminateProcess(static_cast<HANDLE>(_processHandle), 1u);
+    if (_cancellationCallback)
+        _cancellationCallback();
+
+    TerminateProcess(static_cast<HANDLE>(_processHandle), 1u);
+
+    // Close and null the handle immediately so that a second cancel() call
+    // (e.g. from the destructor) is a safe no-op and the callback is not
+    // invoked again.
+    CloseHandle(static_cast<HANDLE>(_processHandle));
+    _processHandle = nullptr;
+
+    if (_jobHandle != nullptr)
+    {
+        CloseHandle(static_cast<HANDLE>(_jobHandle));
+        _jobHandle = nullptr;
     }
+    _pid = 0;
 #endif
 }
 
@@ -124,6 +159,13 @@ void SidecarProcess::setCancellationCallback(CancellationCallback callback)
 {
     _cancellationCallback = std::move(callback);
 }
+
+#if JUCE_WINDOWS
+void SidecarProcess::setJobAssignmentFunction(JobAssignFn fn)
+{
+    _jobAssignFn = std::move(fn);
+}
+#endif
 
 SidecarProcessError SidecarProcess::waitForExit(int timeoutMs)
 {

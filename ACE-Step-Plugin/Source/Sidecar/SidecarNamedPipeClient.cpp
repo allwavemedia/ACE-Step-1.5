@@ -117,6 +117,7 @@ SidecarClientError SidecarNamedPipeClient::pollProgress(const juce::String& acti
         if (outEvent.requestId != activeRequestId)
             return SidecarClientError::staleCompletion;
 
+        outEvent.isComplete = true;
         return SidecarClientError::none;
     }
 

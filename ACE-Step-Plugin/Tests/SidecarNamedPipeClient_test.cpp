@@ -226,6 +226,56 @@ public:
             fake->disconnect();
             expect(!client.isConnected());
         }
+
+        // Issue 4: matching completion must set isComplete on ProgressEvent.
+        beginTest("matching completion message sets isComplete on ProgressEvent");
+        {
+            const juce::String reqId = "active-req";
+            auto* fake = new FakeTransport();
+            fake->enqueue(makeCompletionMsg(reqId));
+            SidecarNamedPipeClient client{ std::unique_ptr<SidecarTransport>(fake) };
+
+            ProgressEvent event;
+            const auto err = client.pollProgress(reqId, event, 100);
+
+            expect(err == SidecarClientError::none,
+                   "matching completion must return none");
+            expect(event.isComplete,
+                   "isComplete must be true for a matching completion message");
+            expect(event.requestId == reqId,
+                   "requestId must be set on completion event");
+        }
+
+        beginTest("stale completion returns staleCompletion without setting isComplete");
+        {
+            const juce::String activeId = "new-req";
+            const juce::String cancelledId = "old-req";
+            auto* fake = new FakeTransport();
+            fake->enqueue(makeCompletionMsg(cancelledId));
+            SidecarNamedPipeClient client{ std::unique_ptr<SidecarTransport>(fake) };
+
+            ProgressEvent event;
+            const auto err = client.pollProgress(activeId, event, 100);
+            expect(err == SidecarClientError::staleCompletion,
+                   "stale completion must return staleCompletion");
+            expect(!event.isComplete,
+                   "isComplete must remain false for stale completion");
+        }
+
+        beginTest("progress message does not set isComplete");
+        {
+            const juce::String reqId = "active-req";
+            auto* fake = new FakeTransport();
+            fake->enqueue(makeProgressMsg(reqId, 0.5f));
+            SidecarNamedPipeClient client{ std::unique_ptr<SidecarTransport>(fake) };
+
+            ProgressEvent event;
+            const auto err = client.pollProgress(reqId, event, 100);
+
+            expect(err == SidecarClientError::none);
+            expect(!event.isComplete,
+                   "isComplete must be false for a progress (non-completion) message");
+        }
     }
 };
 

@@ -51,6 +51,7 @@ struct ProgressEvent
     juce::String requestId;
     float progressFraction = 0.0f;
     juce::String statusMessage;
+    bool isComplete = false; /**< True when this event carries a "completion" message. */
 };
 
 // ---------------------------------------------------------------------------

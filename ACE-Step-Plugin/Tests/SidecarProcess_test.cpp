@@ -180,6 +180,110 @@ public:
                 }
             }
         }
+
+        // Issue 1: cancellation callback must fire at most once across explicit
+        // cancel() and the destructor.
+        beginTest("cancel callback fires at most once even after double cancel");
+        {
+            const juce::String cmdPath = "C:\\Windows\\System32\\cmd.exe";
+            if (juce::File(cmdPath).existsAsFile())
+            {
+                int invokeCount = 0;
+                {
+                    SidecarProcess proc;
+                    proc.setCancellationCallback([&invokeCount]() { ++invokeCount; });
+                    proc.setHelperPath(cmdPath);
+                    if (proc.launch() == SidecarProcessError::none)
+                    {
+                        proc.cancel();        // first cancel — callback fires once
+                        proc.cancel();        // second explicit cancel — must be no-op
+                        proc.waitForExit(2000);
+                    }
+                }
+                // Destructor fires here — must not invoke callback again.
+                expect(invokeCount <= 1, "callback must not fire more than once");
+            }
+            else
+            {
+                expect(true, "cmd.exe not found - skipping");
+            }
+        }
+
+        beginTest("destructor does not re-fire callback after explicit cancel");
+        {
+            const juce::String cmdPath = "C:\\Windows\\System32\\cmd.exe";
+            if (juce::File(cmdPath).existsAsFile())
+            {
+                int invokeCount = 0;
+                {
+                    SidecarProcess proc;
+                    proc.setCancellationCallback([&invokeCount]() { ++invokeCount; });
+                    proc.setHelperPath(cmdPath);
+                    if (proc.launch() == SidecarProcessError::none)
+                        proc.cancel();
+                    // Destructor runs at end of scope.
+                }
+                expect(invokeCount <= 1, "destructor must not re-fire callback after cancel");
+            }
+            else
+            {
+                expect(true, "cmd.exe not found - skipping");
+            }
+        }
+
+        // Issue 2: second launch must be rejected while a process is running.
+        beginTest("second launch returns alreadyRunning and does not replace the process");
+        {
+            const juce::String cmdPath = "C:\\Windows\\System32\\cmd.exe";
+            if (juce::File(cmdPath).existsAsFile())
+            {
+                SidecarProcess proc;
+                proc.setHelperPath(cmdPath);
+                const auto firstErr = proc.launch();
+                if (firstErr == SidecarProcessError::none)
+                {
+                    const juce::int64 firstPid = proc.getPid();
+                    expect(firstPid > 0);
+
+                    const auto secondErr = proc.launch();
+                    expect(secondErr == SidecarProcessError::alreadyRunning,
+                           "second launch must return alreadyRunning");
+                    expect(proc.getPid() == firstPid,
+                           "PID must not change after rejected second launch");
+
+                    proc.cancel();
+                    proc.waitForExit(2000);
+                }
+            }
+            else
+            {
+                expect(true, "cmd.exe not found - skipping");
+            }
+        }
+
+        // Issue 3: job assignment failure must be detected and returned.
+        beginTest("launch returns jobAssignmentFailed when job assignment is injected to fail");
+        {
+            const juce::String cmdPath = "C:\\Windows\\System32\\cmd.exe";
+            if (juce::File(cmdPath).existsAsFile())
+            {
+                SidecarProcess proc;
+                proc.setHelperPath(cmdPath);
+                proc.setJobAssignmentFunction([](void*, void*) { return false; });
+                const auto err = proc.launch();
+                expect(err == SidecarProcessError::jobAssignmentFailed,
+                       "injected failing job assignment must return jobAssignmentFailed");
+                // Process must have been cleaned up — not running, PID reset.
+                expect(!proc.isRunning(),
+                       "process must not be running after jobAssignmentFailed");
+                expect(proc.getPid() == 0,
+                       "PID must be reset to 0 after jobAssignmentFailed");
+            }
+            else
+            {
+                expect(true, "cmd.exe not found - skipping");
+            }
+        }
 #endif
     }
 };

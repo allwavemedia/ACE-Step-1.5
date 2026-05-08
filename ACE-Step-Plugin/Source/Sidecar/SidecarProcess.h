@@ -26,6 +26,8 @@ enum class SidecarProcessError
     cancelled,             /**< The job was cancelled before or during execution. */
     helperDisconnected,    /**< The pipe broke or the process exited unexpectedly. */
     manifestInvalid,       /**< The output manifest is absent or malformed. */
+    alreadyRunning,        /**< launch() called while a process is already running. */
+    jobAssignmentFailed,   /**< AssignProcessToJobObject failed; process was terminated. */
 };
 
 /** Wraps one sidecar helper process and its associated Windows job object.
@@ -66,7 +68,9 @@ public:
      *  Returns:
      *  - helperPathNotAbsolute if setHelperPath() has not been called successfully.
      *  - helperNotFound if the executable does not exist on disk.
+     *  - alreadyRunning if a process launched by this object is still running.
      *  - launchFailed if CreateProcessW fails.
+     *  - jobAssignmentFailed if AssignProcessToJobObject fails (process is terminated).
      */
     SidecarProcessError launch();
 
@@ -109,6 +113,18 @@ private:
     void* _processHandle = nullptr; /**< HANDLE from CreateProcessW. */
     void* _jobHandle = nullptr;     /**< Job object handle for kill-on-close. */
     juce::int64 _pid = 0;
+
+public:
+    /** Injectable job-assignment function for testing.
+     *
+     *  Receives (jobHandle, processHandle) as void*.
+     *  Defaults to AssignProcessToJobObject.  Override in tests to simulate failure.
+     */
+    using JobAssignFn = std::function<bool(void* jobHandle, void* processHandle)>;
+    void setJobAssignmentFunction(JobAssignFn fn);
+
+private:
+    JobAssignFn _jobAssignFn;
 #endif
 };
 
