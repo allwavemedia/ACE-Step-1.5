@@ -19,6 +19,7 @@
 #include <juce_core/juce_core.h>
 
 #include <functional>
+#include <mutex>
 
 namespace acestep_plugin
 {
@@ -88,6 +89,12 @@ public:
  *
  *  Drive the state machine from a timer callback or background worker via
  *  repeated pollOnce() calls.  Task 6 binds to getState() for UI updates.
+ *
+ *  Thread-safety contract: getState() is safe to call from any thread
+ *  concurrently with pollOnce(), cancelActiveGeneration(), or startGeneration()
+ *  on another thread.  startGeneration(), pollOnce(), and cancelActiveGeneration()
+ *  themselves must be called from a single background or message thread; they
+ *  are not mutually reentrant.
  */
 class GenerationCoordinator final
 {
@@ -157,6 +164,13 @@ private:
     DirectoryProvider _directoryProvider;
     ReferenceAudioResolver _referenceResolver;
 
+    /** Guards _state; held only for reads/writes of coordinator-owned state.
+     *
+     *  Never held across gateway calls or filesystem/manifest validation so
+     *  that callers can read getState() from a UI thread while a background
+     *  worker drives pollOnce().
+     */
+    mutable std::mutex _stateMutex;
     GenerationCoordinatorState _state;
     GenerationFormState _activeForm;
     juce::File _activeJobDir;

@@ -55,6 +55,9 @@ SidecarProcessError validateResultManifest(const juce::File& manifestFile,
         return SidecarProcessError::manifestInvalid;
 
     const auto* artifacts = artifactsVar.getArray();
+    if (artifacts->isEmpty())
+        return SidecarProcessError::manifestInvalid;
+
     for (const auto& art : *artifacts)
     {
         if (!validateArtifact(art))
@@ -62,6 +65,32 @@ SidecarProcessError validateResultManifest(const juce::File& manifestFile,
     }
 
     return SidecarProcessError::none;
+}
+
+juce::StringArray getValidatedArtifactPaths(const juce::File& manifestFile,
+                                            const juce::String& expectedRequestId)
+{
+    if (validateResultManifest(manifestFile, expectedRequestId) != SidecarProcessError::none)
+        return {};
+
+    juce::var parsed;
+    if (juce::JSON::parse(manifestFile.loadFileAsString(), parsed).failed())
+        return {};
+
+    const auto* obj = parsed.getDynamicObject();
+    if (obj == nullptr)
+        return {};
+
+    const juce::var artifactsVar = obj->getProperty("artifacts");
+    const auto* artifacts = artifactsVar.getArray();
+    if (artifacts == nullptr || artifacts->isEmpty())
+        return {};
+
+    juce::StringArray paths;
+    for (const auto& art : *artifacts)
+        paths.add(art["path"].toString());
+
+    return paths;
 }
 
 } // namespace acestep_plugin

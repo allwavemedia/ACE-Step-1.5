@@ -96,6 +96,31 @@ public:
             dir.deleteRecursively();
         }
 
+        beginTest("success manifest with empty artifacts array fails validation");
+        {
+            const auto dir = juce::File::getSpecialLocation(juce::File::tempDirectory)
+                                 .getChildFile("sidecar_manifest_test_emptyarts");
+            dir.createDirectory();
+
+            juce::Array<juce::var> emptyArray;
+
+            juce::DynamicObject::Ptr manifest = new juce::DynamicObject();
+            manifest->setProperty("protocolVersion", juce::String("1.0"));
+            manifest->setProperty("requestId", juce::String("req-test-003"));
+            manifest->setProperty("success", true);
+            manifest->setProperty("artifacts", juce::var(emptyArray));
+
+            const auto manifestFile = dir.getChildFile("manifest.json");
+            manifestFile.replaceWithText(juce::JSON::toString(juce::var(manifest.get())));
+
+            const auto err = validateResultManifest(manifestFile, "req-test-003");
+            expect(err == SidecarProcessError::manifestInvalid,
+                   "success=true with empty artifacts array must yield manifestInvalid");
+
+            manifestFile.deleteFile();
+            dir.deleteRecursively();
+        }
+
         beginTest("manifest referencing a missing artifact file fails validation");
         {
             const auto dir = juce::File::getSpecialLocation(juce::File::tempDirectory)

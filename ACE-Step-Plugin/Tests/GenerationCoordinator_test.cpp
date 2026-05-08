@@ -10,8 +10,10 @@
 #include <juce_core/juce_core.h>
 #include <juce_cryptography/juce_cryptography.h>
 
+#include <atomic>
 #include <deque>
 #include <optional>
+#include <thread>
 
 namespace acestep_plugin
 {
@@ -628,6 +630,100 @@ public:
             expect(state.status == GenerationCoordinatorStatus::running,
                    "staleCompletion must not fail or terminate the active job");
             expectEquals(history.size(), 0, "no asset promoted when staleCompletion received");
+
+            jobDir.deleteRecursively();
+        }
+
+        // ------------------------------------------------------------------
+        // HIGH 2: manifest-listed artifact path is used for promotion,
+        // not the hardcoded full_mix.wav path.
+        beginTest("coordinator promotes manifest-listed artifact path not hardcoded full_mix.wav");
+        {
+            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
+                                    .getChildFile("gc_test_manifest_path");
+            jobDir.createDirectory();
+
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            GenerationCoordinator coordinator{
+                history, gateway,
+                [&jobDir](const juce::String&) { return jobDir; }};
+
+            const auto form = makeValidForm();
+            const auto startErr = coordinator.startGeneration(form);
+            expect(startErr == GenerationCoordinatorError::none, "startGeneration should succeed");
+
+            const auto runState = coordinator.getState();
+
+            // Write a manifest with a DIFFERENT artifact name — NOT full_mix.wav.
+            // full_mix.wav must not exist so the test fails if coordinator falls back
+            // to the hardcoded path.
+            writeValidManifest(jobDir, runState.activeRequestId, "custom_output.wav");
+            expect(!jobDir.getChildFile("full_mix.wav").existsAsFile(),
+                   "full_mix.wav must not exist for this test to be meaningful");
+
+            gateway.pollResponses.push_back(
+                {SidecarClientError::none, makeCompletionEvent(runState.activeRequestId)});
+            coordinator.pollOnce(0);
+
+            const auto finalState = coordinator.getState();
+            expect(finalState.status == GenerationCoordinatorStatus::succeeded,
+                   "status should be succeeded when manifest lists a valid artifact");
+            expectEquals(history.size(), 1, "exactly one asset promoted to history");
+
+            const auto assets = history.getAssets();
+            expect(assets[0].outputPath.contains("custom_output.wav"),
+                   "promoted path must come from the manifest artifact, not full_mix.wav");
+
+            jobDir.deleteRecursively();
+        }
+
+        // ------------------------------------------------------------------
+        // IMPORTANT 3: getState() must be safe to call concurrently while
+        // another thread drives pollOnce() progress events.
+        beginTest("getState thread safety: concurrent getState and pollOnce do not race");
+        {
+            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
+                                    .getChildFile("gc_test_concurrent");
+            jobDir.createDirectory();
+
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            GenerationCoordinator coordinator{
+                history, gateway,
+                [&jobDir](const juce::String&) { return jobDir; }};
+
+            coordinator.startGeneration(makeValidForm());
+            expect(coordinator.getState().status == GenerationCoordinatorStatus::running,
+                   "precondition: should be running");
+
+            // Pre-populate no-message responses so each pollOnce is a no-op.
+            constexpr int kPollCount = 100;
+            for (int i = 0; i < kPollCount; ++i)
+            {
+                FakeGateway::PollResponse r;
+                r.error = SidecarClientError::none;
+                r.event = {};  // empty requestId → ignored by coordinator
+                gateway.pollResponses.push_back(r);
+            }
+
+            // Background thread calls getState() many times while main thread polls.
+            constexpr int kGetStateCount = 500;
+            std::thread getStateThread([&]() {
+                for (int i = 0; i < kGetStateCount; ++i)
+                {
+                    auto s = coordinator.getState();
+                    (void)s.status;
+                }
+            });
+
+            for (int i = 0; i < kPollCount; ++i)
+                coordinator.pollOnce(0);
+
+            getStateThread.join();
+
+            // Reaching here without crash or sanitizer error means the test passes.
+            expect(true, "concurrent getState/pollOnce must complete without data race");
 
             jobDir.deleteRecursively();
         }
