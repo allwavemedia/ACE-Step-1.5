@@ -34,7 +34,7 @@
 
 ## 6. Prompt-to-WAV Generation Workflow
 
-- [ ] 6.1 Add prompt, lyrics, duration, seed, CFG scale, LM seed, scheduler, and captured-reference controls.
+- [x] 6.1 Add prompt, lyrics, duration, seed, CFG scale, LM seed, scheduler, and captured-reference controls.
 - [ ] 6.2 Wire Generate and Cancel controls to sidecar orchestration with progress phases and user-visible errors.
 - [ ] 6.3 Ensure generation runs off the audio thread and does not destabilize pass-through audio.
 - [ ] 6.4 Persist completed WAV artifacts into generated asset history only after verification succeeds.
