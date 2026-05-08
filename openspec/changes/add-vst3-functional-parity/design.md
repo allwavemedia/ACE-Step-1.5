@@ -14,7 +14,9 @@ The in-process ACE-Step/acestep.cpp boundary may remain as a lower-level library
 
 The audio callback remains pass-through-only. The plugin must not launch helpers, load models, perform filesystem work, open IPC, run model discovery, or wait on background jobs during host scan, construction, editor creation, `prepareToPlay`, or `processBlock`.
 
-Heavy work starts only after explicit user action on a message/background thread. The plugin starts a lazy per-host-process helper by absolute `CreateProcessW` path from `ACE-Step.vst3\Contents\Resources\ACE-Step\helpers\`, attaches it to a Windows job object with kill-on-close, and communicates with versioned JSON request/response envelopes over Windows named pipes. The helper uses a private embedded/frozen runtime for Python-based tools and never resolves `python.exe` from user PATH.
+Heavy work starts only after explicit user action on a message/background thread. The plugin starts a lazy per-host-process helper by absolute `CreateProcessW` path from `ACE-Step.vst3\Contents\Resources\ACE-Step\helpers\`, attaches it to a Windows job object with kill-on-close, and communicates with versioned JSON request/response envelopes over Windows named pipes. Python-backed Basic Pitch, Demucs, MT3/MR-MT3, and SCNet tooling is packaged inside that helper tree as a private embedded/frozen runtime. The shipping plugin path must not require or invoke a separately installed Python or user PATH Python.
+
+V1 uses one helper per host process, shared by all ACE-Step plugin instances in that process, rather than one helper per plugin instance. Every job envelope includes request IDs plus plugin instance/session IDs so responses, progress, cancellation, diagnostics, and result manifests are correlated to the correct editor instance. The helper serializes or queues heavyweight generation/export jobs where needed for GPU, model, filesystem, or tool safety.
 
 ## Single-Scroll Editor
 
@@ -50,6 +52,8 @@ For repeated jobs, the sidecar keeps a warm `basic_pitch.inference.Model(ICASSP_
 
 `mt3-infer` with `mr_mt3` is the first fallback/upgrade path. MT3/MR-MT3 remains behind the same note-event and rendered-MIDI contract. MIDI acceptance requires a parseable MIDI file that imports into Reaper and at least one strict parser, note count and duration sanity checks, and simple fixture note-onset F1 measured with 50 ms tolerance.
 
+Fallback selection is explicit. MT3/MR-MT3 is offered or selected only when Basic Pitch is unavailable during setup/tool discovery, incompatible with the packaged runtime or current platform, or explicitly selected by the user or diagnostics path. If Basic Pitch crashes, times out, or returns invalid output mid-job, the MIDI export job fails with explicit editor text and diagnostics, preserves the existing full-mix artifact, and does not automatically retry with MT3/MR-MT3 unless the user starts a new export using that fallback backend.
+
 ## Stem Export
 
 V1 stem export uses Demucs `htdemucs_ft` inside the sidecar. The default invocation is:
@@ -62,6 +66,8 @@ The `python.exe` here is the sidecar's private embedded/frozen runtime, not user
 
 SCNet Large is the first fallback path. Native ACE-Step stem modes remain experimental until validated against release-grade outputs and model compatibility. Stem acceptance requires four valid WAVs, duration matching the source within tolerance, no zero-byte outputs, strong summed-stem correlation with the source, and a manifest recording model ID, checkpoint hash, sample rate, channel count, filenames, and completion timestamp.
 
+Fallback selection is explicit. SCNet is offered or selected only when Demucs is unavailable during setup/tool discovery, incompatible with the packaged runtime or current platform, or explicitly selected by the user or diagnostics path. If Demucs crashes, times out, or returns invalid output mid-job, the stem export job fails with explicit editor text and diagnostics, preserves the existing full-mix artifact, and does not automatically retry with SCNet unless the user starts a new export using that fallback backend.
+
 ## Error Handling
 
 Every user-visible failure maps to explicit editor text and diagnostics. Common classes include missing models/tools, sidecar unavailable, tool unavailable, checksum failure, invalid output, timeout, cancellation, disk full, permission denied, and sidecar crash. The main UI shows short recovery-oriented text; diagnostics include request ID, helper version, paths, hashes, exit codes, and raw Windows errors where applicable.
@@ -70,6 +76,6 @@ A failed export must not create a final artifact unless the artifact is complete
 
 ## Validation
 
-Validation covers Steinberg Validator, VST3 Plug-in Test Host, pluginval, JUCE AudioPluginHost, Reaper, and at least two locally installed VST3 production hosts. Host validation installs to `C:\Program Files\Common Files\VST3`.
+Validation covers Steinberg Validator, VST3 Plug-in Test Host, pluginval, JUCE AudioPluginHost, required Reaper validation, and at least two additional locally installed VST3 production hosts. Host validation installs to `C:\Program Files\Common Files\VST3`.
 
-Destructive validation uses disposable workspaces or VHDX layers and never targets the only known-good model copy. The validation harness records SHA-256 manifests before and after runs, uses ACL save/restore for permission tests, uses real disk-full volumes, validates atomic promotion, and captures evidence for sidecar launch failure, sidecar crash, cancellation, MIDI failure, stem failure, corrupt output, corrupt presets, and host recovery. Basic Pitch and Demucs are not considered implementation-complete until packaged-runtime smoke tests, tool availability checks, artifact validation, Reaper import checks, and host validation evidence pass.
+Destructive validation uses disposable workspaces or VHDX layers and never targets the only known-good model copy. The validation harness records SHA-256 manifests before and after runs for models, checkpoints, tool package manifests, and every output artifact referenced by result manifests. It uses ACL save/restore for permission tests, uses real disk-full volumes, validates atomic promotion, and captures evidence for sidecar launch failure, sidecar crash, cancellation, MIDI failure, stem failure, corrupt output, corrupt presets, and host recovery. Basic Pitch, Demucs, MT3/MR-MT3, and SCNet are not considered implementation-complete until packaged-runtime smoke tests, tool availability checks, artifact validation, Reaper import checks, and host validation evidence pass. Runtime packaging evidence must include bundle inspection plus Process Monitor or equivalent proof that the shipping plugin path makes zero user PATH Python resolution attempts. Multi-instance validation must prove concurrent plugin instances submitting generation/export jobs do not cross-wire results and do not launch more than one helper per host process.

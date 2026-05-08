@@ -39,7 +39,9 @@ The research basis is:
 
 ### MIDI Feasibility Notes
 
-Feasibility is based on `research/audio-to-midi-report.md`, which records Basic Pitch Windows support, CLI/API availability, note-event outputs, and warm model reuse. The sidecar must ship Basic Pitch inside a private embedded/frozen runtime and must never invoke user PATH Python. Shipping remains gated on packaging validation, a sidecar smoke test, strict parser validation, Reaper import validation, and host validation evidence.
+Feasibility is based on `research/audio-to-midi-report.md`, which records Basic Pitch Windows support, CLI/API availability, note-event outputs, and warm model reuse. The sidecar must ship Basic Pitch, MT3/MR-MT3, and their Python dependencies inside `ACE-Step.vst3\Contents\Resources\ACE-Step\helpers\` as a private embedded/frozen runtime. The shipping plugin path must not require or invoke a separately installed Python or user PATH Python. Shipping remains gated on packaging validation, a sidecar smoke test, strict parser validation, Reaper import validation, and host validation evidence, including bundle inspection plus Process Monitor or equivalent proof that no user PATH Python resolution is attempted.
+
+MT3/MR-MT3 fallback is offered or selected only when Basic Pitch is unavailable during setup/tool discovery, incompatible with the packaged runtime or current platform, or explicitly selected by the user or diagnostics path. If Basic Pitch crashes or fails mid-job, the MIDI export job fails explicitly, preserves the existing full-mix artifact, and does not silently retry with MT3/MR-MT3 unless the user starts a new export using that fallback backend.
 
 ## Stem Decision
 
@@ -55,7 +57,9 @@ Feasibility is based on `research/audio-to-midi-report.md`, which records Basic 
 
 ### Stem Feasibility Notes
 
-Feasibility is based on `research/Local-Stem-Separation-report.md`, which records Demucs `htdemucs_ft` as the stable v1 4-stem path with a simple Windows CLI and SCNet Large as a lighter fallback. The sidecar must ship Demucs and dependencies inside a private embedded/frozen runtime and must never invoke user PATH Python. Shipping remains gated on packaged-runtime smoke validation, four-stem output validation, manifest/hash validation, Reaper stem import validation, and host validation evidence.
+Feasibility is based on `research/Local-Stem-Separation-report.md`, which records Demucs `htdemucs_ft` as the stable v1 4-stem path with a simple Windows CLI and SCNet Large as a lighter fallback. The sidecar must ship Demucs, SCNet, and their Python dependencies inside `ACE-Step.vst3\Contents\Resources\ACE-Step\helpers\` as a private embedded/frozen runtime. The shipping plugin path must not require or invoke a separately installed Python or user PATH Python. Shipping remains gated on packaged-runtime smoke validation, four-stem output validation, manifest/hash validation, Reaper stem import validation, and host validation evidence, including bundle inspection plus Process Monitor or equivalent proof that no user PATH Python resolution is attempted.
+
+SCNet fallback is offered or selected only when Demucs is unavailable during setup/tool discovery, incompatible with the packaged runtime or current platform, or explicitly selected by the user or diagnostics path. If Demucs crashes or fails mid-job, the stem export job fails explicitly, preserves the existing full-mix artifact, and does not silently retry with SCNet unless the user starts a new export using that fallback backend.
 
 ## Sidecar Decision
 
@@ -69,6 +73,8 @@ Feasibility is based on `research/Local-Stem-Separation-report.md`, which record
 | Bundle location | `ACE-Step.vst3\Contents\Resources\ACE-Step\helpers\` |
 | Python | Private embedded/frozen runtime; never user PATH Python |
 
+V1 uses one lazy helper per host process, shared by all ACE-Step plugin instances in that process. The helper is not launched per plugin instance. Every request includes request IDs plus plugin instance/session IDs for correlation, and heavyweight generation/export jobs are serialized or queued where needed to avoid resource contention. Validation must prove concurrent plugin instances do not cross-wire results and do not launch more than one helper for the same host process.
+
 ## UI and Validation Decisions
 
-The release UI is one fixed-size, single-column, single-scroll workflow covering setup, generation, capture, progress/cancel, generated assets, WAV/MIDI/stem exports, presets, and diagnostics. All destructive validation must run in disposable workspaces or VHDX layers, never against the only known-good model copy. Validation evidence must include manifests, hashes, host/tool versions, sidecar runtime identity, raw Windows errors where applicable, and observed recovery behavior.
+The release UI is one fixed-size, single-column, single-scroll workflow covering setup, generation, capture, progress/cancel, generated assets, WAV/MIDI/stem exports, presets, and diagnostics. All destructive validation must run in disposable workspaces or VHDX layers, never against the only known-good model copy. Validation evidence must include manifests, hashes, host/tool versions, sidecar runtime identity, raw Windows errors where applicable, and observed recovery behavior. SHA-256 scope includes models, checkpoints, tool package manifests, and every output artifact referenced by result manifests.
