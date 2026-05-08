@@ -1,8 +1,9 @@
 /** Contract tests for SidecarProcess.
  *
  *  Covers: path validation, missing-executable detection, path-vs-PATH
- *  verification, process launch and cancellation (Windows), timeout behaviour,
- *  and safe no-op semantics for an un-launched process.
+ *  verification, process launch and cancellation (Windows), cooperative-
+ *  cancellation callback ordering, timeout behaviour, and safe no-op semantics
+ *  for an un-launched process.
  */
 #include "../Source/Sidecar/SidecarProcess.h"
 
@@ -93,6 +94,44 @@ public:
             SidecarProcess proc;
             const auto err = proc.waitForExit(0);
             expect(err == SidecarProcessError::none);
+        }
+
+        beginTest("cancel invokes cooperative-cancellation callback when process is running");
+        {
+#if JUCE_WINDOWS
+            const juce::String cmdPath = "C:\\Windows\\System32\\cmd.exe";
+            if (juce::File(cmdPath).existsAsFile())
+            {
+                SidecarProcess proc;
+                bool callbackInvoked = false;
+                proc.setCancellationCallback([&callbackInvoked]() { callbackInvoked = true; });
+                proc.setHelperPath(cmdPath);
+                if (proc.launch() == SidecarProcessError::none)
+                {
+                    proc.cancel();
+                    expect(callbackInvoked,
+                           "cooperative-cancellation callback must be invoked before force-terminate");
+                    proc.waitForExit(2000);
+                }
+            }
+            else
+            {
+                expect(true, "cmd.exe not found - skipping");
+            }
+#else
+            expect(true, "cooperative-cancellation callback test is Windows-only");
+#endif
+        }
+
+        beginTest("cancel does not invoke callback when process was never launched");
+        {
+            SidecarProcess proc;
+            bool callbackInvoked = false;
+            proc.setCancellationCallback([&callbackInvoked]() { callbackInvoked = true; });
+            proc.setHelperPath("C:\\nonexistent\\helper.exe");
+            proc.cancel(); // never launched - callback must be skipped
+            expect(!callbackInvoked,
+                   "callback must not fire when the process was never launched");
         }
 
 #if JUCE_WINDOWS

@@ -8,6 +8,8 @@
  */
 #pragma once
 
+#include <functional>
+
 #include <juce_core/juce_core.h>
 
 namespace acestep_plugin
@@ -34,6 +36,9 @@ enum class SidecarProcessError
 class SidecarProcess final
 {
 public:
+    /** Callable invoked by cancel() before force-termination. */
+    using CancellationCallback = std::function<void()>;
+
     SidecarProcess();
     ~SidecarProcess();
 
@@ -67,10 +72,19 @@ public:
 
     /** Request process termination.
      *
-     *  Force-terminates the helper.  Safe to call even if the process has
-     *  already exited or was never launched.
+     *  If a CancellationCallback has been set and the process is running,
+     *  the callback is invoked first for cooperative cancellation before
+     *  force-termination.  Safe to call even if the process has already
+     *  exited or was never launched.
      */
     void cancel();
+
+    /** Register a callback to be invoked before force-termination.
+     *
+     *  The callback runs synchronously inside cancel() only when the process
+     *  has been successfully launched.  Pass an empty function to clear.
+     */
+    void setCancellationCallback(CancellationCallback callback);
 
     /** Block until the process exits or timeoutMs elapses.
      *
@@ -89,6 +103,7 @@ public:
 private:
     juce::File _helperPath;
     bool _pathSet = false;
+    CancellationCallback _cancellationCallback;
 
 #if JUCE_WINDOWS
     void* _processHandle = nullptr; /**< HANDLE from CreateProcessW. */

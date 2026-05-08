@@ -111,8 +111,18 @@ void SidecarProcess::cancel()
 {
 #if JUCE_WINDOWS
     if (_processHandle != nullptr)
+    {
+        if (_cancellationCallback)
+            _cancellationCallback();
+
         TerminateProcess(static_cast<HANDLE>(_processHandle), 1u);
+    }
 #endif
+}
+
+void SidecarProcess::setCancellationCallback(CancellationCallback callback)
+{
+    _cancellationCallback = std::move(callback);
 }
 
 SidecarProcessError SidecarProcess::waitForExit(int timeoutMs)
