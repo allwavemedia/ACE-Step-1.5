@@ -116,6 +116,11 @@ void GenerationCoordinator::pollOnce(int pollTimeoutMs)
         return;
     }
 
+    // staleCompletion signals a completion for a cancelled/superseded request.
+    // The active job should continue; treat it like receiving no meaningful event.
+    if (pollError == SidecarClientError::staleCompletion)
+        return;
+
     if (pollError != SidecarClientError::none)
     {
         _state.status = GenerationCoordinatorStatus::failed;
@@ -167,12 +172,13 @@ void GenerationCoordinator::cancelActiveGeneration()
 
     const auto cancelError = _gateway.cancelGeneration(_state.activeRequestId);
 
-    // Gap 3: if the sidecar is disconnected we cannot expect a graceful cancel event;
+    // Gap 3: any transport/protocol error means we cannot expect a graceful cancel event;
     // transition directly to failed rather than leaving a permanent cancelling state.
-    if (cancelError == SidecarClientError::helperDisconnected)
+    if (cancelError != SidecarClientError::none)
     {
         _state.status = GenerationCoordinatorStatus::failed;
-        _state.errorText = "Helper disconnected while sending cancellation.";
+        _state.errorText = "Cancel failed with error code "
+                           + juce::String(static_cast<int>(cancelError));
         return;
     }
 

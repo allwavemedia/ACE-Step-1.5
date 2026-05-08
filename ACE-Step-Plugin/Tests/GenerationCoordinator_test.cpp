@@ -225,6 +225,9 @@ public:
             expect(state.status == GenerationCoordinatorStatus::failed,
                    "status should be failed after submit error");
             expect(state.errorText.isNotEmpty(), "errorText must be set on failure");
+            // ITEM 2: activeRequestId must not be stale after submit failure.
+            expect(state.activeRequestId.isEmpty(),
+                   "activeRequestId must be empty after submit failure");
         }
 
         // ------------------------------------------------------------------
@@ -572,6 +575,61 @@ public:
                    "helperDisconnected on cancel must transition to failed, not cancelling");
             expect(state.errorText.isNotEmpty(),
                    "errorText must be set when cancel returns helperDisconnected");
+        }
+
+        // ------------------------------------------------------------------
+        // ITEM 1: cancelActiveGeneration must treat ANY non-none SidecarClientError as failed.
+        beginTest("cancelActiveGeneration with any non-none error transitions to failed not cancelling");
+        {
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            gateway.cancelError = SidecarClientError::unknownMessageType;
+            GenerationCoordinator coordinator{history, gateway};
+
+            coordinator.startGeneration(makeValidForm());
+            expect(coordinator.getState().status == GenerationCoordinatorStatus::running,
+                   "precondition: should be running");
+
+            coordinator.cancelActiveGeneration();
+
+            const auto state = coordinator.getState();
+            expect(state.status == GenerationCoordinatorStatus::failed,
+                   "unknownMessageType on cancel must transition to failed, not cancelling");
+            expect(state.errorText.isNotEmpty(),
+                   "errorText must be set when cancel returns non-none error");
+            expect(state.status != GenerationCoordinatorStatus::cancelling,
+                   "must not remain in cancelling state after a cancel error");
+        }
+
+        // ------------------------------------------------------------------
+        // ITEM 3 (optional): pollOnce must ignore staleCompletion without failing the active job.
+        beginTest("pollOnce with staleCompletion error keeps job running without failing");
+        {
+            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
+                                    .getChildFile("gc_test_stale_completion");
+            jobDir.createDirectory();
+
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            GenerationCoordinator coordinator{
+                history, gateway,
+                [&jobDir](const juce::String&) { return jobDir; }};
+
+            coordinator.startGeneration(makeValidForm());
+            expect(coordinator.getState().status == GenerationCoordinatorStatus::running,
+                   "precondition: should be running");
+
+            // staleCompletion signals a completion for a cancelled/superseded request;
+            // the active job must remain running, not fail.
+            gateway.pollResponses.push_back({SidecarClientError::staleCompletion, {}});
+            coordinator.pollOnce(0);
+
+            const auto state = coordinator.getState();
+            expect(state.status == GenerationCoordinatorStatus::running,
+                   "staleCompletion must not fail or terminate the active job");
+            expectEquals(history.size(), 0, "no asset promoted when staleCompletion received");
+
+            jobDir.deleteRecursively();
         }
     }
 };
