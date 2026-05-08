@@ -34,7 +34,11 @@ int main(int argc, char* argv[])
         failures += result->failures;
 
         if (result->failures > 0)
+        {
             std::cerr << result->unitTestName << ": " << result->failures << " failure(s)\n";
+            for (const auto& message : result->messages)
+                std::cerr << "  " << message << "\n";
+        }
     }
 
     if (failures == 0)

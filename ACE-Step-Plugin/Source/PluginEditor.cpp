@@ -9,8 +9,15 @@ namespace
 {
 
 constexpr auto kEditorWidth = 520;
-constexpr auto kEditorHeightBase = 322;
-constexpr auto kEditorHeightWithSetup = 452;
+constexpr auto kEditorHeight = 640;
+constexpr auto kContentPadding = 24;
+constexpr auto kSectionGap = 14;
+constexpr auto kHeadingHeight = 24;
+constexpr auto kStatusHeight = 44;
+constexpr auto kGenerationPanelHeight = 346;
+constexpr auto kPresetPanelHeight = 112;
+constexpr auto kAssetPanelHeight = 142;
+constexpr auto kDiagnosticsHeight = 82;
 
 juce::String formatDownloadSize(juce::int64 bytes)
 {
@@ -31,52 +38,104 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     titleLabel.setJustificationType(juce::Justification::centredLeft);
     titleLabel.setColour(juce::Label::textColourId, juce::Colours::white);
     titleLabel.setFont(juce::FontOptions(26.0f, juce::Font::bold));
-    addAndMakeVisible(titleLabel);
+    scrollViewport.setViewedComponent(&scrollContent, false);
+    scrollViewport.setScrollBarsShown(true, false);
+    scrollViewport.setName("Single-scroll editor viewport");
+    scrollContent.setName("Single-scroll editor content");
+    addAndMakeVisible(scrollViewport);
+
+    auto configureHeading = [](juce::Label& label, const juce::String& text)
+    {
+        label.setText(text, juce::dontSendNotification);
+        label.setJustificationType(juce::Justification::centredLeft);
+        label.setColour(juce::Label::textColourId, juce::Colours::white);
+        label.setFont(juce::FontOptions(17.0f, juce::Font::bold));
+    };
+
+    configureHeading(setupHeadingLabel, "Setup");
+    configureHeading(generationHeadingLabel, "Generation");
+    configureHeading(captureHeadingLabel, "Capture");
+    configureHeading(generatedAssetsHeadingLabel, "Generated Assets");
+    configureHeading(diagnosticsHeadingLabel, "Diagnostics");
+    setupHeadingLabel.setName("Setup section");
+    generationHeadingLabel.setName("Generation section");
+    captureHeadingLabel.setName("Capture section");
+    generatedAssetsHeadingLabel.setName("Generated assets section");
+    diagnosticsHeadingLabel.setName("Diagnostics section");
+
+    scrollContent.addAndMakeVisible(titleLabel);
+    scrollContent.addAndMakeVisible(setupHeadingLabel);
+    scrollContent.addAndMakeVisible(generationHeadingLabel);
+    scrollContent.addAndMakeVisible(captureHeadingLabel);
+    scrollContent.addAndMakeVisible(generatedAssetsHeadingLabel);
+    scrollContent.addAndMakeVisible(diagnosticsHeadingLabel);
 
     captureSourceLabel.setText("Capture Source: Host input (current routing)",
         juce::dontSendNotification);
     captureSourceLabel.setJustificationType(juce::Justification::centredLeft);
     captureSourceLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     captureSourceLabel.setFont(juce::FontOptions(15.0f));
-    addAndMakeVisible(captureSourceLabel);
+    scrollContent.addAndMakeVisible(captureSourceLabel);
 
     armButton.setButtonText("Arm");
+    armButton.setName("Arm reference capture");
     armButton.onClick = [this] {
         audioProcessor.setReferenceCaptureEnabled(armButton.getToggleState());
     };
-    addAndMakeVisible(armButton);
+    scrollContent.addAndMakeVisible(armButton);
 
     clearButton.setButtonText("Clear");
+    clearButton.setName("Clear reference capture");
     clearButton.onClick = [this] {
         audioProcessor.requestReferenceClear();
         meterLevel = 0.0f;
-        repaint();
+        updateCaptureMeterText();
     };
-    addAndMakeVisible(clearButton);
+    scrollContent.addAndMakeVisible(clearButton);
+
+    captureMeterLabel.setText("Meter: idle", juce::dontSendNotification);
+    captureMeterLabel.setJustificationType(juce::Justification::centredLeft);
+    captureMeterLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
+    captureMeterLabel.setFont(juce::FontOptions(13.0f));
+    scrollContent.addAndMakeVisible(captureMeterLabel);
 
     statusLabel.setText("Audio passes through unchanged.", juce::dontSendNotification);
     statusLabel.setJustificationType(juce::Justification::centredLeft);
     statusLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     statusLabel.setFont(juce::FontOptions(15.0f));
-    addAndMakeVisible(statusLabel);
+    scrollContent.addAndMakeVisible(statusLabel);
 
     modelSetupHeadingLabel.setJustificationType(juce::Justification::centredLeft);
     modelSetupHeadingLabel.setColour(juce::Label::textColourId, juce::Colours::orange);
     modelSetupHeadingLabel.setFont(juce::FontOptions(15.0f, juce::Font::bold));
-    addChildComponent(modelSetupHeadingLabel);
+    scrollContent.addChildComponent(modelSetupHeadingLabel);
 
     modelDestinationLabel.setJustificationType(juce::Justification::centredLeft);
     modelDestinationLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     modelDestinationLabel.setFont(juce::FontOptions(13.0f));
-    addChildComponent(modelDestinationLabel);
+    scrollContent.addChildComponent(modelDestinationLabel);
 
     modelDownloadSizeLabel.setJustificationType(juce::Justification::centredLeft);
     modelDownloadSizeLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     modelDownloadSizeLabel.setFont(juce::FontOptions(13.0f));
-    addChildComponent(modelDownloadSizeLabel);
+    scrollContent.addChildComponent(modelDownloadSizeLabel);
 
     modelSetupButton.setButtonText("Set Up Models");
-    addChildComponent(modelSetupButton);
+    modelSetupButton.onClick = [this] {
+        statusLabel.setText(
+            "Model setup action pending: use the ACE-Step model setup workflow to download missing models.",
+            juce::dontSendNotification);
+    };
+    scrollContent.addChildComponent(modelSetupButton);
+
+    generationFormPanel.setOnGenerate([this](const acestep_plugin::GenerationFormState&) {
+        statusLabel.setText("Generation sidecar wiring is pending.", juce::dontSendNotification);
+    });
+    generationFormPanel.setOnCancel([this] {
+        statusLabel.setText("No active generation to cancel.", juce::dontSendNotification);
+    });
+    generationFormPanel.setName("Generation form");
+    scrollContent.addAndMakeVisible(generationFormPanel);
 
     refreshModelSetupPanel();
     presetBrowserPanel.setOnSave([this] {
@@ -114,11 +173,38 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
             refreshPresetBrowser();
         }
     });
-    addAndMakeVisible(presetBrowserPanel);
+    scrollContent.addAndMakeVisible(presetBrowserPanel);
     refreshPresetBrowser();
 
+    generatedAssetsBodyLabel.setText(
+        "Generated asset history is empty. Completed full-mix WAV assets will appear here.",
+        juce::dontSendNotification);
+    generatedAssetsBodyLabel.setJustificationType(juce::Justification::centredLeft);
+    generatedAssetsBodyLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
+    generatedAssetsBodyLabel.setFont(juce::FontOptions(13.0f));
+    generatedAssetsBodyLabel.setName("Generated asset history");
+    scrollContent.addAndMakeVisible(generatedAssetsBodyLabel);
+
+    exportStatusLabel.setName("Export actions");
+
+    exportStatusLabel.setText(
+        "Exports: WAV Save As/drag, MIDI export, and stem export appear per generated asset.",
+        juce::dontSendNotification);
+    exportStatusLabel.setJustificationType(juce::Justification::centredLeft);
+    exportStatusLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
+    exportStatusLabel.setFont(juce::FontOptions(13.0f));
+    scrollContent.addAndMakeVisible(exportStatusLabel);
+
+    diagnosticsBodyLabel.setText(
+        "Sidecar: idle\nLast request: none\nArtifacts: none\nValidation failures: none",
+        juce::dontSendNotification);
+    diagnosticsBodyLabel.setJustificationType(juce::Justification::topLeft);
+    diagnosticsBodyLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
+    diagnosticsBodyLabel.setFont(juce::FontOptions(13.0f));
+    scrollContent.addAndMakeVisible(diagnosticsBodyLabel);
+
     startTimerHz(30);
-    setSize(kEditorWidth, showModelSetup ? kEditorHeightWithSetup : kEditorHeightBase);
+    setSize(kEditorWidth, kEditorHeight);
 }
 
 void AceStepAudioProcessorEditor::refreshModelSetupPanel()
@@ -153,6 +239,9 @@ void AceStepAudioProcessorEditor::refreshModelSetupPanel()
     modelDestinationLabel.setVisible(showModelSetup);
     modelDownloadSizeLabel.setVisible(showModelSetup);
     modelSetupButton.setVisible(showModelSetup);
+
+    if (getWidth() > 0 && getHeight() > 0)
+        resized();
 }
 
 void AceStepAudioProcessorEditor::refreshPresetBrowser()
@@ -197,44 +286,81 @@ void AceStepAudioProcessorEditor::paint(juce::Graphics& graphics)
     graphics.fillAll(juce::Colour(0xff171a1f));
     graphics.setColour(juce::Colour(0xff2f6f73));
     graphics.fillRect(getLocalBounds().removeFromTop(4));
-
-    auto meterBounds = getLocalBounds().reduced(24).removeFromBottom(48);
-    graphics.setColour(juce::Colour(0xff252b31));
-    graphics.fillRoundedRectangle(meterBounds.toFloat(), 4.0f);
-
-    auto filled = meterBounds.withWidth(
-        juce::roundToInt(static_cast<float>(meterBounds.getWidth()) * meterLevel));
-    graphics.setColour(juce::Colour(0xff47b3a9));
-    graphics.fillRoundedRectangle(filled.toFloat(), 4.0f);
 }
 
 void AceStepAudioProcessorEditor::resized()
 {
-    auto bounds = getLocalBounds().reduced(24);
-    titleLabel.setBounds(bounds.removeFromTop(40));
-    captureSourceLabel.setBounds(bounds.removeFromTop(28));
+    scrollViewport.setBounds(getLocalBounds());
 
-    auto controls = bounds.removeFromTop(36);
-    armButton.setBounds(controls.removeFromLeft(96));
-    clearButton.setBounds(controls.removeFromLeft(96).reduced(8, 0));
+    const int contentWidth = scrollViewport.getMaximumVisibleWidth() > 0
+        ? scrollViewport.getMaximumVisibleWidth()
+        : getWidth();
 
-    statusLabel.setBounds(bounds.removeFromTop(28));
-    presetBrowserPanel.setBounds(bounds.removeFromTop(102));
+    auto bounds = juce::Rectangle<int>(0, 0, contentWidth, 1).reduced(kContentPadding, 0);
+    int y = kContentPadding;
 
+    auto nextArea = [&](int height)
+    {
+        auto area = juce::Rectangle<int>(bounds.getX(), y, bounds.getWidth(), height);
+        y += height;
+        return area;
+    };
+
+    auto addGap = [&] { y += kSectionGap; };
+
+    titleLabel.setBounds(nextArea(40));
+    addGap();
+
+    setupHeadingLabel.setBounds(nextArea(kHeadingHeight));
+    statusLabel.setBounds(nextArea(kStatusHeight));
     if (showModelSetup)
     {
-        bounds.removeFromTop(8);
-        modelSetupHeadingLabel.setBounds(bounds.removeFromTop(24));
-        modelDestinationLabel.setBounds(bounds.removeFromTop(22));
-        modelDownloadSizeLabel.setBounds(bounds.removeFromTop(22));
-        bounds.removeFromTop(8);
-        modelSetupButton.setBounds(bounds.removeFromTop(36).removeFromLeft(160));
+        modelSetupHeadingLabel.setBounds(nextArea(24));
+        modelDestinationLabel.setBounds(nextArea(22));
+        modelDownloadSizeLabel.setBounds(nextArea(22));
+        y += 8;
+        modelSetupButton.setBounds(nextArea(36).removeFromLeft(160));
     }
+    addGap();
+
+    generationHeadingLabel.setBounds(nextArea(kHeadingHeight));
+    generationFormPanel.setBounds(nextArea(kGenerationPanelHeight));
+    addGap();
+
+    captureHeadingLabel.setBounds(nextArea(kHeadingHeight));
+    captureSourceLabel.setBounds(nextArea(28));
+    auto controls = nextArea(36);
+    armButton.setBounds(controls.removeFromLeft(96));
+    clearButton.setBounds(controls.removeFromLeft(96).reduced(8, 0));
+    updateCaptureMeterText();
+    captureMeterLabel.setBounds(nextArea(24));
+    addGap();
+
+    generatedAssetsHeadingLabel.setBounds(nextArea(kHeadingHeight));
+    generatedAssetsBodyLabel.setBounds(nextArea(kAssetPanelHeight - 28));
+    exportStatusLabel.setBounds(nextArea(28));
+    addGap();
+
+    presetBrowserPanel.setBounds(nextArea(kPresetPanelHeight));
+    addGap();
+
+    diagnosticsHeadingLabel.setBounds(nextArea(kHeadingHeight));
+    diagnosticsBodyLabel.setBounds(nextArea(kDiagnosticsHeight));
+    y += kContentPadding;
+
+    scrollContent.setSize(contentWidth, y);
 }
 
 void AceStepAudioProcessorEditor::timerCallback()
 {
     const auto nextPeak = juce::jlimit(0.0f, 1.0f, audioProcessor.consumeReferencePeak());
     meterLevel = std::max(nextPeak, meterLevel * 0.82f);
-    repaint();
+    updateCaptureMeterText();
+}
+
+void AceStepAudioProcessorEditor::updateCaptureMeterText()
+{
+    const auto text = "Meter: " + juce::String(juce::roundToInt(meterLevel * 100.0f)) + "%";
+    if (captureMeterLabel.getText() != text)
+        captureMeterLabel.setText(text, juce::dontSendNotification);
 }
