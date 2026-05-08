@@ -89,7 +89,7 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     clearButton.onClick = [this] {
         audioProcessor.requestReferenceClear();
         meterLevel = 0.0f;
-        repaint();
+        updateCaptureMeterText();
     };
     scrollContent.addAndMakeVisible(clearButton);
 
@@ -121,6 +121,11 @@ AceStepAudioProcessorEditor::AceStepAudioProcessorEditor(AceStepAudioProcessor& 
     scrollContent.addChildComponent(modelDownloadSizeLabel);
 
     modelSetupButton.setButtonText("Set Up Models");
+    modelSetupButton.onClick = [this] {
+        statusLabel.setText(
+            "Model setup action pending: use the ACE-Step model setup workflow to download missing models.",
+            juce::dontSendNotification);
+    };
     scrollContent.addChildComponent(modelSetupButton);
 
     generationFormPanel.setOnGenerate([this](const acestep_plugin::GenerationFormState&) {
@@ -234,6 +239,9 @@ void AceStepAudioProcessorEditor::refreshModelSetupPanel()
     modelDestinationLabel.setVisible(showModelSetup);
     modelDownloadSizeLabel.setVisible(showModelSetup);
     modelSetupButton.setVisible(showModelSetup);
+
+    if (getWidth() > 0 && getHeight() > 0)
+        resized();
 }
 
 void AceStepAudioProcessorEditor::refreshPresetBrowser()
@@ -348,11 +356,11 @@ void AceStepAudioProcessorEditor::timerCallback()
     const auto nextPeak = juce::jlimit(0.0f, 1.0f, audioProcessor.consumeReferencePeak());
     meterLevel = std::max(nextPeak, meterLevel * 0.82f);
     updateCaptureMeterText();
-    repaint();
 }
 
 void AceStepAudioProcessorEditor::updateCaptureMeterText()
 {
-    captureMeterLabel.setText("Meter: " + juce::String(juce::roundToInt(meterLevel * 100.0f)) + "%",
-        juce::dontSendNotification);
+    const auto text = "Meter: " + juce::String(juce::roundToInt(meterLevel * 100.0f)) + "%";
+    if (captureMeterLabel.getText() != text)
+        captureMeterLabel.setText(text, juce::dontSendNotification);
 }

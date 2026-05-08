@@ -216,6 +216,10 @@ if(ACESTEP_BUILD_TESTS)
             Source/UI/PresetBrowserPanel.h
             Source/UI/PreviewPlayer.cpp
             Source/UI/PreviewPlayer.h
+            Source/PluginEditor.cpp
+            Source/PluginEditor.h
+            Source/PluginProcessor.cpp
+            Source/PluginProcessor.h
             Tests/AceStepCApi_test.cpp
             Tests/AceStepEngine_test.cpp
             Tests/AceStepEngineAsync_test.cpp
@@ -257,6 +261,7 @@ if(ACESTEP_BUILD_TESTS)
             JUCE_DISPLAY_SPLASH_SCREEN=0
             JUCE_REPORT_APP_USAGE=0
             ACESTEP_PLUGIN_MODE_STUB=1
+            JucePlugin_Name="ACE-Step"
     )
 
     target_link_libraries(AceStepPluginTests

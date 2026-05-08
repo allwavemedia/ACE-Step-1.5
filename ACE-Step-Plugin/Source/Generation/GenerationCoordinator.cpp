@@ -126,12 +126,19 @@ static bool hasMinimalWavHeader(const juce::File& artifactFile)
     return stream.getPosition() == fileSize && hasFmtChunk && hasDataChunk;
 }
 
-static bool isExpectedFullMixArtifact(const juce::StringArray& artifactPaths)
+static bool isExpectedFullMixArtifact(const juce::StringArray& artifactPaths,
+                                      const juce::File& activeJobDir)
 {
     if (artifactPaths.size() != 1)
         return false;
 
     const juce::File artifactFile(artifactPaths[0]);
+    if (!juce::File::isAbsolutePath(artifactFile.getFullPathName())
+        || !artifactFile.isAChildOf(activeJobDir))
+    {
+        return false;
+    }
+
     return artifactFile.hasFileExtension("wav") && hasMinimalWavHeader(artifactFile);
 }
 
@@ -307,7 +314,7 @@ void GenerationCoordinator::pollOnce(int pollTimeoutMs)
     const auto manifestFile = _activeJobDir.getChildFile("manifest.json");
     const auto artifactPaths = getValidatedArtifactPaths(manifestFile, currentRequestId);
 
-    if (!isExpectedFullMixArtifact(artifactPaths))
+    if (!isExpectedFullMixArtifact(artifactPaths, _activeJobDir))
     {
         std::lock_guard<std::mutex> lock(_stateMutex);
         if (_state.status == GenerationCoordinatorStatus::cancelling)

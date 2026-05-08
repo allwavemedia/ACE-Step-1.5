@@ -54,12 +54,39 @@ bool containsComponentName(juce::Component& component, const juce::String& name)
     return false;
 }
 
-int countViewports(juce::Component& component)
+juce::Label* findLabelContainingText(juce::Component& component, const juce::String& text)
 {
-    int count = dynamic_cast<juce::Viewport*>(&component) == nullptr ? 0 : 1;
+    if (auto* label = dynamic_cast<juce::Label*>(&component))
+        if (label->getText().containsIgnoreCase(text))
+            return label;
 
     for (int i = 0; i < component.getNumChildComponents(); ++i)
-        count += countViewports(*component.getChildComponent(i));
+        if (auto* label = findLabelContainingText(*component.getChildComponent(i), text))
+            return label;
+
+    return nullptr;
+}
+
+juce::Button* findButtonWithText(juce::Component& component, const juce::String& text)
+{
+    if (auto* button = dynamic_cast<juce::Button*>(&component))
+        if (button->getButtonText().containsIgnoreCase(text))
+            return button;
+
+    for (int i = 0; i < component.getNumChildComponents(); ++i)
+        if (auto* button = findButtonWithText(*component.getChildComponent(i), text))
+            return button;
+
+    return nullptr;
+}
+
+int countDirectViewports(juce::Component& component)
+{
+    int count = 0;
+
+    for (int i = 0; i < component.getNumChildComponents(); ++i)
+        if (dynamic_cast<juce::Viewport*>(component.getChildComponent(i)) != nullptr)
+            ++count;
 
     return count;
 }
@@ -85,7 +112,10 @@ public:
             expect(!viewport->isHorizontalScrollBarShown(), "viewport must not horizontally scroll");
             expect(viewport->getViewedComponent() != nullptr,
                    "viewport must own the single-scroll content component");
-            expectEquals(countViewports(editor), 1, "editor must not add nested scroll views");
+            expectEquals(countDirectViewports(editor), 1,
+                         "editor must expose exactly one direct viewport");
+            expectEquals(countDirectViewports(*viewport->getViewedComponent()), 0,
+                         "scroll content must not add a nested app-level viewport");
         }
 
         beginTest("single-scroll content contains generation, capture, presets, assets, diagnostics");
@@ -134,6 +164,59 @@ public:
             expect(containsComponentName(*content, "Generated assets section"));
             expect(containsComponentName(*content, "Export actions"));
             expect(containsComponentName(*content, "Diagnostics section"));
+        }
+
+        beginTest("clear capture updates meter label immediately");
+        {
+            AceStepAudioProcessor processor;
+            AceStepAudioProcessorEditor editor(processor);
+            editor.resized();
+
+            auto* viewport = findDirectViewport(editor);
+            auto* content = viewport == nullptr ? nullptr : viewport->getViewedComponent();
+            expect(content != nullptr, "precondition: scroll content exists");
+            if (content == nullptr)
+                return;
+
+            auto* meterLabel = findLabelContainingText(*content, "Meter:");
+            auto* clearButton = findButtonWithText(*content, "Clear");
+            expect(meterLabel != nullptr, "precondition: meter label exists");
+            expect(clearButton != nullptr, "precondition: clear button exists");
+            if (meterLabel == nullptr || clearButton == nullptr)
+                return;
+
+            meterLabel->setText("Meter: stale", juce::dontSendNotification);
+            expect(static_cast<bool>(clearButton->onClick),
+                   "precondition: clear button must have a click handler");
+            clearButton->onClick();
+
+            expectEquals(meterLabel->getText(), juce::String("Meter: 0%"),
+                         "clear must synchronously reset the displayed meter text");
+        }
+
+        beginTest("model setup button has user-visible action");
+        {
+            AceStepAudioProcessor processor;
+            AceStepAudioProcessorEditor editor(processor);
+            editor.resized();
+
+            auto* viewport = findDirectViewport(editor);
+            auto* content = viewport == nullptr ? nullptr : viewport->getViewedComponent();
+            expect(content != nullptr, "precondition: scroll content exists");
+            if (content == nullptr)
+                return;
+
+            auto* setupButton = findButtonWithText(*content, "Set Up Models");
+            expect(setupButton != nullptr, "model setup button must exist");
+            if (setupButton == nullptr)
+                return;
+
+            expect(static_cast<bool>(setupButton->onClick),
+                   "model setup button must have a click handler");
+            setupButton->onClick();
+
+            expect(containsLabelText(*content, "Model setup action"),
+                   "clicking Set Up Models must produce visible setup feedback");
         }
     }
 };

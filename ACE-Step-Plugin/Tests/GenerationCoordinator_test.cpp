@@ -116,8 +116,8 @@ static void writeMinimalWavFile(const juce::File& artFile)
 }
 
 static void writeValidManifest(const juce::File& jobDir,
-                                 const juce::String& requestId,
-                                 const juce::String& artifactName = "full_mix.wav")
+                                  const juce::String& requestId,
+                                  const juce::String& artifactName = "full_mix.wav")
 {
     const auto artFile = jobDir.getChildFile(artifactName);
     if (artFile.hasFileExtension("wav"))
@@ -142,6 +142,28 @@ static void writeValidManifest(const juce::File& jobDir,
     manifest->setProperty("artifacts", juce::var(artArray));
 
     jobDir.getChildFile("manifest.json")
+        .replaceWithText(juce::JSON::toString(juce::var(manifest.get())));
+}
+
+static void writeManifestForArtifact(const juce::File& manifestDir,
+                                     const juce::String& requestId,
+                                     const juce::File& artifactFile)
+{
+    juce::DynamicObject::Ptr artObj = new juce::DynamicObject();
+    artObj->setProperty("path", artifactFile.getFullPathName());
+    artObj->setProperty("byteSize", static_cast<juce::int64>(artifactFile.getSize()));
+    artObj->setProperty("sha256", juce::SHA256(artifactFile).toHexString());
+
+    juce::Array<juce::var> artArray;
+    artArray.add(juce::var(artObj.get()));
+
+    juce::DynamicObject::Ptr manifest = new juce::DynamicObject();
+    manifest->setProperty("protocolVersion", juce::String("1.0"));
+    manifest->setProperty("requestId", requestId);
+    manifest->setProperty("success", true);
+    manifest->setProperty("artifacts", juce::var(artArray));
+
+    manifestDir.getChildFile("manifest.json")
         .replaceWithText(juce::JSON::toString(juce::var(manifest.get())));
 }
 
@@ -829,6 +851,37 @@ public:
                    "generation manifest with extra artifacts must fail the coordinator");
 
             jobDir.deleteRecursively();
+        }
+
+        beginTest("coordinator rejects manifest artifact outside active job directory");
+        {
+            const auto jobDir = makeCleanTestDirectory("gc_test_outside_artifact_job");
+            const auto outsideDir = makeCleanTestDirectory("gc_test_outside_artifact_external");
+            const auto outsideWav = outsideDir.getChildFile("outside.wav");
+            writeMinimalWavFile(outsideWav);
+
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            GenerationCoordinator coordinator{
+                history, gateway,
+                [&jobDir](const juce::String&) { return jobDir; }};
+
+            coordinator.startGeneration(makeValidForm());
+            const auto runState = coordinator.getState();
+
+            writeManifestForArtifact(jobDir, runState.activeRequestId, outsideWav);
+
+            gateway.pollResponses.push_back(
+                {SidecarClientError::none, makeCompletionEvent(runState.activeRequestId)});
+            coordinator.pollOnce(0);
+
+            expectEquals(history.size(), 0,
+                         "manifest artifact outside the active job directory must not promote");
+            expect(coordinator.getState().status == GenerationCoordinatorStatus::failed,
+                   "outside-job artifact must fail the coordinator");
+
+            jobDir.deleteRecursively();
+            outsideDir.deleteRecursively();
         }
 
         beginTest("cancel in flight prevents concurrent completion promotion");
