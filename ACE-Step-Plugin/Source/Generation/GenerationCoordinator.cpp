@@ -21,8 +21,7 @@ namespace
 
 static juce::uint16 readLittleEndian16(const unsigned char* bytes)
 {
-    return static_cast<juce::uint16>(static_cast<juce::uint16>(bytes[0])
-                                     | (static_cast<juce::uint16>(bytes[1]) << 8));
+    return static_cast<juce::uint16>(bytes[0] | (bytes[1] << 8));
 }
 
 static juce::uint32 readLittleEndian32(const unsigned char* bytes)
@@ -40,9 +39,14 @@ static bool readChunkHeader(juce::InputStream& stream,
     unsigned char sizeBytes[4] {};
     const auto chunkIdSize = static_cast<int>(sizeof(chunkId));
     const auto chunkSizeSize = static_cast<int>(sizeof(sizeBytes));
-    return stream.read(chunkId, chunkIdSize) == chunkIdSize
-           && stream.read(sizeBytes, chunkSizeSize) == chunkSizeSize
-           && (chunkSize = readLittleEndian32(sizeBytes), true);
+    if (stream.read(chunkId, chunkIdSize) != chunkIdSize
+        || stream.read(sizeBytes, chunkSizeSize) != chunkSizeSize)
+    {
+        return false;
+    }
+
+    chunkSize = readLittleEndian32(sizeBytes);
+    return true;
 }
 
 static bool validateFmtChunk(juce::InputStream& stream, juce::uint32 chunkSize)
