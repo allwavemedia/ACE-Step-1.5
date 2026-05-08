@@ -13,6 +13,9 @@ namespace acestep_plugin
 SidecarProcess::SidecarProcess()
 {
 #if JUCE_WINDOWS
+    _jobCreateFn = []() -> void* {
+        return static_cast<void*>(CreateJobObjectW(nullptr, nullptr));
+    };
     _jobAssignFn = [](void* job, void* process) -> bool {
         return AssignProcessToJobObject(static_cast<HANDLE>(job),
                                        static_cast<HANDLE>(process)) != FALSE;
@@ -80,15 +83,17 @@ SidecarProcessError SidecarProcess::launch()
         return SidecarProcessError::alreadyRunning;
 
     // Create a job object with kill-on-close so the helper process tree is
-    // terminated when this SidecarProcess is destroyed.
-    auto* job = CreateJobObjectW(nullptr, nullptr);
-    if (job != nullptr)
+    // terminated when this SidecarProcess is destroyed.  A null return is a
+    // hard failure: launching without a job object breaks the kill-on-close
+    // guarantee, so we reject the launch rather than silently proceeding.
+    auto* job = _jobCreateFn();
+    if (job == nullptr)
+        return SidecarProcessError::jobCreationFailed;
+
+    if (!_jobConfigFn(job))
     {
-        if (!_jobConfigFn(job))
-        {
-            CloseHandle(job);
-            return SidecarProcessError::jobConfigurationFailed;
-        }
+        CloseHandle(static_cast<HANDLE>(job));
+        return SidecarProcessError::jobConfigurationFailed;
     }
 
     // Build a writable wide command-line buffer; lpCommandLine must be mutable.
@@ -113,14 +118,13 @@ SidecarProcessError SidecarProcess::launch()
 
     if (!ok)
     {
-        if (job != nullptr)
-            CloseHandle(job);
+        CloseHandle(static_cast<HANDLE>(job));
         return SidecarProcessError::launchFailed;
     }
 
     // Assign to job object before resuming to avoid a race where the helper
     // exits before we can assign it.
-    if (job != nullptr && !_jobAssignFn(job, pi.hProcess))
+    if (!_jobAssignFn(job, pi.hProcess))
     {
         // Assignment failed: terminate the suspended process and clean up all
         // handles before returning the error.
@@ -128,7 +132,7 @@ SidecarProcessError SidecarProcess::launch()
         WaitForSingleObject(pi.hProcess, 1000);
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
-        CloseHandle(job);
+        CloseHandle(static_cast<HANDLE>(job));
         return SidecarProcessError::jobAssignmentFailed;
     }
 
@@ -181,6 +185,11 @@ void SidecarProcess::setCancellationCallback(CancellationCallback callback)
 }
 
 #if JUCE_WINDOWS
+void SidecarProcess::setJobCreationFunction(JobCreateFn fn)
+{
+    _jobCreateFn = std::move(fn);
+}
+
 void SidecarProcess::setJobAssignmentFunction(JobAssignFn fn)
 {
     _jobAssignFn = std::move(fn);

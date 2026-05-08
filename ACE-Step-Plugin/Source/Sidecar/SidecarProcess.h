@@ -29,6 +29,7 @@ enum class SidecarProcessError
     alreadyRunning,          /**< launch() called while a process is already running. */
     jobAssignmentFailed,     /**< AssignProcessToJobObject failed; process was terminated. */
     jobConfigurationFailed,  /**< SetInformationJobObject failed; kill-on-close not applied. */
+    jobCreationFailed,       /**< CreateJobObjectW returned null; launch aborted. */
 };
 
 /** Wraps one sidecar helper process and its associated Windows job object.
@@ -124,6 +125,14 @@ private:
     juce::int64 _pid = 0;
 
 public:
+    /** Injectable job-creation function for testing.
+     *
+     *  Returns a new job object handle (void*), or nullptr to simulate failure.
+     *  Defaults to CreateJobObjectW(nullptr, nullptr).
+     */
+    using JobCreateFn = std::function<void*()>;
+    void setJobCreationFunction(JobCreateFn fn);
+
     /** Injectable job-assignment function for testing.
      *
      *  Receives (jobHandle, processHandle) as void*.
@@ -141,6 +150,7 @@ public:
     void setJobConfigureFunction(JobConfigureFn fn);
 
 private:
+    JobCreateFn _jobCreateFn;
     JobAssignFn _jobAssignFn;
     JobConfigureFn _jobConfigFn;
 #endif

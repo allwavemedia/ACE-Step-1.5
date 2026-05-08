@@ -340,6 +340,29 @@ public:
                 expect(true, "cmd.exe not found - skipping");
             }
         }
+
+        // Issue 4 (re-review): CreateJobObjectW failure must be a hard launch failure.
+        beginTest("launch returns jobCreationFailed when job creation is injected to fail");
+        {
+            const juce::String cmdPath = "C:\\Windows\\System32\\cmd.exe";
+            if (juce::File(cmdPath).existsAsFile())
+            {
+                SidecarProcess proc;
+                proc.setHelperPath(cmdPath);
+                proc.setJobCreationFunction([]() -> void* { return nullptr; });
+                const auto err = proc.launch();
+                expect(err == SidecarProcessError::jobCreationFailed,
+                       "injected null job creation must return jobCreationFailed");
+                expect(!proc.isRunning(),
+                       "process must not be running after jobCreationFailed");
+                expect(proc.getPid() == 0,
+                       "PID must be 0 after jobCreationFailed");
+            }
+            else
+            {
+                expect(true, "cmd.exe not found - skipping");
+            }
+        }
 #endif
     }
 };
