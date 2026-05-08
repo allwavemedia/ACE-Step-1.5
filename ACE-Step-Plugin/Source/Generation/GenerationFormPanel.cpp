@@ -1,7 +1,33 @@
 #include "GenerationFormPanel.h"
 
+#include <climits>
+
 namespace acestep_plugin
 {
+
+int GenerationFormPanel::parseSeedText(const juce::String& text)
+{
+    const auto trimmed = text.trim();
+    if (trimmed.isEmpty())
+        return -1;
+
+    const int len = trimmed.length();
+    int start = 0;
+    if (trimmed[0] == '-')
+        start = 1;
+
+    if (start >= len)
+        return -1;
+
+    for (int i = start; i < len; ++i)
+    {
+        if (!juce::CharacterFunctions::isDigit(trimmed[i]))
+            return -1;
+    }
+
+    const juce::int64 value = trimmed.getLargeIntValue();
+    return static_cast<int>(juce::jlimit<juce::int64>(-1LL, static_cast<juce::int64>(INT_MAX), value));
+}
 
 GenerationFormPanel::GenerationFormPanel()
 {
@@ -60,9 +86,9 @@ GenerationFormState GenerationFormPanel::getState() const
     state.prompt = promptEditor.getText().trim();
     state.lyrics = lyricsEditor.getText();
     state.durationSeconds = static_cast<float>(durationSlider.getValue());
-    state.seed = seedEditor.getText().trim().getIntValue();
+    state.seed = parseSeedText(seedEditor.getText());
     state.cfgScale = static_cast<float>(cfgScaleSlider.getValue());
-    state.lmSeed = lmSeedEditor.getText().trim().getIntValue();
+    state.lmSeed = parseSeedText(lmSeedEditor.getText());
 
     const int idx = schedulerCombo.getSelectedItemIndex();
     if (idx >= 0)
@@ -81,14 +107,18 @@ void GenerationFormPanel::setState(const GenerationFormState& state)
     cfgScaleSlider.setValue(static_cast<double>(state.cfgScale), juce::dontSendNotification);
     lmSeedEditor.setText(juce::String(state.lmSeed), false);
 
+    bool found = false;
     for (int i = 0; i < schedulerCombo.getNumItems(); ++i)
     {
         if (schedulerCombo.getItemText(i) == state.scheduler)
         {
             schedulerCombo.setSelectedItemIndex(i, juce::dontSendNotification);
+            found = true;
             break;
         }
     }
+    if (!found)
+        schedulerCombo.setSelectedItemIndex(0, juce::dontSendNotification);
 
     capturedReferenceToggle.setToggleState(state.useCapturedReference, juce::dontSendNotification);
 }
@@ -114,13 +144,17 @@ void GenerationFormPanel::setOnCancel(std::function<void()> callback)
     onCancel = std::move(callback);
 }
 
-void GenerationFormPanel::simulateGenerate()
+void GenerationFormPanel::triggerGenerate()
 {
+    if (!generateButton.isEnabled())
+        return;
     onGenerateClicked();
 }
 
-void GenerationFormPanel::simulateCancel()
+void GenerationFormPanel::triggerCancel()
 {
+    if (!cancelButton.isEnabled())
+        return;
     if (onCancel)
         onCancel();
 }

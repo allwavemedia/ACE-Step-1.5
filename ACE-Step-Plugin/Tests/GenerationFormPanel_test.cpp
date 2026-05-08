@@ -131,7 +131,7 @@ public:
                 expectEquals(s.prompt, juce::String("valid prompt"));
             });
 
-            panel.simulateGenerate();
+            panel.triggerGenerate();
             expect(callbackFired);
         }
 
@@ -146,7 +146,7 @@ public:
             bool callbackFired = false;
             panel.setOnGenerate([&](const GenerationFormState&) { callbackFired = true; });
 
-            panel.simulateGenerate();
+            panel.triggerGenerate();
             expect(!callbackFired);
         }
 
@@ -158,8 +158,88 @@ public:
             bool cancelFired = false;
             panel.setOnCancel([&] { cancelFired = true; });
 
-            panel.simulateCancel();
+            panel.triggerCancel();
             expect(cancelFired);
+        }
+
+        beginTest("parseSeedText: empty and whitespace return -1");
+        {
+            expectEquals(GenerationFormPanel::parseSeedText(""),    -1);
+            expectEquals(GenerationFormPanel::parseSeedText("   "), -1);
+        }
+
+        beginTest("parseSeedText: valid integers parse correctly");
+        {
+            expectEquals(GenerationFormPanel::parseSeedText("-1"),        -1);
+            expectEquals(GenerationFormPanel::parseSeedText("0"),          0);
+            expectEquals(GenerationFormPanel::parseSeedText("42"),        42);
+            expectEquals(GenerationFormPanel::parseSeedText("2147483647"), 2147483647);
+        }
+
+        beginTest("parseSeedText: overflow clamps to INT_MAX");
+        {
+            expectEquals(GenerationFormPanel::parseSeedText("2147483648"),  2147483647);
+            expectEquals(GenerationFormPanel::parseSeedText("99999999999"), 2147483647);
+        }
+
+        beginTest("parseSeedText: below -1 clamps to -1");
+        {
+            expectEquals(GenerationFormPanel::parseSeedText("-2"),   -1);
+            expectEquals(GenerationFormPanel::parseSeedText("-100"), -1);
+        }
+
+        beginTest("parseSeedText: malformed text returns -1");
+        {
+            expectEquals(GenerationFormPanel::parseSeedText("1-23"), -1);
+            expectEquals(GenerationFormPanel::parseSeedText("--1"),  -1);
+            expectEquals(GenerationFormPanel::parseSeedText("abc"),  -1);
+            expectEquals(GenerationFormPanel::parseSeedText("-"),    -1);
+        }
+
+        beginTest("triggerGenerate does not fire while generating");
+        {
+            GenerationFormPanel panel;
+            GenerationFormState state;
+            state.prompt = "valid";
+            state.durationSeconds = 30.0f;
+            panel.setState(state);
+            panel.setGenerating(true);
+
+            bool fired = false;
+            panel.setOnGenerate([&](const GenerationFormState&) { fired = true; });
+            panel.triggerGenerate();
+            expect(!fired);
+        }
+
+        beginTest("triggerCancel does not fire while not generating");
+        {
+            GenerationFormPanel panel;
+            bool fired = false;
+            panel.setOnCancel([&] { fired = true; });
+            panel.triggerCancel();
+            expect(!fired);
+        }
+
+        beginTest("triggerCancel fires while generating");
+        {
+            GenerationFormPanel panel;
+            panel.setGenerating(true);
+
+            bool fired = false;
+            panel.setOnCancel([&] { fired = true; });
+            panel.triggerCancel();
+            expect(fired);
+        }
+
+        beginTest("setState with unknown scheduler selects euler");
+        {
+            GenerationFormPanel panel;
+            GenerationFormState state;
+            state.prompt = "ambient";
+            state.durationSeconds = 30.0f;
+            state.scheduler = "nonexistent_scheduler";
+            panel.setState(state);
+            expectEquals(panel.getState().scheduler, juce::String("euler"));
         }
     }
 };

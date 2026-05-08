@@ -46,11 +46,28 @@ public:
     /** Register a callback invoked when Cancel is clicked. */
     void setOnCancel(std::function<void()> callback);
 
-    /** Programmatically invoke the generate action (used by tests). */
-    void simulateGenerate();
+    /** Parse a seed field text string into a clamped integer.
+     *
+     *  Returns -1 for empty or whitespace input.
+     *  Accepts an optional leading minus followed by digits only; any other
+     *  pattern (e.g. "1-23", "--1", "abc") returns -1.
+     *  Values below -1 are clamped to -1; values above INT_MAX are clamped to INT_MAX.
+     */
+    static int parseSeedText(const juce::String& text);
 
-    /** Programmatically invoke the cancel action (used by tests). */
-    void simulateCancel();
+    /** Programmatically invoke the generate action.
+     *
+     *  Mirrors the real Generate button: does nothing when the button is
+     *  disabled (i.e. while a generation is already in progress).
+     */
+    void triggerGenerate();
+
+    /** Programmatically invoke the cancel action.
+     *
+     *  Mirrors the real Cancel button: does nothing when the button is
+     *  disabled (i.e. when no generation is in progress).
+     */
+    void triggerCancel();
 
     void resized() override;
 
