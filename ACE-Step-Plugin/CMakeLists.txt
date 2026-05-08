@@ -87,6 +87,9 @@ set(ACESTEP_PLUGIN_SOURCES
     Source/Models/ModelDownloader.h
     Source/Models/ModelSetupState.cpp
     Source/Models/ModelSetupState.h
+    Source/Generation/GenerationFormPanel.cpp
+    Source/Generation/GenerationFormPanel.h
+    Source/Generation/GenerationFormState.h
     Source/UI/ExternalFileDrag.cpp
     Source/UI/ExternalFileDrag.h
     Source/UI/GeneratedAssetHistoryView.cpp
@@ -196,6 +199,9 @@ if(ACESTEP_BUILD_TESTS)
             Source/Models/ModelDownloader.h
             Source/Models/ModelSetupState.cpp
             Source/Models/ModelSetupState.h
+            Source/Generation/GenerationFormPanel.cpp
+            Source/Generation/GenerationFormPanel.h
+            Source/Generation/GenerationFormState.h
             Source/UI/ExternalFileDrag.cpp
             Source/UI/ExternalFileDrag.h
             Source/UI/GeneratedAssetHistoryView.cpp
@@ -216,6 +222,7 @@ if(ACESTEP_BUILD_TESTS)
             Tests/GeneratedAssetHistoryView_test.cpp
             Tests/GeneratedAssetTempDirectoryCleanup_test.cpp
             Tests/GeneratedAssetTile_test.cpp
+            Tests/GenerationFormPanel_test.cpp
             Tests/GenerationTypes_test.cpp
             Tests/ModelChecksum_test.cpp
             Tests/ModelDiscovery_test.cpp
