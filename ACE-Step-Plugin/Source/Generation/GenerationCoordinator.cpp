@@ -69,8 +69,21 @@ GenerationCoordinatorError GenerationCoordinator::startGeneration(const Generati
     if (submitResult.error != SidecarClientError::none)
     {
         _state.status = GenerationCoordinatorStatus::failed;
+        _state.activeRequestId = {};
         _state.errorText = "Submit failed with error code "
                            + juce::String(static_cast<int>(submitResult.error));
+        return GenerationCoordinatorError::submitFailed;
+    }
+
+    // Gap 1: verify the sidecar acknowledged the correct request ID.
+    if (submitResult.acknowledgedRequestId != sidecarRequest.requestId)
+    {
+        _state.status = GenerationCoordinatorStatus::failed;
+        _state.activeRequestId = {};
+        _state.errorText = "Submit request ID mismatch: sent "
+                           + sidecarRequest.requestId
+                           + " but sidecar acknowledged "
+                           + submitResult.acknowledgedRequestId;
         return GenerationCoordinatorError::submitFailed;
     }
 
@@ -114,6 +127,10 @@ void GenerationCoordinator::pollOnce(int pollTimeoutMs)
     if (event.requestId.isEmpty())
         return;
 
+    // Gap 2: discard events that don't belong to the active request.
+    if (event.requestId != _state.activeRequestId)
+        return;
+
     _state.progressFraction = event.progressFraction;
     _state.statusText = event.statusMessage;
 
@@ -148,8 +165,18 @@ void GenerationCoordinator::cancelActiveGeneration()
     if (_state.status != GenerationCoordinatorStatus::running)
         return;
 
+    const auto cancelError = _gateway.cancelGeneration(_state.activeRequestId);
+
+    // Gap 3: if the sidecar is disconnected we cannot expect a graceful cancel event;
+    // transition directly to failed rather than leaving a permanent cancelling state.
+    if (cancelError == SidecarClientError::helperDisconnected)
+    {
+        _state.status = GenerationCoordinatorStatus::failed;
+        _state.errorText = "Helper disconnected while sending cancellation.";
+        return;
+    }
+
     _state.status = GenerationCoordinatorStatus::cancelling;
-    _gateway.cancelGeneration(_state.activeRequestId);
 }
 
 GenerationCoordinatorState GenerationCoordinator::getState() const

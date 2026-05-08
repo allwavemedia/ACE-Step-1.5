@@ -29,6 +29,10 @@ public:
     };
 
     SidecarClientError submitError = SidecarClientError::none;
+    /** When set, returned as acknowledgedRequestId even if submitError == none (Gap 1). */
+    std::optional<juce::String> submitAcknowledgedRequestIdOverride;
+    /** When set, returned by cancelGeneration instead of none (Gap 3). */
+    SidecarClientError cancelError = SidecarClientError::none;
     std::deque<PollResponse> pollResponses;
     juce::String lastCancelledRequestId;
     std::optional<SidecarJobRequest> lastSubmittedRequest;
@@ -40,7 +44,8 @@ public:
         result.error = submitError;
         if (submitError == SidecarClientError::none)
         {
-            result.acknowledgedRequestId = request.requestId;
+            result.acknowledgedRequestId =
+                submitAcknowledgedRequestIdOverride.value_or(request.requestId);
             result.artifactRoot = request.outputDirectory;
         }
         return result;
@@ -64,7 +69,7 @@ public:
     SidecarClientError cancelGeneration(const juce::String& requestId) override
     {
         lastCancelledRequestId = requestId;
-        return SidecarClientError::none;
+        return cancelError;
     }
 };
 
@@ -480,6 +485,93 @@ public:
                    "second start while running should return alreadyRunning");
 
             jobDir.deleteRecursively();
+        }
+
+        // ------------------------------------------------------------------
+        // GAP 1: submit returns error==none but wrong acknowledgedRequestId
+        beginTest("submit ack requestId mismatch transitions to failed with mismatch error text");
+        {
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            gateway.submitAcknowledgedRequestIdOverride = "WRONG-ACK-ID-XYZ";
+            GenerationCoordinator coordinator{history, gateway};
+
+            const auto err = coordinator.startGeneration(makeValidForm());
+            expect(err == GenerationCoordinatorError::submitFailed,
+                   "mismatched acknowledgedRequestId should yield submitFailed");
+            expectEquals(history.size(), 0, "no history entry on ack mismatch");
+
+            const auto state = coordinator.getState();
+            expect(state.status == GenerationCoordinatorStatus::failed,
+                   "status must be failed after ack mismatch");
+            expect(state.errorText.isNotEmpty(),
+                   "errorText must describe the request ID mismatch");
+            // The error text should mention the mismatch explicitly
+            const auto lowerError = state.errorText.toLowerCase();
+            expect(lowerError.contains("mismatch") || lowerError.contains("request"),
+                   "errorText should reference the request mismatch");
+            // Active request ID must not be stale after submit failure (Gap 4)
+            expect(state.activeRequestId.isEmpty(),
+                   "activeRequestId must be empty after submit-phase failure");
+        }
+
+        // ------------------------------------------------------------------
+        // GAP 2: pollOnce ignores progress event from stale/different requestId
+        beginTest("pollOnce ignores progress event with stale requestId");
+        {
+            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
+                                    .getChildFile("gc_test_stale_event");
+            jobDir.createDirectory();
+
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            GenerationCoordinator coordinator{
+                history, gateway,
+                [&jobDir](const juce::String&) { return jobDir; }};
+
+            coordinator.startGeneration(makeValidForm());
+
+            // Feed a progress event carrying a different (stale) requestId
+            ProgressEvent staleEvent;
+            staleEvent.requestId = "STALE-REQUEST-ID-99999";
+            staleEvent.progressFraction = 0.75f;
+            staleEvent.statusMessage = "stale progress message should be ignored";
+            staleEvent.isComplete = false;
+
+            gateway.pollResponses.push_back({SidecarClientError::none, staleEvent});
+            coordinator.pollOnce(0);
+
+            const auto state = coordinator.getState();
+            expect(state.status == GenerationCoordinatorStatus::running,
+                   "status must remain running after stale event");
+            expect(state.progressFraction < 0.01f,
+                   "progressFraction must not be updated from stale event");
+            expect(state.statusText != staleEvent.statusMessage,
+                   "statusText must not be updated from stale event");
+
+            jobDir.deleteRecursively();
+        }
+
+        // ------------------------------------------------------------------
+        // GAP 3: cancelActiveGeneration propagates helperDisconnected as failed
+        beginTest("cancelActiveGeneration with helperDisconnected error transitions to failed");
+        {
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            gateway.cancelError = SidecarClientError::helperDisconnected;
+            GenerationCoordinator coordinator{history, gateway};
+
+            coordinator.startGeneration(makeValidForm());
+            expect(coordinator.getState().status == GenerationCoordinatorStatus::running,
+                   "precondition: should be running");
+
+            coordinator.cancelActiveGeneration();
+
+            const auto state = coordinator.getState();
+            expect(state.status == GenerationCoordinatorStatus::failed,
+                   "helperDisconnected on cancel must transition to failed, not cancelling");
+            expect(state.errorText.isNotEmpty(),
+                   "errorText must be set when cancel returns helperDisconnected");
         }
     }
 };
