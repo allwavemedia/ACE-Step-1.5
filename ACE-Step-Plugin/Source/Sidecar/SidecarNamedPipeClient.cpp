@@ -121,7 +121,10 @@ SidecarClientError SidecarNamedPipeClient::pollProgress(const juce::String& acti
         return SidecarClientError::none;
     }
 
-    return SidecarClientError::none;
+    // Unknown message type: clear outEvent to avoid leaving a partial event
+    // with a populated requestId that could mislead the coordinator.
+    outEvent = {};
+    return SidecarClientError::unknownMessageType;
 }
 
 SidecarClientError SidecarNamedPipeClient::sendCancellation(const juce::String& requestId)

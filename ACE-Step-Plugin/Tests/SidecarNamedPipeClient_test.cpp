@@ -276,6 +276,27 @@ public:
             expect(!event.isComplete,
                    "isComplete must be false for a progress (non-completion) message");
         }
+
+        // Issue 3 (re-review): unknown message type must not leave a partial event.
+        beginTest("unknown message type returns unknownMessageType");
+        {
+            auto* fake = new FakeTransport();
+            juce::DynamicObject::Ptr obj = new juce::DynamicObject();
+            obj->setProperty("type", juce::String("telemetry"));
+            obj->setProperty("requestId", juce::String("active-req"));
+            fake->enqueue(juce::var(obj.get()));
+            SidecarNamedPipeClient client{ std::unique_ptr<SidecarTransport>(fake) };
+
+            ProgressEvent event;
+            const auto err = client.pollProgress("active-req", event, 100);
+
+            expect(err == SidecarClientError::unknownMessageType,
+                   "unknown message type must return unknownMessageType");
+            expect(event.requestId.isEmpty(),
+                   "outEvent.requestId must be cleared for unknown message type");
+            expect(!event.isComplete,
+                   "outEvent.isComplete must be false for unknown message type");
+        }
     }
 };
 

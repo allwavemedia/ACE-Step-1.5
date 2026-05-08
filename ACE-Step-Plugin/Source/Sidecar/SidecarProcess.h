@@ -19,15 +19,16 @@ namespace acestep_plugin
 enum class SidecarProcessError
 {
     none,
-    helperPathNotAbsolute, /**< The supplied path is relative or empty. */
-    helperNotFound,        /**< No executable exists at the configured path. */
-    launchFailed,          /**< CreateProcessW failed (check GetLastError). */
-    timedOut,              /**< waitForExit() exceeded its timeout. */
-    cancelled,             /**< The job was cancelled before or during execution. */
-    helperDisconnected,    /**< The pipe broke or the process exited unexpectedly. */
-    manifestInvalid,       /**< The output manifest is absent or malformed. */
-    alreadyRunning,        /**< launch() called while a process is already running. */
-    jobAssignmentFailed,   /**< AssignProcessToJobObject failed; process was terminated. */
+    helperPathNotAbsolute,   /**< The supplied path is relative or empty. */
+    helperNotFound,          /**< No executable exists at the configured path. */
+    launchFailed,            /**< CreateProcessW failed (check GetLastError). */
+    timedOut,                /**< waitForExit() exceeded its timeout. */
+    cancelled,               /**< The job was cancelled before or during execution. */
+    helperDisconnected,      /**< The pipe broke or the process exited unexpectedly. */
+    manifestInvalid,         /**< The output manifest is absent or malformed. */
+    alreadyRunning,          /**< launch() called while a process is already running. */
+    jobAssignmentFailed,     /**< AssignProcessToJobObject failed; process was terminated. */
+    jobConfigurationFailed,  /**< SetInformationJobObject failed; kill-on-close not applied. */
 };
 
 /** Wraps one sidecar helper process and its associated Windows job object.
@@ -104,8 +105,16 @@ public:
     /** Return the OS process ID, or 0 if the process was never launched. */
     juce::int64 getPid() const;
 
+    /** Set optional command-line arguments appended after the helper path.
+     *
+     *  Arguments are appended verbatim after a single space; caller is
+     *  responsible for quoting.  Primarily intended for testing.
+     */
+    void setHelperArguments(const juce::String& args);
+
 private:
     juce::File _helperPath;
+    juce::String _helperArgs;
     bool _pathSet = false;
     CancellationCallback _cancellationCallback;
 
@@ -123,8 +132,17 @@ public:
     using JobAssignFn = std::function<bool(void* jobHandle, void* processHandle)>;
     void setJobAssignmentFunction(JobAssignFn fn);
 
+    /** Injectable job-configuration function for testing.
+     *
+     *  Receives the job handle as void*.  Default applies JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+     *  via SetInformationJobObject.  Override in tests to simulate failure.
+     */
+    using JobConfigureFn = std::function<bool(void* jobHandle)>;
+    void setJobConfigureFunction(JobConfigureFn fn);
+
 private:
     JobAssignFn _jobAssignFn;
+    JobConfigureFn _jobConfigFn;
 #endif
 };
 

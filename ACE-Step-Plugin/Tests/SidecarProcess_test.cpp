@@ -284,6 +284,62 @@ public:
                 expect(true, "cmd.exe not found - skipping");
             }
         }
+
+        // Issue 2 (re-review): SetInformationJobObject failure must be detected.
+        beginTest("launch returns jobConfigurationFailed when job configuration is injected to fail");
+        {
+            const juce::String cmdPath = "C:\\Windows\\System32\\cmd.exe";
+            if (juce::File(cmdPath).existsAsFile())
+            {
+                SidecarProcess proc;
+                proc.setHelperPath(cmdPath);
+                proc.setJobConfigureFunction([](void*) { return false; });
+                const auto err = proc.launch();
+                expect(err == SidecarProcessError::jobConfigurationFailed,
+                       "injected failing job configuration must return jobConfigurationFailed");
+                expect(!proc.isRunning(),
+                       "process must not be running after jobConfigurationFailed");
+                expect(proc.getPid() == 0,
+                       "PID must be 0 after jobConfigurationFailed");
+            }
+            else
+            {
+                expect(true, "cmd.exe not found - skipping");
+            }
+        }
+
+        // Issue 1 (re-review): cancellation callback must not fire on natural exit.
+        beginTest("natural exit followed by destruction does not invoke cancellation callback");
+        {
+            const juce::String cmdPath = "C:\\Windows\\System32\\cmd.exe";
+            if (juce::File(cmdPath).existsAsFile())
+            {
+                int callbackCount = 0;
+                {
+                    SidecarProcess proc;
+                    proc.setCancellationCallback([&callbackCount]() { ++callbackCount; });
+                    proc.setHelperPath(cmdPath);
+                    proc.setHelperArguments("/c exit 0");
+                    if (proc.launch() == SidecarProcessError::none)
+                    {
+                        // cmd /c exit 0 exits nearly immediately; allow up to 5 s.
+                        const auto exitErr = proc.waitForExit(5000);
+                        expect(exitErr == SidecarProcessError::none,
+                               "cmd /c exit 0 must exit naturally within timeout");
+                        // Callback must not have been called during natural exit.
+                        expect(callbackCount == 0,
+                               "callback must not fire when process exits naturally");
+                    }
+                    // Destructor invokes cancel() here.
+                }
+                expect(callbackCount == 0,
+                       "cancellation callback must not fire after natural exit + destruction");
+            }
+            else
+            {
+                expect(true, "cmd.exe not found - skipping");
+            }
+        }
 #endif
     }
 };

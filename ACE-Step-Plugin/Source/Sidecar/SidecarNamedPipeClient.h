@@ -27,6 +27,7 @@ enum class SidecarClientError
     requestIdMismatch,       /**< Response carried an unexpected request ID. */
     staleCompletion,         /**< Completion arrived for a cancelled/superseded request. */
     helperDisconnected,      /**< Pipe broke or helper exited mid-flight. */
+    unknownMessageType,      /**< Message type field is not recognised by this client. */
 };
 
 /** Outcome of a performHandshake() call. */

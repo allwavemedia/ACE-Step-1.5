@@ -17,6 +17,13 @@ SidecarProcess::SidecarProcess()
         return AssignProcessToJobObject(static_cast<HANDLE>(job),
                                        static_cast<HANDLE>(process)) != FALSE;
     };
+    _jobConfigFn = [](void* job) -> bool {
+        JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};
+        limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+        return SetInformationJobObject(static_cast<HANDLE>(job),
+                                      JobObjectExtendedLimitInformation,
+                                      &limits, sizeof(limits)) != FALSE;
+    };
 #endif
 }
 
@@ -54,6 +61,11 @@ juce::File SidecarProcess::getHelperPath() const
     return _helperPath;
 }
 
+void SidecarProcess::setHelperArguments(const juce::String& args)
+{
+    _helperArgs = args;
+}
+
 SidecarProcessError SidecarProcess::launch()
 {
     if (!_pathSet)
@@ -72,14 +84,17 @@ SidecarProcessError SidecarProcess::launch()
     auto* job = CreateJobObjectW(nullptr, nullptr);
     if (job != nullptr)
     {
-        JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};
-        limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-        SetInformationJobObject(job, JobObjectExtendedLimitInformation,
-                                &limits, sizeof(limits));
+        if (!_jobConfigFn(job))
+        {
+            CloseHandle(job);
+            return SidecarProcessError::jobConfigurationFailed;
+        }
     }
 
     // Build a writable wide command-line buffer; lpCommandLine must be mutable.
-    const juce::String cmdLine = "\"" + _helperPath.getFullPathName() + "\"";
+    juce::String cmdLine = "\"" + _helperPath.getFullPathName() + "\"";
+    if (!_helperArgs.isEmpty())
+        cmdLine += " " + _helperArgs;
     const auto* wCmd = cmdLine.toWideCharPointer();
     std::vector<wchar_t> cmdBuf(wCmd, wCmd + wcslen(wCmd) + 1);
 
@@ -135,14 +150,19 @@ void SidecarProcess::cancel()
     if (_processHandle == nullptr)
         return;
 
-    if (_cancellationCallback)
-        _cancellationCallback();
+    // Only invoke the cooperative-cancellation callback and force-terminate
+    // if the process is still alive.  If it has already exited naturally,
+    // simply clean up handles without invoking the callback.
+    if (isRunning())
+    {
+        if (_cancellationCallback)
+            _cancellationCallback();
 
-    TerminateProcess(static_cast<HANDLE>(_processHandle), 1u);
+        TerminateProcess(static_cast<HANDLE>(_processHandle), 1u);
+    }
 
-    // Close and null the handle immediately so that a second cancel() call
-    // (e.g. from the destructor) is a safe no-op and the callback is not
-    // invoked again.
+    // Close and null handles so a second cancel() (e.g. from the destructor)
+    // is a safe no-op.
     CloseHandle(static_cast<HANDLE>(_processHandle));
     _processHandle = nullptr;
 
@@ -165,6 +185,11 @@ void SidecarProcess::setJobAssignmentFunction(JobAssignFn fn)
 {
     _jobAssignFn = std::move(fn);
 }
+
+void SidecarProcess::setJobConfigureFunction(JobConfigureFn fn)
+{
+    _jobConfigFn = std::move(fn);
+}
 #endif
 
 SidecarProcessError SidecarProcess::waitForExit(int timeoutMs)
@@ -176,8 +201,23 @@ SidecarProcessError SidecarProcess::waitForExit(int timeoutMs)
     const DWORD ms = (timeoutMs < 0) ? INFINITE : static_cast<DWORD>(timeoutMs);
     const DWORD result = WaitForSingleObject(static_cast<HANDLE>(_processHandle), ms);
 
-    return (result == WAIT_TIMEOUT) ? SidecarProcessError::timedOut
-                                    : SidecarProcessError::none;
+    if (result != WAIT_TIMEOUT)
+    {
+        // Process exited naturally; close and null handles so that any
+        // subsequent cancel() (e.g. from the destructor) is a safe no-op
+        // and will not invoke the cancellation callback.
+        CloseHandle(static_cast<HANDLE>(_processHandle));
+        _processHandle = nullptr;
+        if (_jobHandle != nullptr)
+        {
+            CloseHandle(static_cast<HANDLE>(_jobHandle));
+            _jobHandle = nullptr;
+        }
+        _pid = 0;
+        return SidecarProcessError::none;
+    }
+
+    return SidecarProcessError::timedOut;
 #else
     return SidecarProcessError::none;
 #endif
