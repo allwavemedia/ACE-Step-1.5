@@ -25,6 +25,7 @@ private:
     void refreshModelSetupPanel();
     void refreshPresetBrowser();
     void loadSelectedPreset();
+    void updateCaptureMeterText();
 
     AceStepAudioProcessor& audioProcessor;
     acestep_plugin::PresetBrowserModel presetBrowserModel;

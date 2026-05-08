@@ -114,7 +114,7 @@ static bool hasMinimalWavHeader(const juce::File& artifactFile)
             hasDataChunk = true;
         }
 
-        const auto paddedChunkEnd = chunkDataEnd + static_cast<juce::int64>(chunkSize % 2);
+        const auto paddedChunkEnd = chunkDataEnd + static_cast<juce::int64>(chunkSize & 1);
         if (paddedChunkEnd > fileSize || !stream.setPosition(paddedChunkEnd))
             return false;
     }

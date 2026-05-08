@@ -324,10 +324,7 @@ void AceStepAudioProcessorEditor::resized()
     auto controls = nextArea(36);
     armButton.setBounds(controls.removeFromLeft(96));
     clearButton.setBounds(controls.removeFromLeft(96).reduced(8, 0));
-    captureMeterLabel.setText("Meter: "
-                                  + juce::String(juce::roundToInt(meterLevel * 100.0f))
-                                  + "%",
-        juce::dontSendNotification);
+    updateCaptureMeterText();
     captureMeterLabel.setBounds(nextArea(24));
     addGap();
 
@@ -350,7 +347,12 @@ void AceStepAudioProcessorEditor::timerCallback()
 {
     const auto nextPeak = juce::jlimit(0.0f, 1.0f, audioProcessor.consumeReferencePeak());
     meterLevel = std::max(nextPeak, meterLevel * 0.82f);
+    updateCaptureMeterText();
+    repaint();
+}
+
+void AceStepAudioProcessorEditor::updateCaptureMeterText()
+{
     captureMeterLabel.setText("Meter: " + juce::String(juce::roundToInt(meterLevel * 100.0f)) + "%",
         juce::dontSendNotification);
-    repaint();
 }

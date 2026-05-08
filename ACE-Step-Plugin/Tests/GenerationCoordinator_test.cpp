@@ -182,11 +182,10 @@ static void writeMultiArtifactManifest(const juce::File& jobDir,
 {
     juce::Array<juce::var> artArray;
 
-    for (const auto& artifactName : { juce::String("full_mix.wav"),
-                                      juce::String("extra.wav") })
+    for (const auto* artifactName : { "full_mix.wav", "extra.wav" })
     {
         const auto artFile = jobDir.getChildFile(artifactName);
-        artFile.replaceWithText("FAKE_AUDIO_CONTENT_" + artifactName);
+        artFile.replaceWithText("FAKE_AUDIO_CONTENT_" + juce::String(artifactName));
 
         juce::DynamicObject::Ptr artObj = new juce::DynamicObject();
         artObj->setProperty("path", artFile.getFullPathName());
