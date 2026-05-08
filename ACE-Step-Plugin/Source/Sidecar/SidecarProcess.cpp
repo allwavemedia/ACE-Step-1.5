@@ -27,6 +27,10 @@ SidecarProcess::SidecarProcess()
                                       JobObjectExtendedLimitInformation,
                                       &limits, sizeof(limits)) != FALSE;
     };
+    _processWaitFn = [](void* h, unsigned long ms) -> unsigned long {
+        return static_cast<unsigned long>(
+            WaitForSingleObject(static_cast<HANDLE>(h), static_cast<DWORD>(ms)));
+    };
 #endif
 }
 
@@ -163,6 +167,10 @@ void SidecarProcess::cancel()
             _cancellationCallback();
 
         TerminateProcess(static_cast<HANDLE>(_processHandle), 1u);
+        // TerminateProcess is asynchronous; wait for the process to fully
+        // settle before closing handles to avoid cleanup races on helper file
+        // handles.  Mirrors the bounded wait in the jobAssignmentFailed path.
+        _processWaitFn(_processHandle, 1000);
     }
 
     // Close and null handles so a second cancel() (e.g. from the destructor)
@@ -198,6 +206,11 @@ void SidecarProcess::setJobAssignmentFunction(JobAssignFn fn)
 void SidecarProcess::setJobConfigureFunction(JobConfigureFn fn)
 {
     _jobConfigFn = std::move(fn);
+}
+
+void SidecarProcess::setProcessWaitFunction(ProcessWaitFn fn)
+{
+    _processWaitFn = std::move(fn);
 }
 #endif
 

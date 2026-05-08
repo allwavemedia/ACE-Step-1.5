@@ -149,10 +149,20 @@ public:
     using JobConfigureFn = std::function<bool(void* jobHandle)>;
     void setJobConfigureFunction(JobConfigureFn fn);
 
+    /** Injectable process-wait function for testing.
+     *
+     *  Receives (processHandle, timeoutMs) and waits for the process to signal.
+     *  Defaults to WaitForSingleObject.  Override in tests to observe that
+     *  cancel() calls the wait after TerminateProcess, without brittle sleeps.
+     */
+    using ProcessWaitFn = std::function<unsigned long(void* handle, unsigned long timeoutMs)>;
+    void setProcessWaitFunction(ProcessWaitFn fn);
+
 private:
     JobCreateFn _jobCreateFn;
     JobAssignFn _jobAssignFn;
     JobConfigureFn _jobConfigFn;
+    ProcessWaitFn _processWaitFn;
 #endif
 };
 

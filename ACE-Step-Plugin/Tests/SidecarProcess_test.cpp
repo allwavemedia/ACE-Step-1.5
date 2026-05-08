@@ -363,6 +363,49 @@ public:
                 expect(true, "cmd.exe not found - skipping");
             }
         }
+
+        // Task 3: cancel() must wait for process termination before closing handles.
+        beginTest("cancel waits for process termination before closing handles");
+        {
+            const juce::String cmdPath = "C:\\Windows\\System32\\cmd.exe";
+            if (juce::File(cmdPath).existsAsFile())
+            {
+                SidecarProcess proc;
+                bool waitCalled = false;
+                proc.setProcessWaitFunction(
+                    [&waitCalled](void*, unsigned long) -> unsigned long {
+                        waitCalled = true;
+                        return 0; // simulate WAIT_OBJECT_0
+                    });
+                proc.setHelperPath(cmdPath);
+                if (proc.launch() == SidecarProcessError::none)
+                {
+                    proc.cancel();
+                    expect(waitCalled,
+                           "cancel() must call the wait function after TerminateProcess");
+                }
+            }
+            else
+            {
+                expect(true, "cmd.exe not found - skipping");
+            }
+        }
+
+        // Task 3: cancel() must not call the wait function when process is not running.
+        beginTest("cancel does not call wait function when process was never launched");
+        {
+            SidecarProcess proc;
+            bool waitCalled = false;
+            proc.setProcessWaitFunction(
+                [&waitCalled](void*, unsigned long) -> unsigned long {
+                    waitCalled = true;
+                    return 0;
+                });
+            proc.setHelperPath("C:\\nonexistent\\helper.exe");
+            proc.cancel();
+            expect(!waitCalled,
+                   "wait function must not be called when process was never launched");
+        }
 #endif
     }
 };
