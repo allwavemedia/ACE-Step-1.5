@@ -12,6 +12,15 @@
 namespace acestep_plugin
 {
 
+static juce::File makeCleanManifestTestDirectory(const juce::String& name)
+{
+    const auto dir = juce::File::getSpecialLocation(juce::File::tempDirectory)
+                         .getChildFile(name);
+    dir.deleteRecursively();
+    dir.createDirectory();
+    return dir;
+}
+
 class SidecarManifestTests final : public juce::UnitTest
 {
 public:
@@ -21,9 +30,7 @@ public:
     {
         beginTest("valid manifest with correct artifact passes validation");
         {
-            const auto dir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                 .getChildFile("sidecar_manifest_test_ok");
-            dir.createDirectory();
+            const auto dir = makeCleanManifestTestDirectory("sidecar_manifest_test_ok");
 
             // Write a trivial artifact
             const auto artFile = dir.getChildFile("output.wav");
@@ -63,9 +70,7 @@ public:
 
         beginTest("manifest with mismatched request ID fails validation");
         {
-            const auto dir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                 .getChildFile("sidecar_manifest_test_badid");
-            dir.createDirectory();
+            const auto dir = makeCleanManifestTestDirectory("sidecar_manifest_test_badid");
 
             const auto artFile = dir.getChildFile("output.wav");
             artFile.replaceWithText("FAKE_AUDIO_CONTENT");
@@ -98,9 +103,7 @@ public:
 
         beginTest("success manifest with empty artifacts array fails validation");
         {
-            const auto dir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                 .getChildFile("sidecar_manifest_test_emptyarts");
-            dir.createDirectory();
+            const auto dir = makeCleanManifestTestDirectory("sidecar_manifest_test_emptyarts");
 
             juce::Array<juce::var> emptyArray;
 
@@ -121,11 +124,79 @@ public:
             dir.deleteRecursively();
         }
 
+        beginTest("manifest with zero-byte artifact fails validation");
+        {
+            const auto dir = makeCleanManifestTestDirectory("sidecar_manifest_test_zerobyte");
+
+            const auto artFile = dir.getChildFile("empty.wav");
+            auto output = artFile.createOutputStream();
+            output.reset();
+            expect(artFile.existsAsFile(), "precondition: zero-byte artifact file exists");
+            expectEquals(artFile.getSize(), static_cast<juce::int64>(0),
+                         "precondition: artifact is zero bytes");
+
+            juce::DynamicObject::Ptr artObj = new juce::DynamicObject();
+            artObj->setProperty("path", artFile.getFullPathName());
+            artObj->setProperty("byteSize", static_cast<juce::int64>(0));
+            artObj->setProperty("sha256", juce::SHA256(artFile).toHexString());
+
+            juce::Array<juce::var> artArray;
+            artArray.add(juce::var(artObj.get()));
+
+            juce::DynamicObject::Ptr manifest = new juce::DynamicObject();
+            manifest->setProperty("protocolVersion", juce::String("1.0"));
+            manifest->setProperty("requestId", juce::String("req-test-004"));
+            manifest->setProperty("success", true);
+            manifest->setProperty("artifacts", juce::var(artArray));
+
+            const auto manifestFile = dir.getChildFile("manifest.json");
+            manifestFile.replaceWithText(juce::JSON::toString(juce::var(manifest.get())));
+
+            const auto err = validateResultManifest(manifestFile, "req-test-004");
+            expect(err == SidecarProcessError::manifestInvalid,
+                   "zero-byte artifacts must not pass manifest validation");
+
+            manifestFile.deleteFile();
+            artFile.deleteFile();
+            dir.deleteRecursively();
+        }
+
+        beginTest("manifest with missing SHA-256 fails validation");
+        {
+            const auto dir = makeCleanManifestTestDirectory("sidecar_manifest_test_missingsha");
+
+            const auto artFile = dir.getChildFile("output.wav");
+            artFile.replaceWithText("FAKE_AUDIO_CONTENT");
+
+            juce::DynamicObject::Ptr artObj = new juce::DynamicObject();
+            artObj->setProperty("path", artFile.getFullPathName());
+            artObj->setProperty("byteSize", static_cast<juce::int64>(artFile.getSize()));
+            artObj->setProperty("sha256", juce::String(""));
+
+            juce::Array<juce::var> artArray;
+            artArray.add(juce::var(artObj.get()));
+
+            juce::DynamicObject::Ptr manifest = new juce::DynamicObject();
+            manifest->setProperty("protocolVersion", juce::String("1.0"));
+            manifest->setProperty("requestId", juce::String("req-test-005"));
+            manifest->setProperty("success", true);
+            manifest->setProperty("artifacts", juce::var(artArray));
+
+            const auto manifestFile = dir.getChildFile("manifest.json");
+            manifestFile.replaceWithText(juce::JSON::toString(juce::var(manifest.get())));
+
+            const auto err = validateResultManifest(manifestFile, "req-test-005");
+            expect(err == SidecarProcessError::manifestInvalid,
+                   "artifacts without SHA-256 must not pass manifest validation");
+
+            manifestFile.deleteFile();
+            artFile.deleteFile();
+            dir.deleteRecursively();
+        }
+
         beginTest("manifest referencing a missing artifact file fails validation");
         {
-            const auto dir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                 .getChildFile("sidecar_manifest_test_noart");
-            dir.createDirectory();
+            const auto dir = makeCleanManifestTestDirectory("sidecar_manifest_test_noart");
 
             juce::DynamicObject::Ptr artObj = new juce::DynamicObject();
             artObj->setProperty("path",

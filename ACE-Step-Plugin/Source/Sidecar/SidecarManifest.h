@@ -24,8 +24,8 @@ namespace acestep_plugin
  *    4. requestId matches expectedRequestId exactly.
  *    5. success field is true.
  *    6. artifacts array is present and non-empty.
- *    7. For each artifact: path exists on disk, byteSize matches, sha256
- *       matches (case-insensitive) when a non-empty digest is recorded.
+ *    7. For each artifact: path exists on disk, file is non-empty, byteSize
+ *       matches, and sha256 is present and matches case-insensitively.
  *
  *  @param manifestFile       JSON manifest file written by the sidecar helper.
  *  @param expectedRequestId  Request ID the manifest must carry.

@@ -10,10 +10,128 @@
 
 #include <juce_core/juce_core.h>
 
+#include <cstring>
 #include <mutex>
 
 namespace acestep_plugin
 {
+
+namespace
+{
+
+static juce::uint16 readLittleEndian16(const unsigned char* bytes)
+{
+    return static_cast<juce::uint16>(static_cast<juce::uint16>(bytes[0])
+                                     | (static_cast<juce::uint16>(bytes[1]) << 8));
+}
+
+static juce::uint32 readLittleEndian32(const unsigned char* bytes)
+{
+    return static_cast<juce::uint32>(bytes[0])
+           | (static_cast<juce::uint32>(bytes[1]) << 8)
+           | (static_cast<juce::uint32>(bytes[2]) << 16)
+           | (static_cast<juce::uint32>(bytes[3]) << 24);
+}
+
+static bool readChunkHeader(juce::InputStream& stream,
+                            char (&chunkId)[4],
+                            juce::uint32& chunkSize)
+{
+    unsigned char sizeBytes[4] {};
+    const auto chunkIdSize = static_cast<int>(sizeof(chunkId));
+    const auto chunkSizeSize = static_cast<int>(sizeof(sizeBytes));
+    return stream.read(chunkId, chunkIdSize) == chunkIdSize
+           && stream.read(sizeBytes, chunkSizeSize) == chunkSizeSize
+           && (chunkSize = readLittleEndian32(sizeBytes), true);
+}
+
+static bool validateFmtChunk(juce::InputStream& stream, juce::uint32 chunkSize)
+{
+    if (chunkSize < 16)
+        return false;
+
+    unsigned char fmtBytes[16] {};
+    const auto fmtByteCount = static_cast<int>(sizeof(fmtBytes));
+    if (stream.read(fmtBytes, fmtByteCount) != fmtByteCount)
+        return false;
+
+    const auto audioFormat = readLittleEndian16(fmtBytes);
+    const auto channelCount = readLittleEndian16(fmtBytes + 2);
+    const auto sampleRate = readLittleEndian32(fmtBytes + 4);
+    const auto bitsPerSample = readLittleEndian16(fmtBytes + 14);
+
+    const auto isPcmOrFloat = audioFormat == 1 || audioFormat == 3;
+    return isPcmOrFloat && channelCount > 0 && sampleRate > 0 && bitsPerSample > 0;
+}
+
+static bool hasMinimalWavHeader(const juce::File& artifactFile)
+{
+    juce::FileInputStream stream(artifactFile);
+    if (!stream.openedOk())
+        return false;
+
+    char header[12] {};
+    const auto headerBytesRead = stream.read(header, static_cast<int>(sizeof(header)));
+    if (headerBytesRead != static_cast<int>(sizeof(header)))
+        return false;
+
+    if (std::memcmp(header, "RIFF", 4) != 0 || std::memcmp(header + 8, "WAVE", 4) != 0)
+        return false;
+
+    const auto* riffSizeBytes = reinterpret_cast<const unsigned char*>(header + 4);
+    const auto riffDataSize = readLittleEndian32(riffSizeBytes);
+    const auto fileSize = artifactFile.getSize();
+    if (static_cast<juce::int64>(riffDataSize) + 8 != fileSize)
+        return false;
+
+    bool hasFmtChunk = false;
+    bool hasDataChunk = false;
+
+    while (stream.getPosition() + 8 <= fileSize)
+    {
+        char chunkId[4] {};
+        juce::uint32 chunkSize = 0;
+        if (!readChunkHeader(stream, chunkId, chunkSize))
+            return false;
+
+        const auto chunkDataStart = stream.getPosition();
+        const auto chunkDataEnd = chunkDataStart + static_cast<juce::int64>(chunkSize);
+        if (chunkDataEnd > fileSize)
+            return false;
+
+        if (std::memcmp(chunkId, "fmt ", 4) == 0)
+        {
+            if (!validateFmtChunk(stream, chunkSize))
+                return false;
+
+            hasFmtChunk = true;
+        }
+        else if (std::memcmp(chunkId, "data", 4) == 0)
+        {
+            if (chunkSize == 0)
+                return false;
+
+            hasDataChunk = true;
+        }
+
+        const auto paddedChunkEnd = chunkDataEnd + static_cast<juce::int64>(chunkSize % 2);
+        if (paddedChunkEnd > fileSize || !stream.setPosition(paddedChunkEnd))
+            return false;
+    }
+
+    return stream.getPosition() == fileSize && hasFmtChunk && hasDataChunk;
+}
+
+static bool isExpectedFullMixArtifact(const juce::StringArray& artifactPaths)
+{
+    if (artifactPaths.size() != 1)
+        return false;
+
+    const juce::File artifactFile(artifactPaths[0]);
+    return artifactFile.hasFileExtension("wav") && hasMinimalWavHeader(artifactFile);
+}
+
+} // namespace
 
 GenerationCoordinator::GenerationCoordinator(GeneratedAssetHistory& history,
                                              GenerationSidecarGateway& gateway,
@@ -185,19 +303,34 @@ void GenerationCoordinator::pollOnce(int pollTimeoutMs)
     const auto manifestFile = _activeJobDir.getChildFile("manifest.json");
     const auto artifactPaths = getValidatedArtifactPaths(manifestFile, currentRequestId);
 
-    if (artifactPaths.isEmpty())
+    if (!isExpectedFullMixArtifact(artifactPaths))
     {
         std::lock_guard<std::mutex> lock(_stateMutex);
+        if (_state.status == GenerationCoordinatorStatus::cancelling)
+        {
+            _state.status = GenerationCoordinatorStatus::cancelled;
+            return;
+        }
+
         _state.status = GenerationCoordinatorStatus::failed;
         _state.errorText = "Manifest validation failed.";
         return;
     }
 
-    // Promote the first validated artifact from the manifest — never hardcoded path.
-    promoteSuccessfulAsset(_activeForm, artifactPaths[0]);
-
     {
         std::lock_guard<std::mutex> lock(_stateMutex);
+        if (_state.status == GenerationCoordinatorStatus::cancelling)
+        {
+            _state.status = GenerationCoordinatorStatus::cancelled;
+            return;
+        }
+
+        if (_state.status != GenerationCoordinatorStatus::running)
+            return;
+
+        // Promote the validated manifest artifact while holding the state mutex so a
+        // concurrent cancel cannot slip between the final state check and history update.
+        promoteSuccessfulAsset(_activeForm, artifactPaths[0]);
         _state.status = GenerationCoordinatorStatus::succeeded;
     }
 }
@@ -209,7 +342,9 @@ void GenerationCoordinator::cancelActiveGeneration()
         std::lock_guard<std::mutex> lock(_stateMutex);
         if (_state.status != GenerationCoordinatorStatus::running)
             return;
+
         requestId = _state.activeRequestId;
+        _state.status = GenerationCoordinatorStatus::cancelling;
     }
 
     // Send cancellation outside lock (may block on I/O).
@@ -217,6 +352,9 @@ void GenerationCoordinator::cancelActiveGeneration()
 
     {
         std::lock_guard<std::mutex> lock(_stateMutex);
+        if (_state.status != GenerationCoordinatorStatus::cancelling)
+            return;
+
         // Any transport/protocol error means we cannot expect a graceful cancel event;
         // transition directly to failed rather than leaving a permanent cancelling state.
         if (cancelError != SidecarClientError::none)

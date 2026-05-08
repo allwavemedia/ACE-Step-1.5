@@ -15,7 +15,7 @@
 
 - [x] 3.1 Create per-job artifact directories under LocalAppData/temp with deterministic cleanup rules.
 - [x] 3.2 Require schema version, request ID, byte size, SHA-256, expected artifact count, and readability checks before promoting results.
-- [ ] 3.3 Prevent partial or malformed outputs from creating success-shaped generated asset tiles.
+- [x] 3.3 Prevent partial or malformed outputs from creating success-shaped generated asset tiles.
 - [ ] 3.4 Preserve successful full-mix output when later MIDI or stem work partially fails.
 
 ## 4. Single-Scroll Editor Shell
@@ -37,7 +37,7 @@
 - [x] 6.1 Add prompt, lyrics, duration, seed, CFG scale, LM seed, scheduler, and captured-reference controls.
 - [ ] 6.2 Wire Generate and Cancel controls to sidecar orchestration with progress phases and user-visible errors.
 - [ ] 6.3 Ensure generation runs off the audio thread and does not destabilize pass-through audio.
-- [ ] 6.4 Persist completed WAV artifacts into generated asset history only after verification succeeds.
+- [x] 6.4 Persist completed WAV artifacts into generated asset history only after verification succeeds.
 
 ## 7. Capture Integration
 

@@ -5,6 +5,9 @@
 namespace acestep_plugin
 {
 
+namespace
+{
+
 static bool validateArtifact(const juce::var& art)
 {
     const juce::String path = art["path"].toString();
@@ -13,22 +16,27 @@ static bool validateArtifact(const juce::var& art)
     if (!artFile.existsAsFile())
         return false;
 
-    if (artFile.getSize() != static_cast<juce::int64>(art["byteSize"]))
+    const auto fileSize = artFile.getSize();
+    if (fileSize <= 0)
+        return false;
+
+    if (fileSize != static_cast<juce::int64>(art["byteSize"]))
         return false;
 
     const juce::String recordedHash = art["sha256"].toString();
-    if (recordedHash.isNotEmpty())
-    {
-        const juce::String actualHash = juce::SHA256(artFile).toHexString();
-        if (!actualHash.equalsIgnoreCase(recordedHash))
-            return false;
-    }
+    if (recordedHash.isEmpty())
+        return false;
+
+    const juce::String actualHash = juce::SHA256(artFile).toHexString();
+    if (!actualHash.equalsIgnoreCase(recordedHash))
+        return false;
 
     return true;
 }
 
-SidecarProcessError validateResultManifest(const juce::File& manifestFile,
-                                           const juce::String& expectedRequestId)
+static SidecarProcessError parseAndValidateManifest(const juce::File& manifestFile,
+                                                    const juce::String& expectedRequestId,
+                                                    juce::StringArray* artifactPaths)
 {
     if (!manifestFile.existsAsFile())
         return SidecarProcessError::manifestInvalid;
@@ -62,33 +70,31 @@ SidecarProcessError validateResultManifest(const juce::File& manifestFile,
     {
         if (!validateArtifact(art))
             return SidecarProcessError::manifestInvalid;
+
+        if (artifactPaths != nullptr)
+            artifactPaths->add(art["path"].toString());
     }
 
     return SidecarProcessError::none;
 }
 
+} // namespace
+
+SidecarProcessError validateResultManifest(const juce::File& manifestFile,
+                                           const juce::String& expectedRequestId)
+{
+    return parseAndValidateManifest(manifestFile, expectedRequestId, nullptr);
+}
+
 juce::StringArray getValidatedArtifactPaths(const juce::File& manifestFile,
                                             const juce::String& expectedRequestId)
 {
-    if (validateResultManifest(manifestFile, expectedRequestId) != SidecarProcessError::none)
-        return {};
-
-    juce::var parsed;
-    if (juce::JSON::parse(manifestFile.loadFileAsString(), parsed).failed())
-        return {};
-
-    const auto* obj = parsed.getDynamicObject();
-    if (obj == nullptr)
-        return {};
-
-    const juce::var artifactsVar = obj->getProperty("artifacts");
-    const auto* artifacts = artifactsVar.getArray();
-    if (artifacts == nullptr || artifacts->isEmpty())
-        return {};
-
     juce::StringArray paths;
-    for (const auto& art : *artifacts)
-        paths.add(art["path"].toString());
+    if (parseAndValidateManifest(manifestFile, expectedRequestId, &paths)
+        != SidecarProcessError::none)
+    {
+        return {};
+    }
 
     return paths;
 }

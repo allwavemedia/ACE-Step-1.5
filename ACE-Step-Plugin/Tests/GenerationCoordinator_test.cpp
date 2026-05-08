@@ -11,6 +11,7 @@
 #include <juce_cryptography/juce_cryptography.h>
 
 #include <atomic>
+#include <chrono>
 #include <deque>
 #include <optional>
 #include <thread>
@@ -38,6 +39,12 @@ public:
     std::deque<PollResponse> pollResponses;
     juce::String lastCancelledRequestId;
     std::optional<SidecarJobRequest> lastSubmittedRequest;
+    std::atomic<bool> blockPoll { false };
+    std::atomic<bool> pollEntered { false };
+    std::atomic<bool> releasePoll { false };
+    std::atomic<bool> blockCancel { false };
+    std::atomic<bool> cancelEntered { false };
+    std::atomic<bool> releaseCancel { false };
 
     SubmitResult submitGeneration(const SidecarJobRequest& request) override
     {
@@ -54,9 +61,13 @@ public:
     }
 
     SidecarClientError pollProgress(const juce::String& /*requestId*/,
-                                    ProgressEvent& outEvent,
-                                    int /*timeoutMs*/) override
+                                     ProgressEvent& outEvent,
+                                     int /*timeoutMs*/) override
     {
+        pollEntered = true;
+        while (blockPoll && !releasePoll)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
         if (pollResponses.empty())
         {
             outEvent = {};
@@ -71,6 +82,10 @@ public:
     SidecarClientError cancelGeneration(const juce::String& requestId) override
     {
         lastCancelledRequestId = requestId;
+        cancelEntered = true;
+        while (blockCancel && !releaseCancel)
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
         return cancelError;
     }
 };
@@ -78,13 +93,37 @@ public:
 // ---------------------------------------------------------------------------
 // Helpers
 
+static juce::File makeCleanTestDirectory(const juce::String& name)
+{
+    const auto dir = juce::File::getSpecialLocation(juce::File::tempDirectory)
+                         .getChildFile(name);
+    dir.deleteRecursively();
+    dir.createDirectory();
+    return dir;
+}
+
 /** Write a valid manifest + artifact file in jobDir for requestId. */
+static void writeMinimalWavFile(const juce::File& artFile)
+{
+    const unsigned char wavBytes[] = {
+        'R', 'I', 'F', 'F', 38, 0, 0, 0, 'W', 'A', 'V', 'E',
+        'f', 'm', 't', ' ', 16, 0, 0, 0, 1, 0, 1, 0,
+        0x44, 0xac, 0, 0, 0x88, 0x58, 0x01, 0, 2, 0, 16, 0,
+        'd', 'a', 't', 'a', 2, 0, 0, 0, 0, 0
+    };
+
+    artFile.replaceWithData(wavBytes, sizeof(wavBytes));
+}
+
 static void writeValidManifest(const juce::File& jobDir,
-                                const juce::String& requestId,
-                                const juce::String& artifactName = "full_mix.wav")
+                                 const juce::String& requestId,
+                                 const juce::String& artifactName = "full_mix.wav")
 {
     const auto artFile = jobDir.getChildFile(artifactName);
-    artFile.replaceWithText("FAKE_AUDIO_CONTENT");
+    if (artFile.hasFileExtension("wav"))
+        writeMinimalWavFile(artFile);
+    else
+        artFile.replaceWithText("FAKE_AUDIO_CONTENT");
 
     const auto sha256 = juce::SHA256(artFile).toHexString();
 
@@ -95,6 +134,66 @@ static void writeValidManifest(const juce::File& jobDir,
 
     juce::Array<juce::var> artArray;
     artArray.add(juce::var(artObj.get()));
+
+    juce::DynamicObject::Ptr manifest = new juce::DynamicObject();
+    manifest->setProperty("protocolVersion", juce::String("1.0"));
+    manifest->setProperty("requestId", requestId);
+    manifest->setProperty("success", true);
+    manifest->setProperty("artifacts", juce::var(artArray));
+
+    jobDir.getChildFile("manifest.json")
+        .replaceWithText(juce::JSON::toString(juce::var(manifest.get())));
+}
+
+/** Write a manifest for a malformed .wav file whose metadata and hash match. */
+static void writeMalformedWavManifest(const juce::File& jobDir,
+                                      const juce::String& requestId)
+{
+    const auto artFile = jobDir.getChildFile("full_mix.wav");
+    const unsigned char badRiffSizeWav[] = {
+        'R', 'I', 'F', 'F', 0, 0, 0, 0, 'W', 'A', 'V', 'E',
+        'f', 'm', 't', ' ', 16, 0, 0, 0, 1, 0, 1, 0,
+        0x44, 0xac, 0, 0, 0x88, 0x58, 0x01, 0, 2, 0, 16, 0,
+        'd', 'a', 't', 'a', 2, 0, 0, 0, 0, 0
+    };
+    artFile.replaceWithData(badRiffSizeWav, sizeof(badRiffSizeWav));
+
+    juce::DynamicObject::Ptr artObj = new juce::DynamicObject();
+    artObj->setProperty("path", artFile.getFullPathName());
+    artObj->setProperty("byteSize", static_cast<juce::int64>(artFile.getSize()));
+    artObj->setProperty("sha256", juce::SHA256(artFile).toHexString());
+
+    juce::Array<juce::var> artArray;
+    artArray.add(juce::var(artObj.get()));
+
+    juce::DynamicObject::Ptr manifest = new juce::DynamicObject();
+    manifest->setProperty("protocolVersion", juce::String("1.0"));
+    manifest->setProperty("requestId", requestId);
+    manifest->setProperty("success", true);
+    manifest->setProperty("artifacts", juce::var(artArray));
+
+    jobDir.getChildFile("manifest.json")
+        .replaceWithText(juce::JSON::toString(juce::var(manifest.get())));
+}
+
+/** Write a manifest containing multiple valid artifact entries. */
+static void writeMultiArtifactManifest(const juce::File& jobDir,
+                                       const juce::String& requestId)
+{
+    juce::Array<juce::var> artArray;
+
+    for (const auto& artifactName : { juce::String("full_mix.wav"),
+                                      juce::String("extra.wav") })
+    {
+        const auto artFile = jobDir.getChildFile(artifactName);
+        artFile.replaceWithText("FAKE_AUDIO_CONTENT_" + artifactName);
+
+        juce::DynamicObject::Ptr artObj = new juce::DynamicObject();
+        artObj->setProperty("path", artFile.getFullPathName());
+        artObj->setProperty("byteSize", static_cast<juce::int64>(artFile.getSize()));
+        artObj->setProperty("sha256", juce::SHA256(artFile).toHexString());
+        artArray.add(juce::var(artObj.get()));
+    }
 
     juce::DynamicObject::Ptr manifest = new juce::DynamicObject();
     manifest->setProperty("protocolVersion", juce::String("1.0"));
@@ -145,9 +244,7 @@ public:
         // ------------------------------------------------------------------
         beginTest("successful generation promotes exactly one verified WAV asset");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_success");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_success");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -235,9 +332,7 @@ public:
         // ------------------------------------------------------------------
         beginTest("completion with corrupt manifest does not add history");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_badmanifest");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_badmanifest");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -267,9 +362,7 @@ public:
         // ------------------------------------------------------------------
         beginTest("completion with missing manifest does not add history");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_nomanifest");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_nomanifest");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -294,9 +387,7 @@ public:
         // ------------------------------------------------------------------
         beginTest("completion with mismatched manifest requestId does not add history");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_badreqid");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_badreqid");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -323,9 +414,7 @@ public:
         // ------------------------------------------------------------------
         beginTest("cancellation sends cancel for active request and does not promote");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_cancel");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_cancel");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -357,12 +446,8 @@ public:
         // ------------------------------------------------------------------
         beginTest("failed later generation preserves earlier successful asset in history");
         {
-            const auto jobDir1 = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                     .getChildFile("gc_test_preserve1");
-            const auto jobDir2 = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                     .getChildFile("gc_test_preserve2");
-            jobDir1.createDirectory();
-            jobDir2.createDirectory();
+            const auto jobDir1 = makeCleanTestDirectory("gc_test_preserve1");
+            const auto jobDir2 = makeCleanTestDirectory("gc_test_preserve2");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -395,9 +480,7 @@ public:
         // ------------------------------------------------------------------
         beginTest("generated parametersJson contains all required fields");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_params");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_params");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -472,9 +555,7 @@ public:
         // ------------------------------------------------------------------
         beginTest("alreadyRunning error returned when startGeneration called while running");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_already");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_already");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -524,9 +605,7 @@ public:
         // GAP 2: pollOnce ignores progress event from stale/different requestId
         beginTest("pollOnce ignores progress event with stale requestId");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_stale_event");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_stale_event");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -607,9 +686,7 @@ public:
         // ITEM 3 (optional): pollOnce must ignore staleCompletion without failing the active job.
         beginTest("pollOnce with staleCompletion error keeps job running without failing");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_stale_completion");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_stale_completion");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -639,9 +716,7 @@ public:
         // not the hardcoded full_mix.wav path.
         beginTest("coordinator promotes manifest-listed artifact path not hardcoded full_mix.wav");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_manifest_path");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_manifest_path");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
@@ -678,14 +753,132 @@ public:
             jobDir.deleteRecursively();
         }
 
+        beginTest("coordinator rejects non-WAV generation artifact");
+        {
+            const auto jobDir = makeCleanTestDirectory("gc_test_nonwav_artifact");
+
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            GenerationCoordinator coordinator{
+                history, gateway,
+                [&jobDir](const juce::String&) { return jobDir; }};
+
+            coordinator.startGeneration(makeValidForm());
+            const auto runState = coordinator.getState();
+
+            writeValidManifest(jobDir, runState.activeRequestId, "not_audio.txt");
+
+            gateway.pollResponses.push_back(
+                {SidecarClientError::none, makeCompletionEvent(runState.activeRequestId)});
+            coordinator.pollOnce(0);
+
+            expectEquals(history.size(), 0, "non-WAV generation artifact must not promote");
+            expect(coordinator.getState().status == GenerationCoordinatorStatus::failed,
+                   "non-WAV generation artifact must fail the coordinator");
+
+            jobDir.deleteRecursively();
+        }
+
+        beginTest("coordinator rejects malformed WAV generation artifact");
+        {
+            const auto jobDir = makeCleanTestDirectory("gc_test_malformed_wav");
+
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            GenerationCoordinator coordinator{
+                history, gateway,
+                [&jobDir](const juce::String&) { return jobDir; }};
+
+            coordinator.startGeneration(makeValidForm());
+            const auto runState = coordinator.getState();
+
+            writeMalformedWavManifest(jobDir, runState.activeRequestId);
+
+            gateway.pollResponses.push_back(
+                {SidecarClientError::none, makeCompletionEvent(runState.activeRequestId)});
+            coordinator.pollOnce(0);
+
+            expectEquals(history.size(), 0, "malformed WAV artifact must not promote");
+            expect(coordinator.getState().status == GenerationCoordinatorStatus::failed,
+                   "malformed WAV artifact must fail the coordinator");
+
+            jobDir.deleteRecursively();
+        }
+
+        beginTest("coordinator rejects manifest with more than one generation artifact");
+        {
+            const auto jobDir = makeCleanTestDirectory("gc_test_multi_artifact");
+
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            GenerationCoordinator coordinator{
+                history, gateway,
+                [&jobDir](const juce::String&) { return jobDir; }};
+
+            coordinator.startGeneration(makeValidForm());
+            const auto runState = coordinator.getState();
+
+            writeMultiArtifactManifest(jobDir, runState.activeRequestId);
+
+            gateway.pollResponses.push_back(
+                {SidecarClientError::none, makeCompletionEvent(runState.activeRequestId)});
+            coordinator.pollOnce(0);
+
+            expectEquals(history.size(), 0,
+                         "generation manifest with extra artifacts must not promote");
+            expect(coordinator.getState().status == GenerationCoordinatorStatus::failed,
+                   "generation manifest with extra artifacts must fail the coordinator");
+
+            jobDir.deleteRecursively();
+        }
+
+        beginTest("cancel in flight prevents concurrent completion promotion");
+        {
+            const auto jobDir = makeCleanTestDirectory("gc_test_cancel_completion_race");
+
+            GeneratedAssetHistory history;
+            FakeGateway gateway;
+            gateway.blockPoll = true;
+            gateway.blockCancel = true;
+            GenerationCoordinator coordinator{
+                history, gateway,
+                [&jobDir](const juce::String&) { return jobDir; }};
+
+            coordinator.startGeneration(makeValidForm());
+            const auto runState = coordinator.getState();
+            writeValidManifest(jobDir, runState.activeRequestId);
+
+            gateway.pollResponses.push_back(
+                {SidecarClientError::none, makeCompletionEvent(runState.activeRequestId)});
+
+            std::thread pollThread([&]() { coordinator.pollOnce(0); });
+            while (!gateway.pollEntered)
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+            std::thread cancelThread([&]() { coordinator.cancelActiveGeneration(); });
+            while (!gateway.cancelEntered)
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+            gateway.releasePoll = true;
+            pollThread.join();
+
+            gateway.releaseCancel = true;
+            cancelThread.join();
+
+            expectEquals(history.size(), 0,
+                         "completion must not promote while cancellation is in flight");
+            expect(coordinator.getState().status != GenerationCoordinatorStatus::succeeded,
+                   "race must not leave coordinator succeeded after cancellation");
+
+            jobDir.deleteRecursively();
+        }
+
         // ------------------------------------------------------------------
         // IMPORTANT 3: getState() must be safe to call concurrently while
         // another thread drives pollOnce() progress events.
         beginTest("getState thread safety: concurrent getState and pollOnce do not race");
         {
-            const auto jobDir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                                    .getChildFile("gc_test_concurrent");
-            jobDir.createDirectory();
+            const auto jobDir = makeCleanTestDirectory("gc_test_concurrent");
 
             GeneratedAssetHistory history;
             FakeGateway gateway;
