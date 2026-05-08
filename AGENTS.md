@@ -175,6 +175,30 @@ def inject_lora_into_dit(
 5. Self-review only changed hunks for regressions and scope creep.
 6. Summarize risk, validation, and non-target impact in PR notes.
 
+## Required Agent Skills for OpenSpec Implementation
+
+When continuing `openspec/changes/add-vst3-functional-parity/` or any comparable
+multi-task OpenSpec implementation, future agent sessions must apply these skills when
+available:
+
+- `openspec-apply-change` to select the active change, read OpenSpec context files, and
+  keep task checkboxes current.
+- `subagent-driven-development` to execute each task with a fresh implementer subagent,
+  followed by spec-compliance review and code-quality review.
+- `test-driven-development` before production code for new behavior, bug fixes, and
+  refactoring; verify the red/green cycle before committing.
+- `requesting-code-review` after each task and before final branch handoff.
+- `verification-before-completion` before claiming task completion, committing, opening a
+  PR, or handing off validation results.
+- `systematic-debugging` or `diagnose` when builds, tests, host validation, or destructive
+  validation expose failures.
+- `receiving-code-review` before applying reviewer feedback.
+- `finishing-a-development-branch` only after all scoped tasks are complete and verified.
+
+The current working model for VST3 parity recovery is: OpenSpec context first, TDD for
+behavior changes, subagent implementation, spec review, quality review, fresh
+verification, scoped commit, then task checkbox update.
+
 ## PR Readiness Checklist
 
 - [ ] Change is tightly scoped to one problem.
